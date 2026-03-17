@@ -13,6 +13,12 @@ namespace MISReports_Api.Controllers
     {
         private readonly RoleInfoRepository _repository = new RoleInfoRepository();
 
+        private static bool HasCostCentres(CreateRoleRequest request)
+        {
+            return (request?.CostCentres != null && request.CostCentres.Exists(value => !string.IsNullOrWhiteSpace(value)))
+                || !string.IsNullOrWhiteSpace(request?.CostCentre);
+        }
+
         [HttpGet]
         [Route("admin")]
         public IHttpActionResult GetAdminRoles()
@@ -95,11 +101,14 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(request.Company))
                     validationErrors.Add("Company is required.");
 
+                if (string.IsNullOrWhiteSpace(request.MotherCompany))
+                    validationErrors.Add("MotherCompany is required.");
+
                 if (string.IsNullOrWhiteSpace(request.UserGroup))
                     validationErrors.Add("UserGroup is required.");
 
-                if (string.IsNullOrWhiteSpace(request.CostCentre))
-                    validationErrors.Add("CostCentre is required.");
+                if (!HasCostCentres(request))
+                    validationErrors.Add("At least one CostCentre is required.");
 
                 if (request.LvlNo <= 0)
                     validationErrors.Add("LvlNo must be greater than 0.");
@@ -132,6 +141,129 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot create role.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpPut]
+        [Route("{epfNo}")]
+        public IHttpActionResult UpdateRole(string epfNo, [FromBody] CreateRoleRequest request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Request body is required."
+                    }));
+                }
+
+                request.OriginalEpfNo = string.IsNullOrWhiteSpace(request.OriginalEpfNo)
+                    ? epfNo
+                    : request.OriginalEpfNo;
+
+                var validationErrors = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(request.OriginalEpfNo))
+                    validationErrors.Add("OriginalEpfNo is required.");
+
+                if (string.IsNullOrWhiteSpace(request.EpfNo))
+                    validationErrors.Add("EpfNo is required.");
+
+                if (string.IsNullOrWhiteSpace(request.RoleId))
+                    validationErrors.Add("RoleId is required.");
+
+                if (string.IsNullOrWhiteSpace(request.RoleName))
+                    validationErrors.Add("RoleName is required.");
+
+                if (string.IsNullOrWhiteSpace(request.UserType))
+                    validationErrors.Add("UserType is required.");
+
+                if (string.IsNullOrWhiteSpace(request.Company))
+                    validationErrors.Add("Company is required.");
+
+                if (string.IsNullOrWhiteSpace(request.MotherCompany))
+                    validationErrors.Add("MotherCompany is required.");
+
+                if (string.IsNullOrWhiteSpace(request.UserGroup))
+                    validationErrors.Add("UserGroup is required.");
+
+                if (!HasCostCentres(request))
+                    validationErrors.Add("At least one CostCentre is required.");
+
+                if (request.LvlNo <= 0)
+                    validationErrors.Add("LvlNo must be greater than 0.");
+
+                if (validationErrors.Count > 0)
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = string.Join(" ", validationErrors)
+                    }));
+                }
+
+                var updated = _repository.UpdateRole(request);
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = new
+                    {
+                        success = updated,
+                        roleId = request.RoleId,
+                        message = updated ? "Role updated successfully." : "Role not found."
+                    },
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot update role.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpDelete]
+        [Route("{epfNo}")]
+        public IHttpActionResult DeleteRole(string epfNo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(epfNo))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "EpfNo is required."
+                    }));
+                }
+
+                var deleted = _repository.DeleteRole(epfNo.Trim());
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = new
+                    {
+                        success = deleted,
+                        epfNo = epfNo.Trim(),
+                        message = deleted ? "Role deleted successfully." : "Role not found."
+                    },
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot delete role.",
                     errorDetails = ex.Message
                 }));
             }

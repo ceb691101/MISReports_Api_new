@@ -1,4 +1,4 @@
-namespace MISReports_Api.Models
+﻿namespace MISReports_Api.Models
 {
     public class MotherCompanyOptionModel
     {

@@ -478,6 +478,7 @@
     <Compile Include="Helpers\BillCycleHelper.cs" />
     <Compile Include="Models\Admin\RepRoles\CreateRoleRequest.cs" />
     <Compile Include="Models\Admin\RepRoles\RoleInfoModel.cs" />
+    <Compile Include="Models\Admin\RepRoles\RoleLookupModels.cs" />
     <Compile Include="Models\Cash Book\CashBookCCReportModel.cs" />
     <Compile Include="Models\Cash Book\CashBookReportModel.cs" />
     <Compile Include="Models\Cash Book\DocumentInquiryModel.cs" />
