@@ -276,6 +276,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\Admin\ReportCategory\ReportCategoryController.cs" />
     <Compile Include="Controllers\Admin\RepRoles\RoleInfoController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
@@ -358,6 +359,7 @@
     <Compile Include="Controllers\WorkInProgController\ProjectAgeAnalysisController.cs" />
     <Compile Include="Controllers\WorkInProgController\ProjectCommitmentSummaryController.cs" />
     <Compile Include="Controllers\WorkInProgController\WorkInProgressCompletedCostCenterwiseController.cs" />
+    <Compile Include="DAL\Admin\ReportCategory\ReportCategoryRepository.cs" />
     <Compile Include="DAL\Admin\RepRoles\RoleInfoRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
@@ -476,6 +478,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\BillCycleHelper.cs" />
+    <Compile Include="Models\Admin\ReportCategory\CreateReportCategoryRequest.cs" />
+    <Compile Include="Models\Admin\ReportCategory\ReportCategoryModel.cs" />
     <Compile Include="Models\Admin\RepRoles\CreateRoleRequest.cs" />
     <Compile Include="Models\Admin\RepRoles\RoleInfoModel.cs" />
     <Compile Include="Models\Admin\RepRoles\RoleLookupModels.cs" />
