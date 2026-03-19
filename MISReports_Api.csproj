@@ -356,7 +356,10 @@
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
+    <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
+    <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
+    <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
@@ -469,7 +472,10 @@
     <Compile Include="Models\Cash Book\CashBookReportModel.cs" />
     <Compile Include="Models\Cash Book\DocumentInquiryModel.cs" />
     <Compile Include="Models\Dashboard\BulkCustomerModels.cs" />
+    <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
+    <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
+    <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
     <Compile Include="Models\Debtors\BillCycleModel.cs" />
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
