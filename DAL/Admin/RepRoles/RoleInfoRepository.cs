@@ -535,5 +535,45 @@ namespace MISReports_Api.DAL
 
             return costCentres;
         }
+
+        public List<UserGroupOptionModel> GetUserGroups()
+        {
+            var groups = new List<UserGroupOptionModel>();
+
+            try
+            {
+                using (var conn = new OracleConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string sql = @"
+                                SELECT USER_ROLE_ID, USER_ROLE_NAME 
+                                FROM REP_USER_ROLE_NEW 
+                                ORDER BY USER_ROLE_ID";
+
+                    using (var cmd = new OracleCommand(sql, conn))
+                    {
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                groups.Add(new UserGroupOptionModel
+                                {
+                                    UserGroupId = reader["USER_ROLE_ID"]?.ToString()?.Trim(),
+                                    UserGroupName = reader["USER_ROLE_NAME"]?.ToString()?.Trim()
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetUserGroups: {ex.Message}");
+                throw;
+            }
+
+            return groups;
+        }
     }
 }

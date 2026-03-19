@@ -327,5 +327,30 @@ namespace MISReports_Api.Controllers
                 }));
             }
         }
+
+        [HttpGet]
+        [Route("usergroups")]
+        public IHttpActionResult GetUserGroups()
+        {
+            try
+            {
+                var result = _repository.GetUserGroups();
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get user groups.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
     }
 }

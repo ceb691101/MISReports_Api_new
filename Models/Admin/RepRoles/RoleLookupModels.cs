@@ -11,4 +11,10 @@
         public string CostCentreId { get; set; }
         public string CostCentreName { get; set; }
     }
+
+    public class UserGroupOptionModel
+    {
+        public string UserGroupId { get; set; }
+        public string UserGroupName { get; set; }
+    }
 }
