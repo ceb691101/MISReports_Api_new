@@ -27,7 +27,7 @@ namespace MISReports_Api.DAL
 
                     const string sql = @"
                         SELECT catcode, catname
-                        FROM rep_cats
+                        FROM rep_cats_new
                         ORDER BY catcode";
 
                     using (var cmd = new OracleCommand(sql, conn))
@@ -79,7 +79,7 @@ namespace MISReports_Api.DAL
 
                     const string sql = @"
                         SELECT catcode, catname
-                        FROM rep_cats
+                        FROM rep_cats_new
                         WHERE TRIM(catcode) = :catCode";
 
                     using (var cmd = new OracleCommand(sql, conn))
@@ -129,9 +129,9 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     const string sql = @"
-                        MERGE INTO rep_cats t
+                        MERGE INTO rep_cats_new t
                         USING dual
-                        ON (t.catcode = :catCode)
+                        ON (TRIM(t.catcode) = :catCode)
                         WHEN MATCHED THEN
                             UPDATE SET t.catname = :catDesc
                         WHEN NOT MATCHED THEN
@@ -175,9 +175,9 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     const string sql = @"
-                        UPDATE rep_cats
+                        UPDATE rep_cats_new
                         SET catname = :catDesc
-                        WHERE catcode = :catCode";
+                        WHERE TRIM(catcode) = :catCode";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
@@ -216,8 +216,8 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     const string sql = @"
-                        DELETE FROM rep_cats
-                        WHERE catcode = :catCode";
+                        DELETE FROM rep_cats_new
+                        WHERE TRIM(catcode) = :catCode";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
