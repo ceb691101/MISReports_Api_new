@@ -362,6 +362,7 @@
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
+    <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
@@ -482,6 +483,7 @@
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
     <Compile Include="Models\General\SecDepositConDemandBulkModel.cs" />
+    <Compile Include="Models\General\SMSRegisteredCustomersModel.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureRegionDetailedModel.cs" />
     <Compile Include="Models\Inventory\avgConsumptionSelectedDataModel.cs" />
     <Compile Include="Models\Inventory\InventoryOnHandModel.cs" />
