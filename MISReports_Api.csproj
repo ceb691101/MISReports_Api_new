@@ -328,6 +328,7 @@
     <Compile Include="Controllers\PIV\RegionWiseVatReportController.cs" />
     <Compile Include="Controllers\PIV\StampDutyDetailedController.cs" />
     <Compile Include="Controllers\PIV\TypewisePIVController.cs" />
+    <Compile Include="Controllers\RepRoleReport\RepRoleReportController.cs" />
     <Compile Include="Controllers\SharedController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarBillingController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarPendingJobsController.cs" />
@@ -410,6 +411,7 @@
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\RawDataForSolarDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\TotalSolarCustomersDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\VariableSolarDataDao.cs" />
+    <Compile Include="DAL\RepRoleReport\RepRoleReportRepository.cs" />
     <Compile Include="DAL\Shared\BillCycleFromAreaDao.cs" />
     <Compile Include="DAL\PIV\ProvincialConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PIV\RegionalPIVStampDutyRepository.cs" />
@@ -543,6 +545,7 @@
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\RawDataForSolarModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\TotalSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\VariableSolarDataModel.cs" />
+    <Compile Include="Models\RepRoleReport\RepRoleReportModel.cs" />
     <Compile Include="Models\SolarDetails\SolarBillingModel.cs" />
     <Compile Include="Models\SolarDetails\SolarPendingJobsModel.cs" />
     <Compile Include="Models\SolarInformation\AreaBulkModel.cs" />
