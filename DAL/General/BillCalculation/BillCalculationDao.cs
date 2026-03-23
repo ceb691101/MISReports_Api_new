@@ -40,10 +40,10 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@category", category);
-                        cmd.Parameters.AddWithValue("@toDate", toDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("yyyy-MM-dd"));
-                        //cmd.Parameters.AddWithValue("@toDate", toDate.ToString("dd-MM-yyyy"));
-                        //cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("dd-MM-yyyy"));
+                        //cmd.Parameters.AddWithValue("@toDate", toDate.ToString("yyyy-MM-dd"));
+                        //cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@toDate", toDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -91,10 +91,10 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@category", category);
-                        cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("yyyy-MM-dd"));
-                        //cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("dd-MM-yyyy"));
-                        //cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("dd-MM-yyyy"));
+                        //cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("yyyy-MM-dd"));
+                        //cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -217,8 +217,8 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     {
                         // Safety check: if no balance days remain, assign all remaining units
                         unitsInPeriod = balanceUnits;
-                        System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:yyyy-MM-dd} to {periodEnd:yyyy-MM-dd}");
-                        //System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:dd-MM-yyyy} to {periodEnd:dd-MM-yyyy}");
+                        //System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:yyyy-MM-dd} to {periodEnd:yyyy-MM-dd}");
+                        System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:dd-MM-yyyy} to {periodEnd:dd-MM-yyyy}");
                     }
                     else
                     {

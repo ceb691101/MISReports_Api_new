@@ -10,4 +10,10 @@
         public string UomCd { get; set; }
         public string Region { get; set; }
     }
+
+    public class MaterialCommittedStockProvinceModel
+    {
+        public string CompId { get; set; }
+        public string CompNm { get; set; }
+    }
 }

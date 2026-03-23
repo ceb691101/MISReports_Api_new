@@ -286,8 +286,11 @@
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
     <Compile Include="Controllers\Inventory\MaterialCommittedStockController.cs" />
+    <Compile Include="Controllers\Inventory\QtyonHandAllRegionController.cs" />
     <Compile Include="Controllers\JobCard\JobCardController.cs" />
     <Compile Include="Controllers\JobCard\JobCardMaterialsController.cs" />
+    <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
+    <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\LedgerCard\DivisionalLedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardTotalController.cs" />
@@ -301,12 +304,16 @@
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVShoratgeSurplusWHwiseController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVSlowNonMovingWHwiseController.cs" />
+    <Compile Include="Controllers\PIV\AccCodeWisePivNotAfmhqController.cs" />
     <Compile Include="Controllers\PIV\AccountCodesWisePivController.cs" />
+    <Compile Include="Controllers\PIV\BankPaidPIVDetailsController.cs" />
+    <Compile Include="Controllers\PIV\BankPivTabulationController.cs" />
     <Compile Include="Controllers\PIV\BranchWisePivBothController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVEntryFormController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVValidationController.cs" />
     <Compile Include="Controllers\PIV\ConsolidatedOutputVATController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVValidationWarehousewiseController.cs" />
+    <Compile Include="Controllers\PIV\CostCenterwisePivdetailsController.cs" />
     <Compile Include="Controllers\PIV\OtherCCtoProvinceController.cs" />
     <Compile Include="Controllers\PIV\PIVbyBanksController.cs" />
     <Compile Include="Controllers\PIV\PivByPeopleBankController.cs" />
@@ -318,12 +325,14 @@
     <Compile Include="Controllers\PIV\ProvinceManualSetOffController.cs" />
     <Compile Include="Controllers\PIV\ProvincePIVAllController.cs" />
     <Compile Include="Controllers\PIV\ProvincePIVbankController.cs" />
+    <Compile Include="Controllers\PIV\RegionPivFromOtherCCController.cs" />
     <Compile Include="Controllers\PIV\ProvincePivOtherCCController.cs" />
     <Compile Include="Controllers\PIV\ProvincePIVprovincialPOSController.cs" />
     <Compile Include="Controllers\PIV\ProvinceSetOffReportController.cs" />
     <Compile Include="Controllers\PIV\ProvinceWisePIVStampDutyController.cs" />
     <Compile Include="Controllers\PUCSLController.cs" />
     <Compile Include="Controllers\PIV\ProvincialConsolidatedOutputVATController.cs" />
+    <Compile Include="Controllers\PIV\RefundedPivController.cs" />
     <Compile Include="Controllers\PIV\RegionalPIVStampDutyController.cs" />
     <Compile Include="Controllers\PIV\RegionWiseVatReportController.cs" />
     <Compile Include="Controllers\PIV\StampDutyDetailedController.cs" />
@@ -364,6 +373,10 @@
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
+    <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
+    <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
+    <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesOrdBillCycleDao.cs" />
+    <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\SalesByTariffDao.cs" />
     <Compile Include="DAL\General\BillCalculation\BillCalculationDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
@@ -372,7 +385,10 @@
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
     <Compile Include="DAL\Inventory\MaterialCommittedStockRepository.cs" />
+    <Compile Include="DAL\Inventory\QtyonHandAllRegionRepository.cs" />
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
+    <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
+    <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\AnnualVerificationSheetRepository.cs" />
@@ -385,12 +401,16 @@
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVShoratgeSurplusWHwiseRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVSlowNonMovingWHwiseRepository.cs" />
+    <Compile Include="DAL\PIV\AccCodeWisePivNotAfmhqRepository.cs" />
     <Compile Include="DAL\PIV\AccountCodesWisePivRepository.cs" />
+    <Compile Include="DAL\PIV\BankPaidPIVDetailsRepository.cs" />
+    <Compile Include="DAL\PIV\BankPivTabulationRepository.cs" />
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
+    <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
     <Compile Include="DAL\PIV\OtherCCtoProvinceRepository.cs" />
     <Compile Include="DAL\PIV\PIVbyBanksRepository.cs" />
     <Compile Include="DAL\PIV\PivByPeopleBankRepository.cs" />
@@ -402,6 +422,7 @@
     <Compile Include="DAL\PIV\ProvinceManualSetOffRepository.cs" />
     <Compile Include="DAL\PIV\ProvincePIVAllRepository.cs" />
     <Compile Include="DAL\PIV\ProvincePIVbankRepository.cs" />
+    <Compile Include="DAL\PIV\RegionPivFromOtherCCRepository.cs" />
     <Compile Include="DAL\PIV\ProvincePivOtherCCRepository.cs" />
     <Compile Include="DAL\PIV\ProvincePIVprovincialRepository.cs" />
     <Compile Include="DAL\PIV\ProvinceSetOffReportRepository.cs" />
@@ -414,6 +435,7 @@
     <Compile Include="DAL\RepRoleReport\RepRoleReportRepository.cs" />
     <Compile Include="DAL\Shared\BillCycleFromAreaDao.cs" />
     <Compile Include="DAL\PIV\ProvincialConsolidatedOutputVATRepository.cs" />
+    <Compile Include="DAL\PIV\RefundedPivRepository.cs" />
     <Compile Include="DAL\PIV\RegionalPIVStampDutyRepository.cs" />
     <Compile Include="DAL\PIV\RegionWiseVatReportRepository.cs" />
     <Compile Include="DAL\PIV\StampDutyDetailedRepository.cs" />
@@ -490,15 +512,21 @@
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
+    <Compile Include="Models\General\ActiveCustomersModel.cs" />
     <Compile Include="Models\General\BillCalculationModel.cs" />
+    <Compile Include="Models\General\SalesByTariffModel.cs" />
     <Compile Include="Models\General\SecDepositConDemandBulkModel.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureRegionDetailedModel.cs" />
     <Compile Include="Models\Inventory\avgConsumptionSelectedDataModel.cs" />
     <Compile Include="Models\Inventory\InventoryOnHandModel.cs" />
     <Compile Include="Models\Inventory\ProvinceQtyOnHandCrossTabModel.cs" />
     <Compile Include="Models\Inventory\MaterialCommittedStockModel.cs" />
+    <Compile Include="Models\Inventory\QtyonHandAllRegionModel.cs" />
     <Compile Include="Models\JobCard\JobCardMaterialsModel.cs" />
     <Compile Include="Models\JobCard\JobCardModel.cs" />
+    <Compile Include="Models\JobSearch\JobSearchDtos.cs" />
+    <Compile Include="Models\JobSearch\JobSearchMainTable.cs" />
+    <Compile Include="Models\JobSearch\JobSearchModel.cs" />
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardTotalModel.cs" />
@@ -513,12 +541,16 @@
     <Compile Include="Models\PhysicalVerification\PHVObsoleteIdleModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVShoratgeSurplusWHwiseModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVSlowNonMovingWHwiseModel.cs" />
+    <Compile Include="Models\PIV\AccCodeWisePivNotAfmhqModel.cs" />
     <Compile Include="Models\PIV\accountCodesWisePivModel.cs" />
+    <Compile Include="Models\PIV\BankPaidPIVDetailsModel.cs" />
+    <Compile Include="Models\PIV\BankPivTabulationModel.cs" />
     <Compile Include="Models\PIV\BranchWisePivBothModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVEntryFormModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVValidationModel.cs" />
     <Compile Include="Models\PIV\ConsolidatedOutputVATModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVValidationWarehousewiseModel.cs" />
+    <Compile Include="Models\PIV\CostCenterwisePivdetailsModel.cs" />
     <Compile Include="Models\PIV\OtherCCtoProvinceModel.cs" />
     <Compile Include="Models\PIV\PIVbyBanksModel.cs" />
     <Compile Include="Models\PIV\PivByPeopleBankModel.cs" />
@@ -530,6 +562,7 @@
     <Compile Include="Models\PIV\ProvinceManualSetOffModel.cs" />
     <Compile Include="Models\PIV\ProvincePIVAllModel.cs" />
     <Compile Include="Models\PIV\ProvincePIVbankModel.cs" />
+    <Compile Include="Models\PIV\RegionPivFromOtherCCModel.cs" />
     <Compile Include="Models\PIV\ProvincePivOtherCC.model.cs" />
     <Compile Include="Models\PIV\ProvincePIVprovincialPOSModel.cs" />
     <Compile Include="Models\PIV\ProvinceSetOffModel.cs" />
@@ -538,6 +571,7 @@
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\NetMeteringModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\PUCSLReportRequest.cs" />
     <Compile Include="Models\PIV\ProvincialConsolidatedOutputVATModel.cs" />
+    <Compile Include="Models\PIV\RefundedPivModel.cs" />
     <Compile Include="Models\PIV\RegionalPIVStampDutyModel.cs" />
     <Compile Include="Models\PIV\RegionWiseVatReportModel.cs" />
     <Compile Include="Models\PIV\StampDutyDetailedModel.cs" />
@@ -655,6 +689,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Controllers\Admin\" />
+    <Folder Include="DAL\Admin\" />
+    <Folder Include="Models\Admin\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
