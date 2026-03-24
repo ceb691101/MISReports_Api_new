@@ -71,13 +71,14 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
             try
             {
+                // Changed: Use proper INNER JOIN syntax instead of comma joins
                 string sql = @"SELECT c.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, c.tariff, 
                                       c.cntr_dmnd, c.tot_sec_dep, m.tot_untskwo, m.tot_untskwd, 
                                       m.tot_untskwp, m.tot_kva, m.tot_amt 
-                               FROM customer c, mon_tot m 
+                               FROM customer c
+                               INNER JOIN mon_tot m ON c.acc_nbr = m.acc_nbr
                                WHERE m.bill_cycle = ? 
                                  AND c.cst_st = '0' 
-                                 AND c.acc_nbr = m.acc_nbr 
                                  AND c.area_cd = ? 
                                ORDER BY c.acc_nbr";
 
@@ -113,6 +114,7 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
         /// <summary>
         /// Gets data for Province report type with area and province information
+        /// Changed: Simplified to single query with all data
         /// </summary>
         private List<SecDepositConDemandBulkModel> GetProvinceReportData(OleDbConnection conn, SecDepositConDemandRequest request)
         {
@@ -120,22 +122,22 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
             try
             {
-                // First, get the main data with area and province codes
+                // Changed: Use proper INNER JOIN syntax and include area_name and prov_name directly
                 string sql = @"SELECT c.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, c.tariff, 
                                       c.cntr_dmnd, c.tot_sec_dep, m.tot_untskwo, m.tot_untskwd, 
-                                      m.tot_untskwp, m.tot_kva, m.tot_amt, a.area_code, p.prov_code
-                               FROM customer c, mon_tot m, areas a, provinces p 
+                                      m.tot_untskwp, m.tot_kva, m.tot_amt, 
+                                      a.area_code, a.area_name,
+                                      p.prov_code, p.prov_name
+                               FROM customer c
+                               INNER JOIN mon_tot m ON c.acc_nbr = m.acc_nbr
+                               INNER JOIN areas a ON c.area_cd = a.area_code
+                               INNER JOIN provinces p ON a.prov_code = p.prov_code
                                WHERE m.bill_cycle = ? 
                                  AND c.cst_st = '0' 
-                                 AND c.acc_nbr = m.acc_nbr 
-                                 AND c.area_cd = a.area_code 
-                                 AND a.prov_code = p.prov_code 
                                  AND p.prov_code = ? 
-                               ORDER BY c.acc_nbr, a.area_code";
+                               ORDER BY a.area_code, c.acc_nbr";
 
                 logger.Info($"Executing Province SQL with BillCycle={request.BillCycle}, ProvCode={request.ProvCode}");
-
-                var accountAreaMap = new Dictionary<string, ProvinceAreaInfo>();
 
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
@@ -148,34 +150,16 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
                         {
                             var model = MapReaderToModel(reader);
 
-                            // Get area and province codes
-                            var areaCode = GetColumnValue(reader, "area_code");
-                            var provCode = GetColumnValue(reader, "prov_code");
-
-                            model.AreaCode = areaCode;
-                            model.ProvinceCode = provCode;
+                            // Changed: Get area and province data directly from the query
+                            model.AreaCode = GetColumnValue(reader, "area_code") ?? "";
+                            model.Area = GetColumnValue(reader, "area_name") ?? "";
+                            model.ProvinceCode = GetColumnValue(reader, "prov_code") ?? "";
+                            model.Province = GetColumnValue(reader, "prov_name") ?? "";
                             model.BillCycle = request.BillCycle;
-
-                            // Store area info for later enrichment
-                            if (!string.IsNullOrEmpty(areaCode))
-                            {
-                                accountAreaMap[model.AccountNumber] = new ProvinceAreaInfo
-                                {
-                                    AccountNumber = model.AccountNumber,
-                                    AreaCode = areaCode,
-                                    ProvinceCode = provCode
-                                };
-                            }
 
                             results.Add(model);
                         }
                     }
-                }
-
-                // Enrich with area and province names if we have data
-                if (results.Count > 0)
-                {
-                    EnrichWithLocationNames(conn, results, accountAreaMap);
                 }
 
                 logger.Info($"Retrieved {results.Count} records for Province report");
@@ -191,6 +175,7 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
         /// <summary>
         /// Maps database reader to model
+        /// Changed: Improved data reading with ordinal positions and IsDBNull checks
         /// </summary>
         private SecDepositConDemandBulkModel MapReaderToModel(OleDbDataReader reader)
         {
@@ -198,26 +183,26 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
             try
             {
-                // Get raw values
-                model.AccountNumber = GetColumnValue(reader, "acc_nbr") ?? "";
-                model.Name = GetColumnValue(reader, "name")?.Trim() ?? "";
+                // Get raw values using ordinal positions for better performance
+                model.AccountNumber = reader.IsDBNull(0) ? "" : reader.GetString(0).Trim();
+                model.Name = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim();
 
                 // Combine address lines
-                string addr1 = GetColumnValue(reader, "address_l1")?.Trim() ?? "";
-                string addr2 = GetColumnValue(reader, "address_l2")?.Trim() ?? "";
+                string addr1 = reader.IsDBNull(2) ? "" : reader.GetString(2).Trim();
+                string addr2 = reader.IsDBNull(3) ? "" : reader.GetString(3).Trim();
                 model.Address = string.IsNullOrEmpty(addr2) ? addr1 : $"{addr1} {addr2}";
 
-                model.City = GetColumnValue(reader, "city")?.Trim() ?? "";
-                model.Tariff = GetColumnValue(reader, "tariff") ?? "";
+                model.City = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
+                model.Tariff = reader.IsDBNull(5) ? "" : reader.GetString(5).Trim();
 
                 // Get raw numeric values
-                model.RawContractDemand = GetDecimalValue(reader, "cntr_dmnd");
-                model.RawSecurityDeposit = GetDecimalValue(reader, "tot_sec_dep");
-                model.RawTotalKWOUnits = GetDecimalValue(reader, "tot_untskwo");
-                model.RawTotalKWDUnits = GetDecimalValue(reader, "tot_untskwd");
-                model.RawTotalKWPUnits = GetDecimalValue(reader, "tot_untskwp");
-                model.RawKVA = GetDecimalValue(reader, "tot_kva");
-                model.RawMonthlyCharge = GetDecimalValue(reader, "tot_amt");
+                model.RawContractDemand = reader.IsDBNull(6) ? 0 : Convert.ToDecimal(reader.GetValue(6));
+                model.RawSecurityDeposit = reader.IsDBNull(7) ? 0 : Convert.ToDecimal(reader.GetValue(7));
+                model.RawTotalKWOUnits = reader.IsDBNull(8) ? 0 : Convert.ToDecimal(reader.GetValue(8));
+                model.RawTotalKWDUnits = reader.IsDBNull(9) ? 0 : Convert.ToDecimal(reader.GetValue(9));
+                model.RawTotalKWPUnits = reader.IsDBNull(10) ? 0 : Convert.ToDecimal(reader.GetValue(10));
+                model.RawKVA = reader.IsDBNull(11) ? 0 : Convert.ToDecimal(reader.GetValue(11));
+                model.RawMonthlyCharge = reader.IsDBNull(12) ? 0 : Convert.ToDecimal(reader.GetValue(12));
 
                 // Format for display (as per VB6 code)
                 model.ContractDemand = FormatInteger(model.RawContractDemand);
@@ -239,156 +224,15 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
             return model;
         }
 
-        /// <summary>
-        /// Enriches province report results with area and province names
-        /// </summary>
-        private void EnrichWithLocationNames(OleDbConnection conn,
-            List<SecDepositConDemandBulkModel> results,
-            Dictionary<string, ProvinceAreaInfo> accountAreaMap)
-        {
-            try
-            {
-                // Get unique area codes
-                var areaCodes = accountAreaMap.Values
-                    .Select(v => v.AreaCode)
-                    .Where(c => !string.IsNullOrEmpty(c))
-                    .Distinct()
-                    .ToList();
-
-                if (areaCodes.Count == 0)
-                    return;
-
-                // Get area names
-                var areaNames = GetAreaNamesBatch(conn, areaCodes);
-
-                // Get unique province codes
-                var provCodes = accountAreaMap.Values
-                    .Select(v => v.ProvinceCode)
-                    .Where(c => !string.IsNullOrEmpty(c))
-                    .Distinct()
-                    .ToList();
-
-                // Get province names
-                var provinceNames = GetProvinceNamesBatch(conn, provCodes);
-
-                // Enrich each result
-                foreach (var result in results)
-                {
-                    if (accountAreaMap.TryGetValue(result.AccountNumber, out var info))
-                    {
-                        if (!string.IsNullOrEmpty(info.AreaCode) && areaNames.TryGetValue(info.AreaCode, out string areaName))
-                        {
-                            result.Area = areaName;
-                        }
-
-                        if (!string.IsNullOrEmpty(info.ProvinceCode) && provinceNames.TryGetValue(info.ProvinceCode, out string provName))
-                        {
-                            result.Province = provName;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error enriching with location names");
-            }
-        }
-
-        /// <summary>
-        /// Gets area names for multiple area codes
-        /// </summary>
-        private Dictionary<string, string> GetAreaNamesBatch(OleDbConnection conn, List<string> areaCodes)
-        {
-            var result = new Dictionary<string, string>();
-
-            try
-            {
-                var parameters = string.Join(",", areaCodes.Select((_, idx) => $"?"));
-
-                string sql = $@"SELECT area_code, area_name 
-                               FROM areas 
-                               WHERE area_code IN ({parameters})";
-
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    foreach (var areaCode in areaCodes)
-                    {
-                        cmd.Parameters.AddWithValue("?", areaCode);
-                    }
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var code = GetColumnValue(reader, "area_code");
-                            var name = GetColumnValue(reader, "area_name")?.Trim() ?? "";
-                            if (!string.IsNullOrEmpty(code))
-                            {
-                                result[code] = name;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error fetching area names batch");
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets province names for multiple province codes
-        /// </summary>
-        private Dictionary<string, string> GetProvinceNamesBatch(OleDbConnection conn, List<string> provCodes)
-        {
-            var result = new Dictionary<string, string>();
-
-            try
-            {
-                var parameters = string.Join(",", provCodes.Select((_, idx) => $"?"));
-
-                string sql = $@"SELECT prov_code, prov_name 
-                               FROM provinces 
-                               WHERE prov_code IN ({parameters})";
-
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    foreach (var provCode in provCodes)
-                    {
-                        cmd.Parameters.AddWithValue("?", provCode);
-                    }
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var code = GetColumnValue(reader, "prov_code");
-                            var name = GetColumnValue(reader, "prov_name")?.Trim() ?? "";
-                            if (!string.IsNullOrEmpty(code))
-                            {
-                                result[code] = name;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error fetching province names batch");
-            }
-
-            return result;
-        }
-
-        // Helper methods
+        // Changed: Improved helper methods with ordinal position support
         private string GetColumnValue(OleDbDataReader reader, string columnName)
         {
             try
             {
-                var value = reader[columnName];
-                return value == DBNull.Value ? null : value.ToString()?.Trim();
+                int ordinal = reader.GetOrdinal(columnName);
+                if (reader.IsDBNull(ordinal))
+                    return null;
+                return reader.GetString(ordinal).Trim();
             }
             catch (IndexOutOfRangeException)
             {
@@ -401,8 +245,10 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
         {
             try
             {
-                var value = reader[columnName];
-                return value == DBNull.Value ? 0 : Convert.ToDecimal(value);
+                int ordinal = reader.GetOrdinal(columnName);
+                if (reader.IsDBNull(ordinal))
+                    return 0;
+                return Convert.ToDecimal(reader.GetValue(ordinal));
             }
             catch (IndexOutOfRangeException)
             {
