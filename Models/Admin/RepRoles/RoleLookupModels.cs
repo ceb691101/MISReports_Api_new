@@ -10,6 +10,7 @@
     {
         public string CostCentreId { get; set; }
         public string CostCentreName { get; set; }
+        public string CostCentreDisplay { get; set; } // Formatted as "ID:Name"
     }
 
     public class UserGroupOptionModel

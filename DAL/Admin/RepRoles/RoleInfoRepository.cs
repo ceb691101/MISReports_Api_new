@@ -501,16 +501,33 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                                SELECT dept_id AS CostCentreId,
-                                             dept_nm AS CostCentreName
-                                FROM gldeptm
-                                WHERE comp_id = :compid
-                                ORDER BY dept_id";
+                        SELECT 
+                            dept_id || ':' || dept_nm AS CostCentreDisplay,
+                            TRIM(dept_id) AS CostCentreId,
+                            TRIM(dept_nm) AS CostCentreName
+                        FROM gldeptm
+                        WHERE dept_id IN (
+                            SELECT dept_id
+                            FROM gldeptm
+                            WHERE status = 2
+                              AND comp_id IN (
+                                  SELECT comp_id
+                                  FROM glcompm
+                                  WHERE status = 2
+                                    AND (
+                                        comp_id   LIKE :comp_prefix
+                                     OR parent_id LIKE :comp_prefix
+                                     OR grp_comp  LIKE :comp_prefix
+                                    )
+                              )
+                        )
+                        ORDER BY dept_nm";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         cmd.BindByName = true;
-                        cmd.Parameters.Add("compid", OracleDbType.Varchar2).Value = companyId?.Trim();
+                        string compPrefix = (companyId?.Trim().ToUpper() ?? "") + "%";
+                        cmd.Parameters.Add("comp_prefix", OracleDbType.Varchar2).Value = compPrefix;
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -519,7 +536,8 @@ namespace MISReports_Api.DAL
                                 costCentres.Add(new CostCentreOptionModel
                                 {
                                     CostCentreId = reader["CostCentreId"]?.ToString(),
-                                    CostCentreName = reader["CostCentreName"]?.ToString()
+                                    CostCentreName = reader["CostCentreName"]?.ToString(),
+                                    CostCentreDisplay = reader["CostCentreDisplay"]?.ToString()
                                 });
                             }
                         }
