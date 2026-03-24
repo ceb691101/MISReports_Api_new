@@ -400,8 +400,7 @@ namespace MISReports_Api.DAL
                             }
                         }
 
-                        const string deleteRoleCctSql = @"
-                            DELETE FROM REP_ROLES_CCT_NEW
+                        const string deleteRoleCctSql = @"                            DELETE FROM REP_ROLES_CCT_NEW
                             WHERE TRIM(ROLEID) = (
                                 SELECT TRIM(ROLEID)
                                 FROM REP_ROLE_NEW

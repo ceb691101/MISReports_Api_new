@@ -11,6 +11,26 @@ namespace MISReports_Api.DAL
     {
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
+        public int GetNextReportIdNo()
+        {
+            try
+            {
+                using (var conn = new OracleConnection(connectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new OracleCommand("SELECT REP_REPORTS_SEQ.NEXTVAL FROM DUAL", conn))
+                    {
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetNextReportIdNo: {ex.Message}");
+                throw;
+            }
+        }
+
         public bool AddReportEntry(ReportEntryModel request)
         {
             using (var conn = new OracleConnection(connectionString))
@@ -24,12 +44,13 @@ namespace MISReports_Api.DAL
                             INSERT INTO REP_REPORTS_NEW
                             (REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE)
                             VALUES
-                            (REP_REPORTS_SEQ.NEXTVAL, :repid, :catcode, :repname, :favorite, :active)";
+                            (:repid_no, :repid, :catcode, :repname, :favorite, :active)";
 
                         using (var cmd = new OracleCommand(sql, conn))
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
+                            cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = request.RepIdNo;
                             cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = request.RepId?.Trim();
                             cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
                             cmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
@@ -158,7 +179,7 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                        SELECT REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
+                        SELECT REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
                         FROM REP_REPORTS_NEW
                         WHERE REPID = :repid
                         AND CATCODE = :catcode";
@@ -175,6 +196,7 @@ namespace MISReports_Api.DAL
                             {
                                 results.Add(new ReportEntryModel
                                 {
+                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
                                     RepId = reader["REPID"]?.ToString()?.Trim(),
                                     CatCode = reader["CATCODE"]?.ToString()?.Trim(),
                                     RepName = reader["REPNAME"]?.ToString()?.Trim(),
@@ -206,9 +228,9 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                        SELECT REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
+                        SELECT REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
                         FROM REP_REPORTS_NEW
-                        ORDER BY REPID";
+                        ORDER BY REPID_NO";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
@@ -218,6 +240,7 @@ namespace MISReports_Api.DAL
                             {
                                 results.Add(new ReportEntryModel
                                 {
+                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
                                     RepId = reader["REPID"]?.ToString()?.Trim(),
                                     CatCode = reader["CATCODE"]?.ToString()?.Trim(),
                                     RepName = reader["REPNAME"]?.ToString()?.Trim(),

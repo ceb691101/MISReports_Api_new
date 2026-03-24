@@ -4,6 +4,7 @@ namespace MISReports_Api.Models
 {
     public class ReportEntryModel
     {
+        public int RepIdNo { get; set; }
         public string RepId { get; set; }
         public string CatCode { get; set; }
         public string RepName { get; set; }

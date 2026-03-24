@@ -13,6 +13,21 @@ namespace MISReports_Api.Controllers
         private readonly ReportEntryRepository _repository = new ReportEntryRepository();
 
         [HttpGet]
+        [Route("nextid")]
+        public IHttpActionResult GetNextReportIdNo()
+        {
+            try
+            {
+                var id = _repository.GetNextReportIdNo();
+                return Ok(JObject.FromObject(new { data = id, errorMessage = (string)null }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Cannot get next ID.", errorDetails = ex.Message }));
+            }
+        }
+
+        [HttpGet]
         [Route("")]
         public IHttpActionResult GetAllReportEntries()
         {
