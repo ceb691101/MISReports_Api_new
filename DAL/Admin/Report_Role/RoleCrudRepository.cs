@@ -1,334 +1,414 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using MISReports_Api.Models;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 
 namespace MISReports_Api.DAL
 {
-    public class RoleCrudRepository
-    {
-        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+	public class RoleCrudRepository
+	{
+		private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
-        private OracleConnection OpenConnection()
-        {
-            var conn = new OracleConnection(_connectionString);
-            conn.Open();
-            return conn;
-        }
+		private static string Normalize(string value)
+		{
+			return value?.Trim();
+		}
 
-        // 1) SELECT - Check if user exists (Normal User)
-        public bool ExistsNormalUser(string roleId)
-        {
-            const string sql = @"
-                SELECT roleid, rolename, usertype
-                FROM rep_role_new
-                WHERE roleid = :roleID";
+		private static List<string> NormalizeDistinctCodes(IEnumerable<string> codes)
+		{
+			return (codes ?? Enumerable.Empty<string>())
+				.Where(code => !string.IsNullOrWhiteSpace(code))
+				.Select(code => code.Trim())
+				.Distinct(StringComparer.OrdinalIgnoreCase)
+				.ToList();
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
+		public List<RoleReportLookupDto> GetReportsByCategory(List<string> catCodes)
+		{
+			var normalizedCodes = NormalizeDistinctCodes(catCodes);
+			var result = new List<RoleReportLookupDto>();
 
-                using (var reader = cmd.ExecuteReader())
-                {
-                    if (!reader.Read()) return false;
-                    var userType = reader["USERTYPE"]?.ToString()?.Trim();
-                    return string.Equals(userType, "User", StringComparison.OrdinalIgnoreCase);
-                }
-            }
-        }
+			if (normalizedCodes.Count == 0)
+			{
+				return result;
+			}
 
-        // 1) SELECT - Check if admin exists
-        public bool ExistsAdmin(string roleId)
-        {
-            const string sql = @"
-                SELECT roleid, rolename
-                FROM rep_role_new
-                WHERE roleid = :roleID";
+			try
+			{
+				using (var conn = new OracleConnection(connectionString))
+				{
+					conn.Open();
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
+					var bindNames = new List<string>();
+					for (var i = 0; i < normalizedCodes.Count; i++)
+					{
+						bindNames.Add(":cat" + i);
+					}
 
-                using (var reader = cmd.ExecuteReader())
-                {
-                    if (!reader.Read()) return false;
-                    return true;
-                }
-            }
-        }
+					var sql = @"
+SELECT CATCODE, REPID
+FROM REP_REPORTS_NEW
+WHERE CATCODE IN (" + string.Join(",", bindNames) + @")
+AND FAVORITE = '1'
+AND ACTIVE = '1'";
 
-        // 1) SELECT - Inside DELETE_ADMINUSER
-        public string GetUserType(string roleId)
-        {
-            const string sql = @"
-                SELECT usertype
-                FROM rep_role_new
-                WHERE roleid = :roleID";
+					using (var cmd = new OracleCommand(sql, conn))
+					{
+						cmd.BindByName = true;
+						for (var i = 0; i < normalizedCodes.Count; i++)
+						{
+							cmd.Parameters.Add("cat" + i, OracleDbType.Varchar2).Value = normalizedCodes[i];
+						}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                return cmd.ExecuteScalar()?.ToString();
-            }
-        }
+						using (var reader = cmd.ExecuteReader())
+						{
+							while (reader.Read())
+							{
+								result.Add(new RoleReportLookupDto
+								{
+									CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+									RepId = reader["REPID"]?.ToString()?.Trim(),
+									RepName = string.Empty
+								});
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Error in GetReportsByCategory: " + ex.Message);
+				throw;
+			}
 
-        // 1) SELECT - Inside SAVE_ADMINUSER
-        public string GetRoleName(string roleId)
-        {
-            const string sql = @"
-                SELECT rolename
-                FROM rep_role_new
-                WHERE roleid = :roleID";
+			return result;
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                return cmd.ExecuteScalar()?.ToString();
-            }
-        }
+		public bool ExistsRoleReportExact(string roleId, string repId, string catCode)
+		{
+			const string sql = @"
+SELECT CATCODE, REPID
+FROM REP_ROLES_REP_NEW
+WHERE ROLEID = :ROLEID
+AND REPID = :REPID
+AND CATCODE = :CATCODE";
 
-        // 1) SELECT - Inside SAVE_REPROLECCT
-        public bool ExistsRoleCostCentre(string roleId, string cct)
-        {
-            const string sql = @"
-                SELECT costcentre, lvl_no
-                FROM rep_roles_cct_new
-                WHERE roleid = :roleID
-                AND costcentre = :cct";
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("cct", OracleDbType.Varchar2).Value = cct?.Trim();
+					using (var reader = cmd.ExecuteReader())
+					{
+						return reader.Read();
+					}
+				}
+			}
+		}
 
-                using (var reader = cmd.ExecuteReader())
-                {
-                    return reader.Read();
-                }
-            }
-        }
+		private bool ExistsRoleReportByRepId(string roleId, string repId)
+		{
+			const string sql = @"
+SELECT 1
+FROM REP_ROLES_REP_NEW
+WHERE ROLEID = :ROLEID
+AND REPID = :REPID";
 
-        // 2) INSERT - Insert new user
-        public int InsertUser(string roleId, string roleName, string pwd, string userType, string company, string compSub)
-        {
-            const string sql = @"
-                INSERT INTO rep_role_new 
-                (roleid, rolename, password, usertype, company, comp_dup)
-                VALUES 
-                (:roleID, :roleName, :pwd, :userType, :company, :compSub)";
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					using (var reader = cmd.ExecuteReader())
+					{
+						return reader.Read();
+					}
+				}
+			}
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("roleName", OracleDbType.Varchar2).Value = roleName?.Trim();
-                cmd.Parameters.Add("pwd", OracleDbType.Varchar2).Value = pwd?.Trim();
-                cmd.Parameters.Add("userType", OracleDbType.Varchar2).Value = userType?.Trim();
-                cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = company?.Trim();
-                cmd.Parameters.Add("compSub", OracleDbType.Varchar2).Value = compSub?.Trim();
+		public int InsertUserReport(string roleId, string catCode, string repId)
+		{
+			const string sql = @"
+INSERT INTO REP_ROLES_REP_NEW
+(REPID_NO, ROLEID, CATCODE, REPID, FAVORITE)
+VALUES (SEQ_REP_ROLES_REP.NEXTVAL, :ROLEID, :CATCODE, :REPID, '1')";
 
-                return cmd.ExecuteNonQuery();
-            }
-        }
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					return cmd.ExecuteNonQuery();
+				}
+			}
+		}
 
-        // 2) INSERT - Insert user cost centre
-        public int InsertUserCostCentre(string roleId, string cct, int lvlNo)
-        {
-            const string sql = @"
-                INSERT INTO rep_roles_cct_new 
-                (roleid, costcentre, lvl_no)
-                VALUES 
-                (:roleID, :cct, :lvlNo)";
+		public int UpdateUserReport(string roleId, string catCode, string repId)
+		{
+			const string sql = @"
+UPDATE REP_ROLES_REP_NEW
+SET CATCODE = :CATCODE,
+	REPID   = :REPID
+WHERE ROLEID = :ROLEID
+AND REPID = :REPID";
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("cct", OracleDbType.Varchar2).Value = cct?.Trim();
-                cmd.Parameters.Add("lvlNo", OracleDbType.Int32).Value = lvlNo;
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					return cmd.ExecuteNonQuery();
+				}
+			}
+		}
 
-                return cmd.ExecuteNonQuery();
-            }
-        }
+		public RoleSaveResultDto SaveUserRoleReports(string roleId, List<RoleReportItemRequest> reports)
+		{
+			var result = new RoleSaveResultDto();
 
-        // 3) UPDATE - Update user
-        public int UpdateUser(string roleId, string roleName, string pwd, string userType, string company, string compSub)
-        {
-            const string sql = @"
-                UPDATE rep_role_new
-                SET 
-                    rolename = :roleName,
-                    password = :pwd,
-                    usertype = :userType,
-                    company  = :company,
-                    comp_dup = :compSub
-                WHERE roleid = :roleID";
+			if (string.IsNullOrWhiteSpace(roleId) || reports == null || reports.Count == 0)
+			{
+				return result;
+			}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleName", OracleDbType.Varchar2).Value = roleName?.Trim();
-                cmd.Parameters.Add("pwd", OracleDbType.Varchar2).Value = pwd?.Trim();
-                cmd.Parameters.Add("userType", OracleDbType.Varchar2).Value = userType?.Trim();
-                cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = company?.Trim();
-                cmd.Parameters.Add("compSub", OracleDbType.Varchar2).Value = compSub?.Trim();
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
+			foreach (var item in reports)
+			{
+				if (item == null || string.IsNullOrWhiteSpace(item.RepId) || string.IsNullOrWhiteSpace(item.CatCode))
+				{
+					result.Ignored++;
+					continue;
+				}
 
-                return cmd.ExecuteNonQuery();
-            }
-        }
+				var role = Normalize(roleId);
+				var rep = Normalize(item.RepId);
+				var cat = Normalize(item.CatCode);
 
-        // 3) UPDATE - Update cost centre level
-        public int UpdateCostCentreLevel(string roleId, string cct, int lvlNo)
-        {
-            const string sql = @"
-                UPDATE rep_roles_cct_new
-                SET lvl_no = :lvlNo
-                WHERE roleid = :roleID
-                AND costcentre = :cct";
+				if (ExistsRoleReportExact(role, rep, cat))
+				{
+					// Keep servlet-compatible behavior: update when existing.
+					UpdateUserReport(role, cat, rep);
+					result.Updated++;
+					continue;
+				}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("lvlNo", OracleDbType.Int32).Value = lvlNo;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("cct", OracleDbType.Varchar2).Value = cct?.Trim();
+				if (ExistsRoleReportByRepId(role, rep))
+				{
+					UpdateUserReport(role, cat, rep);
+					result.Updated++;
+					continue;
+				}
 
-                return cmd.ExecuteNonQuery();
-            }
-        }
+				InsertUserReport(role, cat, rep);
+				result.Inserted++;
+			}
 
-        // 4) DELETE - basic
-        public int DeleteUserBasic(string roleId)
-        {
-            const string sql = @"
-                DELETE FROM rep_role_new
-                WHERE roleid = :roleID";
+			return result;
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                return cmd.ExecuteNonQuery();
-            }
-        }
+		public int DeleteAllReports(string roleId)
+		{
+			const string sql = @"
+DELETE FROM REP_ROLES_REP_NEW
+WHERE ROLEID = :ROLEID";
 
-        // 4) DELETE - by type
-        public int DeleteUserByType(string roleId, string type) // User / Administrator
-        {
-            const string sql = @"
-                DELETE FROM rep_role_new
-                WHERE roleid = :roleID AND usertype = :type";
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					return cmd.ExecuteNonQuery();
+				}
+			}
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("type", OracleDbType.Varchar2).Value = type?.Trim();
-                return cmd.ExecuteNonQuery();
-            }
-        }
+		public int DeleteReportsByCategory(string roleId, string catCode)
+		{
+			const string sql = @"
+DELETE FROM REP_ROLES_REP_NEW
+WHERE ROLEID = :ROLEID
+AND CATCODE = :CATCODE";
 
-        // 4) DELETE - all reports for user
-        public int DeleteAllReports(string roleId)
-        {
-            const string sql = @"
-                DELETE FROM rep_roles_rep_new
-                WHERE roleid = :roleID";
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
+					return cmd.ExecuteNonQuery();
+				}
+			}
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                return cmd.ExecuteNonQuery();
-            }
-        }
+		public int DeleteReportByName(string roleId, string repId)
+		{
+			const string sql = @"
+DELETE FROM REP_ROLES_REP_NEW
+WHERE ROLEID = :ROLEID
+AND REPID = :REPID";
 
-        // 4) DELETE - reports by category
-        public int DeleteReportsByCategory(string roleId, IEnumerable<string> catCodes)
-        {
-            var codes = (catCodes ?? Enumerable.Empty<string>())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => x.Trim())
-                .ToList();
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					return cmd.ExecuteNonQuery();
+				}
+			}
+		}
 
-            if (codes.Count == 0) return 0;
+		public List<RoleReportLookupDto> GetReportsByName(string repId)
+		{
+			const string sql = @"
+SELECT CATCODE, REPID, REPNAME
+FROM REP_REPORTS_NEW
+WHERE REPID = :REPID";
 
-            var bindNames = new List<string>();
-            for (int i = 0; i < codes.Count; i++) bindNames.Add($":cat{i}");
+			var result = new List<RoleReportLookupDto>();
 
-            var sql = $@"
-                DELETE FROM rep_roles_rep_new
-                WHERE roleid = :roleID
-                AND catcode IN ({string.Join(",", bindNames)})";
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
+					using (var reader = cmd.ExecuteReader())
+					{
+						while (reader.Read())
+						{
+							result.Add(new RoleReportLookupDto
+							{
+								CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+								RepId = reader["REPID"]?.ToString()?.Trim(),
+								RepName = reader["REPNAME"]?.ToString()?.Trim()
+							});
+						}
+					}
+				}
+			}
 
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    cmd.Parameters.Add($"cat{i}", OracleDbType.Varchar2).Value = codes[i];
-                }
+			return result;
+		}
 
-                return cmd.ExecuteNonQuery();
-            }
-        }
+		public List<RoleCategoryDto> GetAllCategories()
+		{
+			const string sql = @"
+SELECT CATCODE, CATNAME
+FROM REP_CATS_NEW";
 
-        // 4) DELETE - specific report
-        public int DeleteSpecificReport(string roleId, string repId)
-        {
-            const string sql = @"
-                DELETE FROM rep_roles_rep_new
-                WHERE roleid = :roleID
-                AND repid = :repID";
+			var result = new List<RoleCategoryDto>();
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("repID", OracleDbType.Varchar2).Value = repId?.Trim();
-                return cmd.ExecuteNonQuery();
-            }
-        }
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				using (var reader = cmd.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						result.Add(new RoleCategoryDto
+						{
+							CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+							CatName = reader["CATNAME"]?.ToString()?.Trim()
+						});
+					}
+				}
+			}
 
-        // 4) DELETE - cost centre
-        public int DeleteCostCentre(string roleId, string cct)
-        {
-            const string sql = @"
-                DELETE FROM rep_roles_cct_new
-                WHERE roleid = :roleID
-                AND costcentre = :cct";
+			return result;
+		}
 
-            using (var conn = OpenConnection())
-            using (var cmd = new OracleCommand(sql, conn))
-            {
-                cmd.BindByName = true;
-                cmd.Parameters.Add("roleID", OracleDbType.Varchar2).Value = roleId?.Trim();
-                cmd.Parameters.Add("cct", OracleDbType.Varchar2).Value = cct?.Trim();
-                return cmd.ExecuteNonQuery();
-            }
-        }
-    }
+		public List<RoleReportLookupDto> GetAllActiveReports()
+		{
+			const string sql = @"
+SELECT CATCODE, REPID, REPNAME
+FROM REP_REPORTS_NEW
+WHERE ACTIVE = '1'";
+
+			var result = new List<RoleReportLookupDto>();
+
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				using (var reader = cmd.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						result.Add(new RoleReportLookupDto
+						{
+							CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+							RepId = reader["REPID"]?.ToString()?.Trim(),
+							RepName = reader["REPNAME"]?.ToString()?.Trim()
+						});
+					}
+				}
+			}
+
+			return result;
+		}
+
+		public List<RoleAssignedReportDto> GetUserAssignedReports(string roleId)
+		{
+			const string sql = @"
+SELECT ROLEID, CATCODE, REPID
+FROM REP_ROLES_REP_NEW
+WHERE ROLEID = :ROLEID";
+
+			var result = new List<RoleAssignedReportDto>();
+
+			using (var conn = new OracleConnection(connectionString))
+			{
+				conn.Open();
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.BindByName = true;
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+
+					using (var reader = cmd.ExecuteReader())
+					{
+						while (reader.Read())
+						{
+							result.Add(new RoleAssignedReportDto
+							{
+								RoleId = reader["ROLEID"]?.ToString()?.Trim(),
+								CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+								RepId = reader["REPID"]?.ToString()?.Trim()
+							});
+						}
+					}
+				}
+			}
+
+			return result;
+		}
+	}
 }

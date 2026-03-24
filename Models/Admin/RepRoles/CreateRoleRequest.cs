@@ -17,4 +17,9 @@ namespace MISReports_Api.Models
         public List<string> CostCentres { get; set; }
         public int LvlNo { get; set; }
     }
+
+    public class AddRoleCostCentresRequest
+    {
+        public List<string> CostCentres { get; set; }
+    }
 }

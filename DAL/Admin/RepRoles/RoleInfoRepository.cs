@@ -36,6 +36,27 @@ namespace MISReports_Api.DAL
             return normalized;
         }
 
+        private List<string> NormalizeCostCentres(IEnumerable<string> costCentres)
+        {
+            var normalized = new List<string>();
+
+            if (costCentres == null)
+            {
+                return normalized;
+            }
+
+            foreach (var costCentre in costCentres)
+            {
+                var trimmed = costCentre?.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed) && !normalized.Contains(trimmed))
+                {
+                    normalized.Add(trimmed);
+                }
+            }
+
+            return normalized;
+        }
+
         private int GetCostCentreLvlNo(OracleConnection conn, OracleTransaction transaction, string costCentreId)
         {
             try
@@ -440,6 +461,124 @@ namespace MISReports_Api.DAL
                     {
                         transaction.Rollback();
                         Debug.WriteLine($"Error in DeleteRole: {ex.Message}");
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public int AddCostCentresToRole(string epfNo, List<string> requestedCostCentres)
+        {
+            var normalizedCostCentres = NormalizeCostCentres(requestedCostCentres);
+
+            if (normalizedCostCentres.Count == 0)
+            {
+                return 0;
+            }
+
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        const string roleIdSql = @"
+                            SELECT TRIM(ROLEID)
+                            FROM REP_ROLE_NEW
+                            WHERE TRIM(EPF_NO) = :epf_no";
+
+                        string roleId = null;
+
+                        using (var roleCmd = new OracleCommand(roleIdSql, conn))
+                        {
+                            roleCmd.Transaction = transaction;
+                            roleCmd.BindByName = true;
+                            roleCmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
+
+                            roleId = roleCmd.ExecuteScalar()?.ToString()?.Trim();
+                        }
+
+                        if (string.IsNullOrWhiteSpace(roleId))
+                        {
+                            transaction.Rollback();
+                            return -1;
+                        }
+
+                        var existingCostCentres = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        const string existingSql = @"
+                            SELECT TRIM(COSTCENTRE)
+                            FROM REP_ROLES_CCT_NEW
+                            WHERE TRIM(ROLEID) = :role_id";
+
+                        using (var existingCmd = new OracleCommand(existingSql, conn))
+                        {
+                            existingCmd.Transaction = transaction;
+                            existingCmd.BindByName = true;
+                            existingCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = roleId;
+
+                            using (var reader = existingCmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var existing = reader[0]?.ToString()?.Trim();
+                                    if (!string.IsNullOrWhiteSpace(existing))
+                                    {
+                                        existingCostCentres.Add(existing);
+                                    }
+                                }
+                            }
+                        }
+
+                        const string insertSql = @"
+                            INSERT INTO REP_ROLES_CCT_NEW
+                            (
+                                ROLEID,
+                                COSTCENTRE,
+                                LVL_NO,
+                                STATUS
+                            )
+                            VALUES
+                            (
+                                :role_id,
+                                :costcentre,
+                                :lvl_no,
+                                2
+                            )";
+
+                        int addedCount = 0;
+
+                        foreach (var costCentre in normalizedCostCentres)
+                        {
+                            if (existingCostCentres.Contains(costCentre))
+                            {
+                                continue;
+                            }
+
+                            int lvlNo = GetCostCentreLvlNo(conn, transaction, costCentre);
+
+                            using (var insertCmd = new OracleCommand(insertSql, conn))
+                            {
+                                insertCmd.Transaction = transaction;
+                                insertCmd.BindByName = true;
+                                insertCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = roleId;
+                                insertCmd.Parameters.Add("costcentre", OracleDbType.Varchar2).Value = costCentre;
+                                insertCmd.Parameters.Add("lvl_no", OracleDbType.Int32).Value = lvlNo;
+                                insertCmd.ExecuteNonQuery();
+                            }
+
+                            existingCostCentres.Add(costCentre);
+                            addedCount++;
+                        }
+
+                        transaction.Commit();
+                        return addedCount;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        Debug.WriteLine($"Error in AddCostCentresToRole: {ex.Message}");
                         throw;
                     }
                 }

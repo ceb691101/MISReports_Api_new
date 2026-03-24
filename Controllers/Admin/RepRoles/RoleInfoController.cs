@@ -230,6 +230,66 @@ namespace MISReports_Api.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("{epfNo}/costcentres")]
+        public IHttpActionResult AddCostCentresToRole(string epfNo, [FromBody] AddRoleCostCentresRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(epfNo))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "EpfNo is required."
+                    }));
+                }
+
+                if (request?.CostCentres == null || request.CostCentres.Count == 0)
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "At least one CostCentre is required."
+                    }));
+                }
+
+                var addedCount = _repository.AddCostCentresToRole(epfNo.Trim(), request.CostCentres);
+
+                if (addedCount < 0)
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Role not found."
+                    }));
+                }
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = new
+                    {
+                        success = true,
+                        addedCount,
+                        epfNo = epfNo.Trim(),
+                        message = addedCount > 0
+                            ? "Cost centres added successfully."
+                            : "No new cost centres were added."
+                    },
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot add cost centres.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
         [HttpDelete]
         [Route("{epfNo}")]
         public IHttpActionResult DeleteRole(string epfNo)
