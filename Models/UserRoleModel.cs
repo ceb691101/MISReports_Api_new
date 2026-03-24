@@ -6,5 +6,7 @@ namespace MISReports_Api.Models
     {
         public string RoleId { get; set; }
         public string UserGroup { get; set; }
+        public string USERTYPE { get; set; }
+        public string COMPANY { get; set; }
     }
 }
