@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -17,7 +17,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly ContractDemandBulkDao _contractDemandBulkDao = new ContractDemandBulkDao();
         private readonly ContractDemandBillCycleDao _billCycleDao = new ContractDemandBillCycleDao();
-        private readonly ContractDemandAreaProvinceDao _areaProvinceDao = new ContractDemandAreaProvinceDao(); // ← NEW
+        private readonly ContractDemandAreaProvinceDao _areaProvinceDao = new ContractDemandAreaProvinceDao();
         private readonly SalesAndCollectionRangeDao _dao = new SalesAndCollectionRangeDao();
         private readonly RegisteredCustomersBillCycleDao _smsDao = new RegisteredCustomersBillCycleDao();
 
@@ -44,7 +44,12 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { data = (object)null, errorMessage = "Cannot retrieve bill cycles.", errorDetails = ex.Message });
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve bill cycles.",
+                    errorDetails = ex.Message
+                });
             }
         }
 
@@ -80,7 +85,7 @@ namespace MISReports_Api.Controllers
         // All Provinces                                                        //
         // GET api/contract-demand/provinces                                    //
         // Response: { data: [ { ProvinceCode, ProvinceName }, ... ],          //
-        //             errorMessage }                                           //
+        //             errorMessage: null }                                     //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -108,6 +113,10 @@ namespace MISReports_Api.Controllers
         // ------------------------------------------------------------------ //
         // Contract Demand Bulk — Area                                          //
         // GET api/contract-demand/bulk/area?billCycle=438&areaCode=43         //
+        // Response: { data: [ ...CustomerRecords... ], errorMessage: null }   //
+        //                                                                      //
+        // NOTE: data is a FLAT ARRAY — not a nested object.                   //
+        //       Frontend reads: const records = json?.data ?? []              //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -116,12 +125,12 @@ namespace MISReports_Api.Controllers
             [FromUri] string billCycle = null,
             [FromUri] string areaCode = null)
         {
-            var validationErrors = new List<string>();
-            if (string.IsNullOrWhiteSpace(billCycle)) validationErrors.Add("Bill cycle is required.");
-            if (string.IsNullOrWhiteSpace(areaCode)) validationErrors.Add("Area code is required.");
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+            if (string.IsNullOrWhiteSpace(areaCode)) errors.Add("Area code is required.");
 
-            if (validationErrors.Count > 0)
-                return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
+            if (errors.Count > 0)
+                return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
 
             return ProcessContractDemandRequest(new SecDepositConDemandRequest
             {
@@ -134,6 +143,9 @@ namespace MISReports_Api.Controllers
         // ------------------------------------------------------------------ //
         // Contract Demand Bulk — Province                                      //
         // GET api/contract-demand/bulk/province?billCycle=438&provCode=D      //
+        // Response: { data: [ ...CustomerRecords... ], errorMessage: null }   //
+        //                                                                      //
+        // NOTE: data is a FLAT ARRAY — not a nested object.                   //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -142,12 +154,12 @@ namespace MISReports_Api.Controllers
             [FromUri] string billCycle = null,
             [FromUri] string provCode = null)
         {
-            var validationErrors = new List<string>();
-            if (string.IsNullOrWhiteSpace(billCycle)) validationErrors.Add("Bill cycle is required.");
-            if (string.IsNullOrWhiteSpace(provCode)) validationErrors.Add("Province code is required.");
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+            if (string.IsNullOrWhiteSpace(provCode)) errors.Add("Province code is required.");
 
-            if (validationErrors.Count > 0)
-                return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
+            if (errors.Count > 0)
+                return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
 
             return ProcessContractDemandRequest(new SecDepositConDemandRequest
             {
@@ -157,13 +169,26 @@ namespace MISReports_Api.Controllers
             });
         }
 
+        // ------------------------------------------------------------------ //
+        // Shared report processor                                              //
+        // IMPORTANT: Returns data as a flat List<> directly under "data".     //
+        //            Do NOT wrap it in { records, summary, title, ... }.      //
+        //            The frontend maps json.data as CustomerRecord[].         //
+        // ------------------------------------------------------------------ //
+
         private IHttpActionResult ProcessContractDemandRequest(SecDepositConDemandRequest request)
         {
             try
             {
                 if (!_contractDemandBulkDao.TestConnection(out string connError))
-                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
 
+                // Returns List<SecDepositConDemandBulkModel>
                 var data = _contractDemandBulkDao.GetContractDemandBulkReport(request);
 
                 if (data == null || data.Count == 0)
@@ -174,12 +199,24 @@ namespace MISReports_Api.Controllers
                         errorDetails = "Please check the bill cycle and location code."
                     });
 
-                return Ok(new { data = data, errorMessage = (string)null });
+                // ✅ Return flat array directly — frontend does: json.data as CustomerRecord[]
+                return Ok(new
+                {
+                    data = data,           // List<SecDepositConDemandBulkModel>
+                    errorMessage = (string)null
+                });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine($"ERROR ProcessContractDemandRequest: {ex.Message}\n{ex.StackTrace}");
-                return Ok(new { data = (object)null, errorMessage = "Cannot get report data.", errorDetails = ex.Message });
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR ProcessContractDemandRequest: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get report data.",
+                    errorDetails = ex.Message
+                });
             }
         }
 
@@ -200,7 +237,12 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { data = (object)null, errorMessage = "Cannot retrieve sales and collection range data.", errorDetails = ex.Message });
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve sales and collection range data.",
+                    errorDetails = ex.Message
+                });
             }
         }
 
@@ -218,13 +260,13 @@ namespace MISReports_Api.Controllers
         {
             try
             {
-                var validationErrors = new List<string>();
-                if (string.IsNullOrWhiteSpace(fromCycle)) validationErrors.Add("From bill cycle is required.");
-                if (string.IsNullOrWhiteSpace(toCycle)) validationErrors.Add("To bill cycle is required.");
-                if (string.IsNullOrWhiteSpace(reportType)) validationErrors.Add("Report type is required.");
+                var errors = new List<string>();
+                if (string.IsNullOrWhiteSpace(fromCycle)) errors.Add("From bill cycle is required.");
+                if (string.IsNullOrWhiteSpace(toCycle)) errors.Add("To bill cycle is required.");
+                if (string.IsNullOrWhiteSpace(reportType)) errors.Add("Report type is required.");
 
-                if (validationErrors.Count > 0)
-                    return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
+                if (errors.Count > 0)
+                    return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
 
                 var monthlyData = _smsDao.GetSMSCountRange(new SMSUsageRequest
                 {
@@ -235,7 +277,12 @@ namespace MISReports_Api.Controllers
                 });
 
                 if (monthlyData == null || monthlyData.Count == 0)
-                    return Ok(new { data = (object)null, errorMessage = "No data available.", errorDetails = "Please check the bill cycle range and location code." });
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No data available.",
+                        errorDetails = "Please check the bill cycle range and location code."
+                    });
 
                 return Ok(new
                 {
@@ -249,8 +296,15 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine($"ERROR GetSMSRegisteredRange: {ex.Message}\n{ex.StackTrace}");
-                return Ok(new { data = (object)null, errorMessage = "Cannot retrieve SMS registered range data.", errorDetails = ex.Message });
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetSMSRegisteredRange: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve SMS registered range data.",
+                    errorDetails = ex.Message
+                });
             }
         }
     }
