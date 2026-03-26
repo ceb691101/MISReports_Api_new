@@ -17,11 +17,18 @@ namespace MISReports_Api.DAL
 			return value?.Trim();
 		}
 
+		private static string NormalizeKey(string value)
+		{
+			var trimmed = value?.Trim();
+			return string.IsNullOrWhiteSpace(trimmed) ? null : trimmed.ToUpperInvariant();
+		}
+
 		private static List<string> NormalizeDistinctCodes(IEnumerable<string> codes)
 		{
 			return (codes ?? Enumerable.Empty<string>())
 				.Where(code => !string.IsNullOrWhiteSpace(code))
-				.Select(code => code.Trim())
+				.Select(code => NormalizeKey(code))
+				.Where(code => !string.IsNullOrWhiteSpace(code))
 				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.ToList();
 		}
@@ -51,7 +58,7 @@ namespace MISReports_Api.DAL
 					var sql = @"
 SELECT CATCODE, REPID
 FROM REP_REPORTS_NEW
-WHERE CATCODE IN (" + string.Join(",", bindNames) + @")
+WHERE UPPER(TRIM(CATCODE)) IN (" + string.Join(",", bindNames) + @")
 AND FAVORITE = '1'
 AND ACTIVE = '1'";
 
@@ -92,9 +99,9 @@ AND ACTIVE = '1'";
 			const string sql = @"
 SELECT CATCODE, REPID
 FROM REP_ROLES_REP_NEW
-WHERE ROLEID = :ROLEID
-AND REPID = :REPID
-AND CATCODE = :CATCODE";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID
+AND UPPER(TRIM(REPID)) = :REPID
+AND UPPER(TRIM(CATCODE)) = :CATCODE";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -102,9 +109,9 @@ AND CATCODE = :CATCODE";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
-					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
-					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
 
 					using (var reader = cmd.ExecuteReader())
 					{
@@ -119,8 +126,8 @@ AND CATCODE = :CATCODE";
 			const string sql = @"
 SELECT 1
 FROM REP_ROLES_REP_NEW
-WHERE ROLEID = :ROLEID
-AND REPID = :REPID";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID
+AND UPPER(TRIM(REPID)) = :REPID";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -128,8 +135,8 @@ AND REPID = :REPID";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
-					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
 					using (var reader = cmd.ExecuteReader())
 					{
 						return reader.Read();
@@ -143,7 +150,7 @@ AND REPID = :REPID";
 			const string sql = @"
 INSERT INTO REP_ROLES_REP_NEW
 (REPID_NO, ROLEID, CATCODE, REPID, FAVORITE)
-VALUES (SEQ_REP_ROLES_REP.NEXTVAL, :ROLEID, :CATCODE, :REPID, '1')";
+VALUES ((SELECT NVL(MAX(REPID_NO), 0) + 1 FROM REP_ROLES_REP_NEW), :ROLEID, :CATCODE, :REPID, '1')";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -151,9 +158,9 @@ VALUES (SEQ_REP_ROLES_REP.NEXTVAL, :ROLEID, :CATCODE, :REPID, '1')";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
-					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
-					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
 					return cmd.ExecuteNonQuery();
 				}
 			}
@@ -165,8 +172,8 @@ VALUES (SEQ_REP_ROLES_REP.NEXTVAL, :ROLEID, :CATCODE, :REPID, '1')";
 UPDATE REP_ROLES_REP_NEW
 SET CATCODE = :CATCODE,
 	REPID   = :REPID
-WHERE ROLEID = :ROLEID
-AND REPID = :REPID";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID
+AND UPPER(TRIM(REPID)) = :REPID";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -174,9 +181,9 @@ AND REPID = :REPID";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
-					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
 					return cmd.ExecuteNonQuery();
 				}
 			}
@@ -229,7 +236,7 @@ AND REPID = :REPID";
 		{
 			const string sql = @"
 DELETE FROM REP_ROLES_REP_NEW
-WHERE ROLEID = :ROLEID";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -237,7 +244,7 @@ WHERE ROLEID = :ROLEID";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
 					return cmd.ExecuteNonQuery();
 				}
 			}
@@ -247,8 +254,8 @@ WHERE ROLEID = :ROLEID";
 		{
 			const string sql = @"
 DELETE FROM REP_ROLES_REP_NEW
-WHERE ROLEID = :ROLEID
-AND CATCODE = :CATCODE";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID
+AND UPPER(TRIM(CATCODE)) = :CATCODE";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -256,8 +263,8 @@ AND CATCODE = :CATCODE";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
-					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = Normalize(catCode);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
+					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
 					return cmd.ExecuteNonQuery();
 				}
 			}
@@ -267,8 +274,8 @@ AND CATCODE = :CATCODE";
 		{
 			const string sql = @"
 DELETE FROM REP_ROLES_REP_NEW
-WHERE ROLEID = :ROLEID
-AND REPID = :REPID";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID
+AND UPPER(TRIM(REPID)) = :REPID";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
@@ -276,8 +283,8 @@ AND REPID = :REPID";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
-					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
 					return cmd.ExecuteNonQuery();
 				}
 			}
@@ -288,7 +295,7 @@ AND REPID = :REPID";
 			const string sql = @"
 SELECT CATCODE, REPID, REPNAME
 FROM REP_REPORTS_NEW
-WHERE REPID = :REPID";
+WHERE UPPER(TRIM(REPID)) = :REPID";
 
 			var result = new List<RoleReportLookupDto>();
 
@@ -298,7 +305,7 @@ WHERE REPID = :REPID";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = Normalize(repId);
+					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
 
 					using (var reader = cmd.ExecuteReader())
 					{
@@ -381,7 +388,7 @@ WHERE ACTIVE = '1'";
 			const string sql = @"
 SELECT ROLEID, CATCODE, REPID
 FROM REP_ROLES_REP_NEW
-WHERE ROLEID = :ROLEID";
+WHERE UPPER(TRIM(ROLEID)) = :ROLEID";
 
 			var result = new List<RoleAssignedReportDto>();
 
@@ -391,7 +398,7 @@ WHERE ROLEID = :ROLEID";
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
-					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = Normalize(roleId);
+					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
 
 					using (var reader = cmd.ExecuteReader())
 					{
@@ -407,8 +414,7 @@ WHERE ROLEID = :ROLEID";
 					}
 				}
 			}
-
-			return result;
+		return result;
 		}
 	}
 }
