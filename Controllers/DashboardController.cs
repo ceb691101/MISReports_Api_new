@@ -150,7 +150,7 @@ namespace MISReports_Api.Controllers.Dashboard
                 return Ok(new
                 {
                     data = new { billCycle = maxBillCycle },
-                    errorMessage = string.IsNullOrWhiteSpace(maxBillCycle) ? "No bill cycle found in netmtcons." : (string)null
+                    errorMessage = string.IsNullOrWhiteSpace(maxBillCycle) ? "No bill cycle found in netprogrs." : (string)null
                 });
             }
             catch (Exception ex)

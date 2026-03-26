@@ -2,6 +2,7 @@ using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.Data.OleDb;
 
 namespace MISReports_Api.DAL.Dashboard
@@ -35,37 +36,26 @@ namespace MISReports_Api.DAL.Dashboard
                 {
                     conn.Open();
 
-                    string targetCycle = string.IsNullOrWhiteSpace(billCycle)
-                        ? GetMaxBillCycle(conn)
-                        : billCycle.Trim();
+                    string targetCycle = ResolveTargetBillCycle(conn, billCycle);
 
                     summary.BillCycle = targetCycle;
 
                     if (string.IsNullOrWhiteSpace(targetCycle))
                     {
-                        summary.ErrorMessage = "No bill cycle found in netmtcons.";
+                        summary.ErrorMessage = "No bill cycle found in netprogrs.";
                         return summary;
                     }
 
-                    summary.TotalCustomers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ?",
-                        targetCycle);
+                    var groupedCounts = GetGroupedCountsFromNetprogrs(conn, targetCycle);
 
-                    summary.NetMeteringCustomers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type = '1'",
-                        targetCycle);
-
-                    summary.NetAccountingCustomers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type IN ('2', '5')",
-                        targetCycle);
-
-                    summary.NetPlusCustomers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type = '3'",
-                        targetCycle);
-
-                    summary.NetPlusPlusCustomers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type = '4'",
-                        targetCycle);
+                    summary.NetMeteringCustomers = GetCountByNetType(groupedCounts, "1");
+                    summary.NetAccountingCustomers = GetCountByNetType(groupedCounts, "2") + GetCountByNetType(groupedCounts, "5");
+                    summary.NetPlusCustomers = GetCountByNetType(groupedCounts, "3");
+                    summary.NetPlusPlusCustomers = GetCountByNetType(groupedCounts, "4");
+                    summary.TotalCustomers = summary.NetMeteringCustomers
+                                           + summary.NetAccountingCustomers
+                                           + summary.NetPlusCustomers
+                                           + summary.NetPlusPlusCustomers;
                 }
 
                 return summary;
@@ -85,47 +75,42 @@ namespace MISReports_Api.DAL.Dashboard
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
-                    return GetMaxBillCycle(conn);
+                    return ResolveTargetBillCycle(conn, null);
                 }
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error while fetching latest bill cycle from netmtcons");
+                logger.Error(ex, "Error while fetching latest bill cycle from netprogrs");
                 return string.Empty;
             }
         }
 
         public SolarOrdinaryCustomersCount GetTotalCustomersCount(string billCycle = null)
         {
-            return GetCountResult(billCycle,
-                "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ?");
+            return GetCountResult(billCycle, "ALL");
         }
 
         public SolarOrdinaryCustomersCount GetNetMeteringCustomersCount(string billCycle = null)
         {
-            return GetCountResult(billCycle,
-                "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type = '1'");
+            return GetCountResult(billCycle, "1");
         }
 
         public SolarOrdinaryCustomersCount GetNetAccountingCustomersCount(string billCycle = null)
         {
-            return GetCountResult(billCycle,
-                "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type IN ('2', '5')");
+            return GetCountResult(billCycle, "2");
         }
 
         public SolarOrdinaryCustomersCount GetNetPlusCustomersCount(string billCycle = null)
         {
-            return GetCountResult(billCycle,
-                "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type = '3'");
+            return GetCountResult(billCycle, "3");
         }
 
         public SolarOrdinaryCustomersCount GetNetPlusPlusCustomersCount(string billCycle = null)
         {
-            return GetCountResult(billCycle,
-                "SELECT COUNT(*) FROM netmtcons WHERE bill_cycle = ? AND net_type = '4'");
+            return GetCountResult(billCycle, "4");
         }
 
-        private SolarOrdinaryCustomersCount GetCountResult(string billCycle, string sql)
+        private SolarOrdinaryCustomersCount GetCountResult(string billCycle, string netType)
         {
             var result = new SolarOrdinaryCustomersCount
             {
@@ -140,19 +125,34 @@ namespace MISReports_Api.DAL.Dashboard
                 {
                     conn.Open();
 
-                    string targetCycle = string.IsNullOrWhiteSpace(billCycle)
-                        ? GetMaxBillCycle(conn)
-                        : billCycle.Trim();
+                    string targetCycle = ResolveTargetBillCycle(conn, billCycle);
 
                     result.BillCycle = targetCycle;
 
                     if (string.IsNullOrWhiteSpace(targetCycle))
                     {
-                        result.ErrorMessage = "No bill cycle found in netmtcons.";
+                        result.ErrorMessage = "No bill cycle found in netprogrs.";
                         return result;
                     }
 
-                    result.CustomersCount = ExecuteCount(conn, sql, targetCycle);
+                    var groupedCounts = GetGroupedCountsFromNetprogrs(conn, targetCycle);
+
+                    if (netType == "ALL")
+                    {
+                        result.CustomersCount = GetCountByNetType(groupedCounts, "1")
+                                              + GetCountByNetType(groupedCounts, "2")
+                                              + GetCountByNetType(groupedCounts, "5")
+                                              + GetCountByNetType(groupedCounts, "3")
+                                              + GetCountByNetType(groupedCounts, "4");
+                    }
+                    else if (netType == "2")
+                    {
+                        result.CustomersCount = GetCountByNetType(groupedCounts, "2") + GetCountByNetType(groupedCounts, "5");
+                    }
+                    else
+                    {
+                        result.CustomersCount = GetCountByNetType(groupedCounts, netType);
+                    }
                 }
 
                 return result;
@@ -167,7 +167,7 @@ namespace MISReports_Api.DAL.Dashboard
 
         private string GetMaxBillCycle(OleDbConnection conn)
         {
-            const string sql = "SELECT MAX(bill_cycle) FROM netmtcons";
+            const string sql = "SELECT MAX(bill_cycle) FROM netprogrs";
 
             using (var cmd = new OleDbCommand(sql, conn))
             {
@@ -176,20 +176,57 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private int ExecuteCount(OleDbConnection conn, string sql, string billCycle)
+        private string ResolveTargetBillCycle(OleDbConnection conn, string billCycle)
         {
+            if (!string.IsNullOrWhiteSpace(billCycle))
+            {
+                return billCycle.Trim();
+            }
+
+            string maxBillCycleText = GetMaxBillCycle(conn);
+            if (!int.TryParse(maxBillCycleText, out int maxBillCycle))
+            {
+                return string.Empty;
+            }
+
+            int targetCycle = maxBillCycle - 1;
+            return targetCycle <= 0 ? string.Empty : targetCycle.ToString();
+        }
+
+        private Dictionary<string, int> GetGroupedCountsFromNetprogrs(OleDbConnection conn, string billCycle)
+        {
+            var groupedCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            const string sql = "SELECT bill_cycle, net_type, SUM(cnt), SUM(tot_gen_cap) " +
+                               "FROM netprogrs WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
+
             using (var cmd = new OleDbCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("?", billCycle);
-                object result = cmd.ExecuteScalar();
 
-                if (result == null || result == DBNull.Value)
+                using (var reader = cmd.ExecuteReader())
                 {
-                    return 0;
-                }
+                    while (reader.Read())
+                    {
+                        string netType = reader[1] == DBNull.Value ? string.Empty : reader[1].ToString().Trim();
 
-                return Convert.ToInt32(result);
+                        if (string.IsNullOrWhiteSpace(netType))
+                        {
+                            continue;
+                        }
+
+                        int count = reader[2] == DBNull.Value ? 0 : Convert.ToInt32(reader[2]);
+                        groupedCounts[netType] = count;
+                    }
+                }
             }
+
+            return groupedCounts;
+        }
+
+        private int GetCountByNetType(Dictionary<string, int> groupedCounts, string netType)
+        {
+            return groupedCounts.TryGetValue(netType, out int count) ? count : 0;
         }
     }
 }
