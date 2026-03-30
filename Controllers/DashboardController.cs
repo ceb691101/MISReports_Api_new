@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Globalization;
 using System.Web.Http;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.Models.Dashboard;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// All three dashboard controllers live in this single file.
+// All dashboard controllers live in this single file. - all controllers in dashboard
 // They cannot be merged into one class because each has a different RoutePrefix.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ namespace MISReports_Api.Controllers.Dashboard
         private readonly BulkCustomersDao _bulkCustomersDao = new BulkCustomersDao();
         private readonly SalesAndCollectionRangeDao _salesAndCollectionRangeDao = new SalesAndCollectionRangeDao();
         private readonly OrdinaryCustomersDao _ordinaryCustomersDao = new OrdinaryCustomersDao();
+        private readonly KioskCollectionDao _kioskCollectionDao = new KioskCollectionDao();
 
         /// <summary>GET api/dashboard/customers/active-count</summary>
         [HttpGet]
@@ -123,13 +125,64 @@ namespace MISReports_Api.Controllers.Dashboard
                 return Ok(new { data = (object)null, errorMessage = "Cannot get bulk sales and collection data.", errorDetails = ex.Message });
             }
         }
+
+        /// <summary>GET api/dashboard/kiosk-collection?userId=KIOS00&fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd</summary>
+        [HttpGet]
+        [Route("kiosk-collection")]
+        public IHttpActionResult GetKioskCollection([FromUri] string userId = null, [FromUri] string fromDate = null, [FromUri] string toDate = null)
+        {
+            try
+            {
+                if (!_kioskCollectionDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                if (string.IsNullOrWhiteSpace(userId))
+                    return Ok(new { data = (object)null, errorMessage = "userId is required." });
+
+                string resolvedUserId = userId.Trim();
+
+                DateTime resolvedToDate = DateTime.Today.AddDays(-1);
+                if (!string.IsNullOrWhiteSpace(toDate) &&
+                    !DateTime.TryParseExact(toDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resolvedToDate))
+                {
+                    return Ok(new { data = (object)null, errorMessage = "Invalid toDate format. Use yyyy-MM-dd." });
+                }
+
+                DateTime resolvedFromDate = resolvedToDate.AddDays(-7);
+                if (!string.IsNullOrWhiteSpace(fromDate) &&
+                    !DateTime.TryParseExact(fromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resolvedFromDate))
+                {
+                    return Ok(new { data = (object)null, errorMessage = "Invalid fromDate format. Use yyyy-MM-dd." });
+                }
+
+                if (resolvedFromDate > resolvedToDate)
+                    return Ok(new { data = (object)null, errorMessage = "fromDate cannot be greater than toDate." });
+
+                var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId, resolvedFromDate, resolvedToDate);
+
+                return Ok(new
+                {
+                    data = new
+                    {
+                        userId = resolvedUserId,
+                        fromDate = resolvedFromDate.ToString("yyyy-MM-dd"),
+                        toDate = resolvedToDate.ToString("yyyy-MM-dd"),
+                        records
+                    },
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Cannot get kiosk collection data.", errorDetails = ex.Message });
+            }
+        }
     }
 
 
-    // =========================================================================
-    // 2. SOLAR ORDINARY CUSTOMERS CONTROLLER
+    // SOLAR ORDINARY CUSTOMERS CONTROLLER
     //    Routes: api/dashboard/solar-ordinary-customers/...
-    // =========================================================================
+
     [RoutePrefix("api/dashboard/solar-ordinary-customers")]
     public class SolarOrdinaryCustomersController : ApiController
     {
