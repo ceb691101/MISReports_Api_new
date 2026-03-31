@@ -90,6 +90,11 @@ namespace MISReports_Api.DAL
         private string NormalizeUserType(string userType)
         {
             var t = userType?.Trim();
+            if (string.IsNullOrWhiteSpace(t))
+            {
+                return string.Empty;
+            }
+
             if (string.Equals(t, "ADMINISTRATOR", StringComparison.OrdinalIgnoreCase))
             {
                 return "ADMIN";
@@ -100,7 +105,7 @@ namespace MISReports_Api.DAL
                 return "USER";
             }
 
-            return t ?? string.Empty;
+            return t.ToUpperInvariant();
         }
 
         public List<RoleInfoModel> GetAdminRoles()
@@ -111,6 +116,37 @@ namespace MISReports_Api.DAL
         public List<RoleInfoModel> GetUserRoles()
         {
             return GetRolesByUserType("USER%");
+        }
+
+        private List<string> GetCostCentresByRoleId(OracleConnection conn, string roleId)
+        {
+            var costCentres = new List<string>();
+
+            const string sql = @"
+                SELECT TRIM(COSTCENTRE) AS COSTCENTRE
+                FROM REP_ROLES_CCT_NEW
+                WHERE TRIM(ROLEID) = :roleId
+                ORDER BY COSTCENTRE";
+
+            using (var cmd = new OracleCommand(sql, conn))
+            {
+                cmd.BindByName = true;
+                cmd.Parameters.Add("roleId", OracleDbType.Varchar2).Value = roleId?.Trim();
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var costCentre = reader["COSTCENTRE"]?.ToString()?.Trim();
+                        if (!string.IsNullOrWhiteSpace(costCentre))
+                        {
+                            costCentres.Add(costCentre);
+                        }
+                    }
+                }
+            }
+
+            return costCentres;
         }
 
         private List<RoleInfoModel> GetRolesByUserType(string userTypePattern)
@@ -124,43 +160,42 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"SELECT r.EPF_NO,
-                                                                                    r.roleid,
-                                                                                    r.rolename,
-                                                                                    r.company,
-                                                                                    r.mcompany,
-                                                                                    r.usertype,
-                                                                                    r.user_group,
-                                                                                    NVL(LISTAGG(c.costcentre, ',') WITHIN GROUP (ORDER BY c.costcentre), '') AS costcentre
-                                                                     FROM REP_ROLE_NEW r
-                                                                     LEFT JOIN REP_ROLES_CCT_NEW c ON TRIM(c.roleid) = TRIM(r.roleid)
-                                                                     WHERE r.usertype LIKE :userTypePattern
-                                                                     GROUP BY r.EPF_NO, r.roleid, r.rolename, r.company, r.mcompany, r.usertype, r.user_group
-                                                                     ORDER BY r.roleid";
+                                          r.roleid,
+                                          r.rolename,
+                                          r.company,
+                                          r.mcompany,
+                                          r.usertype,
+                                          r.user_group
+                                   FROM REP_ROLE_NEW r
+                                   WHERE UPPER(TRIM(r.usertype)) LIKE :userTypePattern
+                                   ORDER BY r.roleid";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         cmd.BindByName = true;
-                        cmd.Parameters.Add("userTypePattern", userTypePattern);
+                        cmd.Parameters.Add("userTypePattern", OracleDbType.Varchar2).Value = userTypePattern;
 
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                var costCentreValue = reader["COSTCENTRE"]?.ToString() ?? string.Empty;
+                                var roleId = reader["ROLEID"]?.ToString();
+                                var costCentres = GetCostCentresByRoleId(conn, roleId);
+                                var costCentreValue = costCentres.Count > 0
+                                    ? string.Join(",", costCentres)
+                                    : string.Empty;
 
                                 roles.Add(new RoleInfoModel
                                 {
                                     EpfNo = reader["EPF_NO"]?.ToString(),
-                                    RoleId = reader["ROLEID"]?.ToString(),
+                                    RoleId = roleId,
                                     RoleName = reader["ROLENAME"]?.ToString(),
                                     Company = reader["COMPANY"]?.ToString(),
                                     MotherCompany = reader["MCOMPANY"]?.ToString(),
                                     UserGroup = reader["USER_GROUP"]?.ToString(),
                                     CostCentre = costCentreValue,
-                                    CostCentres = string.IsNullOrWhiteSpace(costCentreValue)
-                                        ? new List<string>()
-                                        : new List<string>(costCentreValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)),
-                                    UserType = reader["USERTYPE"]?.ToString()
+                                    CostCentres = costCentres,
+                                    UserType = NormalizeUserType(reader["USERTYPE"]?.ToString())
                                 });
                             }
                         }

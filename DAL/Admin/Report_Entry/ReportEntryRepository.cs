@@ -40,7 +40,12 @@ namespace MISReports_Api.DAL
                 {
                     try
                     {
-                        var repIdNo = request.RepIdNo > 0 ? request.RepIdNo : GetNextReportIdNo();
+                        if (request.RepIdNo < 0)
+                        {
+                            throw new ArgumentOutOfRangeException("RepIdNo", "RepIdNo cannot be negative.");
+                        }
+
+                        var repIdNo = request.RepIdNo;
                         var favorite = request.Favorite == 1 ? 1 : 0;
                         var active = request.Active == 1 ? 1 : 0;
                         if (active == 0)

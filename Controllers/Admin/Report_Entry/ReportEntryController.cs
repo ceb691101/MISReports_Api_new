@@ -93,6 +93,9 @@ namespace MISReports_Api.Controllers
                 if (request == null)
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Request body is required." }));
 
+                if (request.RepIdNo < 0)
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));
+
                 if (string.IsNullOrWhiteSpace(request.RepId) || string.IsNullOrWhiteSpace(request.CatCode))
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepId and CatCode are required." }));
 
@@ -123,6 +126,9 @@ namespace MISReports_Api.Controllers
                 if (request == null)
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Request body is required." }));
 
+                if (repIdNo < 0 || request.RepIdNo < 0)
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));
+
                 if (string.IsNullOrWhiteSpace(catCode))
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "CatCode is required." }));
 
@@ -150,6 +156,9 @@ namespace MISReports_Api.Controllers
         {
             try
             {
+                if (repIdNo < 0)
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));
+
                 if (string.IsNullOrWhiteSpace(catCode))
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "CatCode is required." }));
 

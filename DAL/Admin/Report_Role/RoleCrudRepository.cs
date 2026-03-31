@@ -145,19 +145,45 @@ AND UPPER(TRIM(REPID)) = :REPID";
 			}
 		}
 
+		private int GetReportEntryRepIdNo(OracleConnection conn, string catCode, string repId)
+		{
+			const string sql = @"
+SELECT REPID_NO
+FROM REP_REPORTS_NEW
+WHERE UPPER(TRIM(CATCODE)) = :CATCODE
+AND UPPER(TRIM(REPID)) = :REPID";
+
+			using (var cmd = new OracleCommand(sql, conn))
+			{
+				cmd.BindByName = true;
+				cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
+				cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
+
+				var repIdNo = cmd.ExecuteScalar();
+				if (repIdNo == null || repIdNo == DBNull.Value)
+				{
+					throw new InvalidOperationException("Cannot find REPID_NO in REP_REPORTS_NEW for the given CATCODE and REPID.");
+				}
+
+				return Convert.ToInt32(repIdNo);
+			}
+		}
+
 		public int InsertUserReport(string roleId, string catCode, string repId)
 		{
 			const string sql = @"
 INSERT INTO REP_ROLES_REP_NEW
 (REPID_NO, ROLEID, CATCODE, REPID, FAVORITE)
-VALUES ((SELECT NVL(MAX(REPID_NO), 0) + 1 FROM REP_ROLES_REP_NEW), :ROLEID, :CATCODE, :REPID, '1')";
+VALUES (:REPID_NO, :ROLEID, :CATCODE, :REPID, '1')";
 
 			using (var conn = new OracleConnection(connectionString))
 			{
 				conn.Open();
+				var repIdNo = GetReportEntryRepIdNo(conn, catCode, repId);
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
+					cmd.Parameters.Add("REPID_NO", OracleDbType.Int32).Value = repIdNo;
 					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
 					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
 					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
@@ -170,7 +196,8 @@ VALUES ((SELECT NVL(MAX(REPID_NO), 0) + 1 FROM REP_ROLES_REP_NEW), :ROLEID, :CAT
 		{
 			const string sql = @"
 UPDATE REP_ROLES_REP_NEW
-SET CATCODE = :CATCODE,
+SET REPID_NO = :REPID_NO,
+	CATCODE = :CATCODE,
 	REPID   = :REPID
 WHERE UPPER(TRIM(ROLEID)) = :ROLEID
 AND UPPER(TRIM(REPID)) = :REPID";
@@ -178,9 +205,11 @@ AND UPPER(TRIM(REPID)) = :REPID";
 			using (var conn = new OracleConnection(connectionString))
 			{
 				conn.Open();
+				var repIdNo = GetReportEntryRepIdNo(conn, catCode, repId);
 				using (var cmd = new OracleCommand(sql, conn))
 				{
 					cmd.BindByName = true;
+					cmd.Parameters.Add("REPID_NO", OracleDbType.Int32).Value = repIdNo;
 					cmd.Parameters.Add("CATCODE", OracleDbType.Varchar2).Value = NormalizeKey(catCode);
 					cmd.Parameters.Add("REPID", OracleDbType.Varchar2).Value = NormalizeKey(repId);
 					cmd.Parameters.Add("ROLEID", OracleDbType.Varchar2).Value = NormalizeKey(roleId);
