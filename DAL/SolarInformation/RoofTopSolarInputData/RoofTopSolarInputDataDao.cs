@@ -231,6 +231,9 @@ namespace MISReports_Api.DAL.SolarInformation.RoofTopSolarInputData
                         BF = sc8.Item2,
                         SumExport = sc8.Item1
                     });
+
+                    foreach (var row in results)
+                        row.CalcCycle = calcCycle;
                 }
 
                 logger.Info($"=== END RoofTopSolarInputDataDao.GetReport ({results.Count} rows) ===");
