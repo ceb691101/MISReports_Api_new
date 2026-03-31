@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Http;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
+using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.Models.SolarInformation;
@@ -23,6 +24,7 @@ namespace MISReports_Api.Controllers
         private readonly RegisteredCustomersBillCycleDao _smsDao = new RegisteredCustomersBillCycleDao();
         private readonly AreasDao _areasDao = new AreasDao();
         private readonly ProvinceDao _provinceDao = new ProvinceDao();
+        private readonly ListOfGovernmentAccountsDao _govAccountsDao = new ListOfGovernmentAccountsDao();
 
         // ------------------------------------------------------------------ //
         // Bill Cycles                                                          //
@@ -320,6 +322,212 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot retrieve SMS registered range data.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // Government Accounts - Max Bill Cycle                               //
+        // GET api/government-accounts/max-bill-cycle?areaCode=43             //
+        // Response: { data: { maxBillCycle: "438" }, errorMessage: null }    //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("government-accounts/max-bill-cycle")]
+        public IHttpActionResult GetMaxBillCycle([FromUri] string areaCode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
+
+                if (!_govAccountsDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var result = _govAccountsDao.GetMaxBillCycle(areaCode);
+
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
+                    return Ok(new { data = (object)null, errorMessage = result.ErrorMessage });
+
+                if (string.IsNullOrEmpty(result.MaxBillCycle))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No bill cycles found for the selected area.",
+                        errorDetails = "The area may have no billing data."
+                    });
+
+                return Ok(new { data = result, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"ERROR GetMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve max bill cycle.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // Government Accounts - Departments                                  //
+        // GET api/government-accounts/departments                           //
+        // Response: { data: [ { departmentCode, departmentName }, ... ],    //
+        //             errorMessage: null }                                   //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("government-accounts/departments")]
+        public IHttpActionResult GetDepartments()
+        {
+            try
+            {
+                if (!_govAccountsDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var data = _govAccountsDao.GetDepartments();
+
+                if (data == null || data.Count == 0)
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No departments found.",
+                        errorDetails = "The department table may be empty."
+                    });
+
+                return Ok(new { data = data, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"ERROR GetDepartments: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve departments.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // Government Accounts - Area Report                                  //
+        // GET api/government-accounts/area?billCycle=438&areaCode=43        //
+        // Response: { data: [ ...GovernmentAccountRecords... ],             //
+        //             errorMessage: null }                                   //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("government-accounts/area")]
+        public IHttpActionResult GetGovernmentAccountsAreaReport(
+            [FromUri] string billCycle = null,
+            [FromUri] string areaCode = null)
+        {
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+            if (string.IsNullOrWhiteSpace(areaCode)) errors.Add("Area code is required.");
+
+            if (errors.Count > 0)
+                return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
+
+            return ProcessGovernmentAccountsRequest(new GovernmentAccountRequest
+            {
+                BillCycle = billCycle,
+                ReportType = "area",
+                AreaCode = areaCode
+            });
+        }
+
+        // ------------------------------------------------------------------ //
+        // Government Accounts - Department Report                           //
+        // GET api/government-accounts/department?billCycle=438&areaCode=43  //
+        //     &departmentCode=ABC                                           //
+        // Response: { data: [ ...GovernmentAccountRecords... ],             //
+        //             errorMessage: null }                                   //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("government-accounts/department")]
+        public IHttpActionResult GetGovernmentAccountsDepartmentReport(
+            [FromUri] string billCycle = null,
+            [FromUri] string areaCode = null,
+            [FromUri] string departmentCode = null)
+        {
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+            if (string.IsNullOrWhiteSpace(areaCode)) errors.Add("Area code is required.");
+            if (string.IsNullOrWhiteSpace(departmentCode)) errors.Add("Department code is required.");
+
+            if (errors.Count > 0)
+                return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
+
+            return ProcessGovernmentAccountsRequest(new GovernmentAccountRequest
+            {
+                BillCycle = billCycle,
+                ReportType = "department",
+                AreaCode = areaCode,
+                DepartmentCode = departmentCode
+            });
+        }
+
+        // ------------------------------------------------------------------ //
+        // Shared government accounts report processor                        //
+        // IMPORTANT: Returns data as a flat List<> directly under "data".   //
+        // ------------------------------------------------------------------ //
+
+        private IHttpActionResult ProcessGovernmentAccountsRequest(GovernmentAccountRequest request)
+        {
+            try
+            {
+                if (!_govAccountsDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                // Returns List<ListOfGovernmentAccountsModel>
+                var data = _govAccountsDao.GetGovernmentAccountsReport(request);
+
+                if (data == null || data.Count == 0)
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No data found for the selected criteria.",
+                        errorDetails = "Please check the bill cycle, area code, and department code."
+                    });
+
+                // Return flat array directly
+                return Ok(new
+                {
+                    data = data,   // List<ListOfGovernmentAccountsModel>
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR ProcessGovernmentAccountsRequest: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get government accounts report data.",
                     errorDetails = ex.Message
                 });
             }
