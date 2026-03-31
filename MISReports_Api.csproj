@@ -280,6 +280,7 @@
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
@@ -373,6 +374,11 @@
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
+    <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
+    <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
+    <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
+    <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
+    <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesOrdBillCycleDao.cs" />
@@ -380,6 +386,7 @@
     <Compile Include="DAL\General\BillCalculation\BillCalculationDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
+    <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
@@ -507,6 +514,11 @@
     <Compile Include="Models\Cash Book\CashBookCCReportModel.cs" />
     <Compile Include="Models\Cash Book\CashBookReportModel.cs" />
     <Compile Include="Models\Cash Book\DocumentInquiryModel.cs" />
+    <Compile Include="Models\Dashboard\BulkCustomerModels.cs" />
+    <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
+    <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
+    <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
+    <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
     <Compile Include="Models\Debtors\BillCycleModel.cs" />
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
@@ -516,6 +528,7 @@
     <Compile Include="Models\General\BillCalculationModel.cs" />
     <Compile Include="Models\General\SalesByTariffModel.cs" />
     <Compile Include="Models\General\SecDepositConDemandBulkModel.cs" />
+    <Compile Include="Models\General\SMSRegisteredCustomersModel.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureRegionDetailedModel.cs" />
     <Compile Include="Models\Inventory\avgConsumptionSelectedDataModel.cs" />
     <Compile Include="Models\Inventory\InventoryOnHandModel.cs" />
