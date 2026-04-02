@@ -252,6 +252,30 @@ namespace MISReports_Api.Controllers.Dashboard
             return GetCustomersCountResponse(billCycle, _solarOrdinaryCustomersDao.GetNetPlusPlusCustomersCount, "Error retrieving net type 4 customers count.");
         }
 
+        /// <summary>GET api/dashboard/solar-ordinary-customers/generation-capacity?billCycle=401&cycles=12</summary>
+        [HttpGet]
+        [Route("generation-capacity")]
+        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12)
+        {
+            try
+            {
+                if (!_solarOrdinaryCustomersDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                var data = _solarOrdinaryCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles);
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Error retrieving solar ordinary generation capacity graph.", errorDetails = ex.Message });
+            }
+        }
+
         // ── Shared helper ─────────────────────────────────────────────────────
         private IHttpActionResult GetCustomersCountResponse(
             string billCycle,
@@ -367,6 +391,30 @@ namespace MISReports_Api.Controllers.Dashboard
             return GetCountResponse(_solarBulkCustomersDao.GetNetType4CustomersCount, "Error retrieving net type 4 solar bulk customers count.");
         }
 
+        /// <summary>GET api/dashboard/solar-bulk-customers/generation-capacity?billCycle=401&cycles=12</summary>
+        [HttpGet]
+        [Route("generation-capacity")]
+        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12)
+        {
+            try
+            {
+                if (!_solarBulkCustomersDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                var data = _solarBulkCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles);
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Error retrieving solar bulk generation capacity graph.", errorDetails = ex.Message });
+            }
+        }
+
         // ── Shared helper ─────────────────────────────────────────────────────
         private IHttpActionResult GetCountResponse(
             Func<SolarBulkCustomersCount> countGetter,
@@ -389,6 +437,21 @@ namespace MISReports_Api.Controllers.Dashboard
             {
                 return Ok(new { data = (object)null, errorMessage = fallbackErrorMessage, errorDetails = ex.Message });
             }
+        }
+
+        private static string NormalizeBillCycle(string billCycle)
+        {
+            if (string.IsNullOrWhiteSpace(billCycle))
+                return null;
+
+            var normalized = billCycle.Trim();
+
+            if ((normalized.StartsWith("{") && normalized.EndsWith("}")) ||
+                normalized.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("undefined", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            return normalized;
         }
     }
 }
