@@ -4,6 +4,7 @@ using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
 using MISReports_Api.DAL.SolarInformation.SolarConnectionDetails;
 using MISReports_Api.DAO.SolarInformation.SolarCustomerInformation;
+using MISReports_Api.DAL.SolarInformation.RoofTopSolarInputData;
 using MISReports_Api.DAL.SolarInformation;
 using MISReports_Api.Models.SolarInformation;
 using Newtonsoft.Json.Linq;
@@ -36,8 +37,9 @@ namespace MISReports_Api.Controllers
         private readonly SolarReadingUsageBulkDao _solarReadingUsageBulkDao = new SolarReadingUsageBulkDao();
         private readonly SolarCustomerInforOrdinaryDao _solarCustomerInforOrdinaryDao = new SolarCustomerInforOrdinaryDao();
         private readonly SolarCustomerInforBulkDao _solarCustomerInforBulkDao = new SolarCustomerInforBulkDao();
+        private readonly RoofTopSolarInputDataDao _roofTopSolarInputDataDao = new RoofTopSolarInputDataDao();
 
-       
+
         [HttpGet]
         [Route("solar-progress/detailed")]
         public IHttpActionResult GetDetailedReport(
@@ -1865,6 +1867,66 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Error retrieving customer information.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // -----------------------------------------------------------------------
+        // GET solarapi/rooftop-solar-input/report
+        //
+        // Query params:
+        //   calcCycle  – raw numeric cycle, e.g. "439"
+        //   reportType – "area" | "province" | "region" | "entireceb"
+        //   typeCode   – area_code / prov_code / region value (omit for entireceb)
+        // -----------------------------------------------------------------------
+        [HttpGet]
+        [Route("rooftop-solar-input/report")]
+        public IHttpActionResult GetRoofTopSolarInputReport(
+            [FromUri] string calcCycle,
+            [FromUri] string reportType,
+            [FromUri] string typeCode = null)
+        {
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(calcCycle))
+                validationErrors.Add("calcCycle is required.");
+
+            if (string.IsNullOrWhiteSpace(reportType))
+                validationErrors.Add("reportType is required.");
+
+            var allowedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        { "area", "province", "region", "entireceb" };
+
+            if (!string.IsNullOrWhiteSpace(reportType) && !allowedTypes.Contains(reportType))
+                validationErrors.Add($"Invalid reportType '{reportType}'. Must be area, province, region, or entireceb.");
+
+            if (reportType?.ToLower() != "entireceb" && string.IsNullOrWhiteSpace(typeCode))
+                validationErrors.Add("typeCode is required for area / province / region report types.");
+
+            if (validationErrors.Count > 0)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = string.Join("; ", validationErrors)
+                });
+            }
+
+            try
+            {
+                var data = _roofTopSolarInputDataDao.GetReport(calcCycle.Trim(), reportType.Trim(), typeCode?.Trim());
+
+                return Ok(new { data, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"ERROR GetRoofTopSolarInputReport: {ex.Message}");
+                System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Error retrieving Roof Top Solar Input Data report.",
                     errorDetails = ex.Message
                 });
             }

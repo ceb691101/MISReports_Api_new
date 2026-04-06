@@ -449,6 +449,7 @@
     <Compile Include="DAL\PIV\TypewisePIVRepository.cs" />
     <Compile Include="DAL\SolarDetails\SolarBillingRepository.cs" />
     <Compile Include="DAL\SolarDetails\SolarPendingJobsRepository.cs" />
+    <Compile Include="DAL\SolarInformation\RoofTopSolarInputData\RoofTopSolarInputDataDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingRetailDetailedDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingRetailSummaryDao.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardRepository.cs" />
@@ -604,6 +605,7 @@
     <Compile Include="Models\SolarInformation\PVCapacityModel.cs" />
     <Compile Include="Models\SolarInformation\RetailDetailedModel.cs" />
     <Compile Include="Models\SolarInformation\RetailSummaryModel.cs" />
+    <Compile Include="Models\SolarInformation\RoofTopSolarInputDataModel.cs" />
     <Compile Include="Models\SolarInformation\SolarCustomerInforModel.cs" />
     <Compile Include="Models\SolarInformation\SolarPaymentBulkModel.cs" />
     <Compile Include="Models\SolarInformation\SolarProgressDetailedModel.cs" />
