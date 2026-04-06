@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Web.Http;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.Models.Dashboard;
@@ -86,8 +87,12 @@ namespace MISReports_Api.Controllers.Dashboard
                 {
                     data = new
                     {
-                        maxBillCycle = result.MaxBillCycle,
-                        records = result.OrdinaryData
+                        records = result.OrdinaryData.Select(rec => new
+                        {
+                            Date = ResolveSalesCollectionDate(rec),
+                            Amount = rec.Collection,
+                            rec.ErrorMessage
+                        })
                     },
                     errorMessage = (string)null
                 });
@@ -114,8 +119,12 @@ namespace MISReports_Api.Controllers.Dashboard
                 {
                     data = new
                     {
-                        maxBillCycle = result.MaxBillCycle,
-                        records = result.BulkData
+                        records = result.BulkData.Select(rec => new
+                        {
+                            Date = ResolveSalesCollectionDate(rec),
+                            Amount = rec.Collection,
+                            rec.ErrorMessage
+                        })
                     },
                     errorMessage = (string)null
                 });
@@ -176,6 +185,24 @@ namespace MISReports_Api.Controllers.Dashboard
             {
                 return Ok(new { data = (object)null, errorMessage = "Cannot get kiosk collection data.", errorDetails = ex.Message });
             }
+        }
+
+        private static string ResolveSalesCollectionDate(SalesAndCollectionModel record)
+        {
+            if (!string.IsNullOrWhiteSpace(record.Date))
+                return record.Date;
+
+            return FormatSalesCollectionDate(record.BillCycle);
+        }
+
+        private static string FormatSalesCollectionDate(int billCycle)
+        {
+            var raw = billCycle.ToString(CultureInfo.InvariantCulture);
+
+            if (raw.Length == 8 && DateTime.TryParseExact(raw, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+                return parsedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            return string.Empty;
         }
     }
 

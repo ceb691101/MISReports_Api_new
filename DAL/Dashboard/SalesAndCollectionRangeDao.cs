@@ -2,8 +2,12 @@
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
+using System.Configuration;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Data.Odbc;
+using System.Globalization;
+using System.Linq;
 
 namespace MISReports_Api.DAL.Dashboard
 {
@@ -11,6 +15,14 @@ namespace MISReports_Api.DAL.Dashboard
     {
         private readonly DBConnection _dbConnection = new DBConnection();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private readonly string _posPaymentConnectionString;
+        private readonly string _bankPaymentConnectionString;
+
+        public SalesAndCollectionRangeDao()
+        {
+            _posPaymentConnectionString = GetRequiredConnectionString("InformixPosPayment");
+            _bankPaymentConnectionString = GetRequiredConnectionString("InformixBankPayment");
+        }
 
         // ------------------------------------------------------------------ //
         // Connection test (Ordinary DB — both queries hit the ordinary DB)
@@ -39,26 +51,17 @@ namespace MISReports_Api.DAL.Dashboard
             {
                 logger.Info("=== START GetSalesAndCollectionRange ===");
 
-                using (var conn = _dbConnection.GetConnection(useBulkConnection: false))
-                {
-                    conn.Open();
+                // Return a rolling 7-day window ending on day-before-today.
+                DateTime toDate = DateTime.Today.AddDays(-1);
+                DateTime fromDate = toDate.AddDays(-6);
 
-                    // Step 1 – get the maximum bill cycle
-                    int maxBillCycle = GetMaxBillCycle(conn);
-                    int minBillCycle = maxBillCycle - 11;          // 12 cycles inclusive
+                result.MaxBillCycle = 0;
 
-                    result.MaxBillCycle = maxBillCycle;
+                result.OrdinaryData = GetOrdinarySalesAndCollectionByDateRange(fromDate, toDate);
+                logger.Info($"Ordinary records fetched: {result.OrdinaryData.Count}");
 
-                    logger.Info($"Bill cycle range: {minBillCycle} – {maxBillCycle}");
-
-                    // Step 2 – ordinary rows (bill_type = 'O')
-                    result.OrdinaryData = GetByBillType(conn, minBillCycle, maxBillCycle, "O");
-                    logger.Info($"Ordinary records fetched: {result.OrdinaryData.Count}");
-
-                    // Step 3 – bulk rows (bill_type = 'B')
-                    result.BulkData = GetByBillType(conn, minBillCycle, maxBillCycle, "B");
-                    logger.Info($"Bulk records fetched: {result.BulkData.Count}");
-                }
+                result.BulkData = GetBulkSalesAndCollectionByDateRange(fromDate, toDate);
+                logger.Info($"Bulk records fetched: {result.BulkData.Count}");
 
                 logger.Info("=== END GetSalesAndCollectionRange (Success) ===");
                 return result;
@@ -144,6 +147,7 @@ namespace MISReports_Api.DAL.Dashboard
                         {
                             rows.Add(new SalesAndCollectionModel
                             {
+                                Date = string.Empty,
                                 BillCycle = GetIntValue(reader, "bill_cycle"),
                                 Collection = GetDecimalValue(reader, "collection"),
                                 Sales = GetDecimalValue(reader, "sales"),
@@ -160,6 +164,166 @@ namespace MISReports_Api.DAL.Dashboard
             }
 
             return rows;
+        }
+
+        private List<SalesAndCollectionModel> GetOrdinarySalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate)
+        {
+            return GetSalesAndCollectionByDateRange(fromDate, toDate, "O");
+        }
+
+        private List<SalesAndCollectionModel> GetBulkSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate)
+        {
+            return GetSalesAndCollectionByDateRange(fromDate, toDate, "B");
+        }
+
+        private List<SalesAndCollectionModel> GetSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string billType)
+        {
+            var dailyCollection = new Dictionary<DateTime, decimal>();
+            var toDateExclusive = toDate.Date.AddDays(1);
+
+            const string posCollectionSql = @"
+                SELECT c.trans_date,
+                       SUM(c.trans_amt) AS amount
+                FROM cus_tran c, areas a
+                WHERE c.area_code = a.area_code
+                  AND c.bill_type = ?
+                  AND c.trans_type = 0
+                  AND c.trans_date >= ?
+                  AND c.trans_date < ?
+                GROUP BY 1
+                ORDER BY 1";
+
+            const string bankCashSql = @"
+                SELECT b.cash_date,
+                       SUM(b.paid_amount) AS amount
+                FROM bank_paymast b, bankname c, areas p
+                WHERE b.area_code = p.area_code
+                  AND b.bank_code = c.bank_code
+                  AND b.cash_date >= ?
+                  AND b.cash_date < ?
+                  AND b.bill_type = ?
+                GROUP BY 1
+                ORDER BY 1";
+
+            const string cardCashSql = @"
+                SELECT b.cash_date,
+                       SUM(b.tot_amt) AS amount
+                FROM crdtauth b, areas p
+                WHERE b.area_code = p.area_code
+                  AND b.cash_date >= ?
+                  AND b.cash_date < ?
+                  AND b.bill_type = ?
+                GROUP BY 1
+                ORDER BY 1";
+
+            try
+            {
+                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
+
+                using (var posConn = new OdbcConnection(_posPaymentConnectionString))
+                {
+                    posConn.Open();
+                    AddDateAmountRowsFromOdbc(
+                        conn: posConn,
+                        sql: posCollectionSql,
+                        destination: dailyCollection,
+                        parameters: new object[] { billType, fromDate.Date, toDateExclusive });
+                }
+
+                using (var bankConn = new OdbcConnection(_bankPaymentConnectionString))
+                {
+                    bankConn.Open();
+
+                    AddDateAmountRowsFromOdbc(
+                        conn: bankConn,
+                        sql: bankCashSql,
+                        destination: dailyCollection,
+                        parameters: new object[] { fromDate.Date, toDateExclusive, billType });
+
+                    AddDateAmountRowsFromOdbc(
+                        conn: bankConn,
+                        sql: cardCashSql,
+                        destination: dailyCollection,
+                        parameters: new object[] { fromDate.Date, toDateExclusive, billType });
+                }
+
+                var rows = new List<SalesAndCollectionModel>();
+
+                for (var day = fromDate.Date; day <= toDate.Date; day = day.AddDays(1))
+                {
+                    var amount = dailyCollection.TryGetValue(day, out var value) ? value : 0m;
+
+                    rows.Add(new SalesAndCollectionModel
+                    {
+                        Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        // Keep contract-compatible int field using yyyyMMdd for daily series.
+                        BillCycle = int.Parse(day.ToString("yyyyMMdd", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+                        Collection = amount,
+                        Sales = amount,
+                        ErrorMessage = string.Empty
+                    });
+                }
+
+                logger.Info($"=== END GetSalesAndCollectionByDateRange billType={billType} (rows: {rows.Count}) ===");
+                return rows;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Error in GetSalesAndCollectionByDateRange for billType='{billType}'");
+                throw;
+            }
+        }
+
+        private void AddDateAmountRowsFromOdbc(
+            OdbcConnection conn,
+            string sql,
+            Dictionary<DateTime, decimal> destination,
+            object[] parameters)
+        {
+            try
+            {
+                using (var cmd = new OdbcCommand(sql, conn))
+                {
+                    foreach (var parameter in parameters)
+                        cmd.Parameters.AddWithValue("?", parameter);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var date = Convert.ToDateTime(reader[0]).Date;
+                            var amount = reader[1] == DBNull.Value ? 0m : Convert.ToDecimal(reader[1]);
+
+                            if (destination.ContainsKey(date))
+                                destination[date] += amount;
+                            else
+                                destination[date] = amount;
+                        }
+                    }
+                }
+            }
+            catch (OdbcException ex) when (IsNoRecordFound(ex.Message))
+            {
+                logger.Warn($"No records found for query/date range. Source skipped. Details: {ex.Message}");
+            }
+        }
+
+        private static bool IsNoRecordFound(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return false;
+
+            return message.IndexOf("no record found", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static string GetRequiredConnectionString(string key)
+        {
+            var setting = ConfigurationManager.ConnectionStrings[key];
+
+            if (setting == null || string.IsNullOrWhiteSpace(setting.ConnectionString))
+                throw new ConfigurationErrorsException($"{key} connection string is missing or empty in configuration.");
+
+            return setting.ConnectionString;
         }
 
         // ------------------------------------------------------------------ //
