@@ -10,13 +10,11 @@ namespace MISReports_Api.DAL
     public class RepRoleReportRepository
     {
         private readonly string _connectionString =
-            ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
+            ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
         public async Task<List<RepRoleReportModel>> GetReportsByRole(string roleId)
         {
             var result = new List<RepRoleReportModel>();
-
-            roleId = roleId.Trim().ToLower(); // match DB style like 'niro'
 
             using (var conn = new OracleConnection(_connectionString))
             {
@@ -24,25 +22,27 @@ namespace MISReports_Api.DAL
 
                 string sql = @"
 SELECT 
-    rr.repid_no,
-    rc.catname,
-    rp.repname
+    TRIM(rr.repid_no) AS repid_no,
+    TRIM(rc.catname) AS catname,
+    TRIM(rp.repname) AS repname
 FROM REP_ROLES_REP_NEW rr
 JOIN REP_CATS_NEW rc 
-    ON rr.catcode = rc.catcode
+    ON TRIM(rr.catcode) = TRIM(rc.catcode)
 JOIN REP_REPORTS_NEW rp 
-    ON rr.repid_no = rp.repid_no
-   AND rr.repid = rp.repid
-   AND rr.catcode = rp.catcode
+    ON TRIM(rr.repid_no) = TRIM(rp.repid_no)
+   AND TRIM(rr.repid) = TRIM(rp.repid)
+   AND TRIM(rr.catcode) = TRIM(rp.catcode)
 WHERE 
-    LOWER(rr.ROLEID) = :roleId
-AND rr.favorite = 1
+    TRIM(rr.roleid) = :roleId
+    AND rr.favorite = 1
 ORDER BY rc.catname, rp.repname";
 
                 using (var cmd = new OracleCommand(sql, conn))
                 {
                     cmd.BindByName = true;
-                    cmd.Parameters.Add("roleId", OracleDbType.Varchar2).Value = roleId;
+
+                    cmd.Parameters.Add("roleId", OracleDbType.Varchar2)
+                                   .Value = roleId.Trim(); // IMPORTANT
 
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
