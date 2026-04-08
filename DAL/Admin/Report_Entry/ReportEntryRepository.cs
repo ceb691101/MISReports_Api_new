@@ -349,30 +349,80 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                        SELECT REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
-                        FROM REP_REPORTS_NEW
-                        WHERE REPID = :repid
-                        AND CATCODE = :catcode";
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        WHERE r.REPID = :repid
+                        AND r.CATCODE = :catcode";
 
-                    using (var cmd = new OracleCommand(sql, conn))
+                    string fallbackSql = @"
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r1.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        LEFT JOIN REP_REPORTS_NEW1 r1
+                            ON UPPER(TRIM(r1.REPID)) = UPPER(TRIM(r.REPID))
+                        WHERE r.REPID = :repid
+                        AND r.CATCODE = :catcode";
+
+                    try
                     {
-                        cmd.BindByName = true;
-                        cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
-                        cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
-
-                        using (var reader = cmd.ExecuteReader())
+                        using (var cmd = new OracleCommand(sql, conn))
                         {
-                            while (reader.Read())
+                            cmd.BindByName = true;
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
+                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
+
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                results.Add(new ReportEntryModel
+                                while (reader.Read())
                                 {
-                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
-                                    RepId = reader["REPID"]?.ToString()?.Trim(),
-                                    CatCode = reader["CATCODE"]?.ToString()?.Trim(),
-                                    RepName = reader["REPNAME"]?.ToString()?.Trim(),
-                                    Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
-                                    Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
-                                });
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    catch (OracleException ex) when (ex.Number == 904)
+                    {
+                        using (var cmd = new OracleCommand(fallbackSql, conn))
+                        {
+                            cmd.BindByName = true;
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
+                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
                             }
                         }
                     }
@@ -398,25 +448,70 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                        SELECT REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
-                        FROM REP_REPORTS_NEW
-                        ORDER BY REPID_NO";
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        ORDER BY r.REPID_NO";
 
-                    using (var cmd = new OracleCommand(sql, conn))
+                    string fallbackSql = @"
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r1.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        LEFT JOIN REP_REPORTS_NEW1 r1
+                            ON UPPER(TRIM(r1.REPID)) = UPPER(TRIM(r.REPID))
+                        ORDER BY r.REPID_NO";
+
+                    try
                     {
-                        using (var reader = cmd.ExecuteReader())
+                        using (var cmd = new OracleCommand(sql, conn))
                         {
-                            while (reader.Read())
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                results.Add(new ReportEntryModel
+                                while (reader.Read())
                                 {
-                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
-                                    RepId = reader["REPID"]?.ToString()?.Trim(),
-                                    CatCode = reader["CATCODE"]?.ToString()?.Trim(),
-                                    RepName = reader["REPNAME"]?.ToString()?.Trim(),
-                                    Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
-                                    Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
-                                });
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    catch (OracleException ex) when (ex.Number == 904)
+                    {
+                        using (var cmd = new OracleCommand(fallbackSql, conn))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
                             }
                         }
                     }
