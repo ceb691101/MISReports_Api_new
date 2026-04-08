@@ -7,6 +7,7 @@ namespace MISReports_Api.Models.Dashboard
     /// </summary>
     public class SalesAndCollectionModel
     {
+        public string Date { get; set; }
         public int BillCycle { get; set; }
         public decimal Collection { get; set; }
         public decimal Sales { get; set; }

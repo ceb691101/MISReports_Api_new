@@ -4,6 +4,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Linq;
 
 namespace MISReports_Api.DAL.Dashboard
 {
@@ -108,6 +109,62 @@ namespace MISReports_Api.DAL.Dashboard
         public SolarOrdinaryCustomersCount GetNetPlusPlusCustomersCount(string billCycle = null)
         {
             return GetCountResult(billCycle, "4");
+        }
+
+        public SolarOrdinaryGenerationCapacityGraph GetGenerationCapacityGraph(string billCycle = null, int cycles = 12)
+        {
+            var graph = new SolarOrdinaryGenerationCapacityGraph
+            {
+                MaxBillCycle = string.Empty,
+                SelectedBillCycle = string.Empty,
+                AvailableBillCycles = new List<string>(),
+                Records = new List<SolarOrdinaryGenerationCapacityPoint>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                using (var conn = _dbConnection.GetConnection(false))
+                {
+                    conn.Open();
+
+                    string maxBillCycleText = GetMaxBillCycle(conn);
+                    if (!int.TryParse(maxBillCycleText, out int maxBillCycle))
+                    {
+                        graph.ErrorMessage = "No bill cycle found in netprogrs.";
+                        return graph;
+                    }
+
+                    int latestCompletedBillCycle = maxBillCycle - 1;
+                    if (latestCompletedBillCycle <= 0)
+                    {
+                        graph.ErrorMessage = "No completed bill cycle found in netprogrs.";
+                        return graph;
+                    }
+
+                    int safeCycles = cycles <= 0 ? 12 : cycles;
+                    int selectedBillCycle = ResolveRequestedBillCycle(billCycle, latestCompletedBillCycle);
+                    var availableBillCycles = GetAvailableBillCyclesFromNetprogrs(conn, latestCompletedBillCycle, safeCycles);
+
+                    if (!availableBillCycles.Contains(selectedBillCycle) && availableBillCycles.Count > 0)
+                    {
+                        selectedBillCycle = availableBillCycles[0];
+                    }
+
+                    graph.MaxBillCycle = latestCompletedBillCycle.ToString();
+                    graph.SelectedBillCycle = selectedBillCycle.ToString();
+                    graph.AvailableBillCycles = availableBillCycles.Select(cycle => cycle.ToString()).ToList();
+                    graph.Records = GetGenerationCapacityByCycleFromNetprogrs(conn, graph.SelectedBillCycle);
+                }
+
+                return graph;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching solar ordinary generation capacity graph");
+                graph.ErrorMessage = ex.Message;
+                return graph;
+            }
         }
 
         private SolarOrdinaryCustomersCount GetCountResult(string billCycle, string netType)
@@ -227,6 +284,113 @@ namespace MISReports_Api.DAL.Dashboard
         private int GetCountByNetType(Dictionary<string, int> groupedCounts, string netType)
         {
             return groupedCounts.TryGetValue(netType, out int count) ? count : 0;
+        }
+
+        private List<int> GetAvailableBillCyclesFromNetprogrs(OleDbConnection conn, int maxAllowedCycle, int takeCount)
+        {
+            var billCycles = new List<int>();
+
+            const string sql = "SELECT DISTINCT bill_cycle FROM netprogrs WHERE bill_cycle <= ? ORDER BY bill_cycle DESC";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("?", maxAllowedCycle.ToString());
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read() && billCycles.Count < takeCount)
+                    {
+                        if (reader[0] == DBNull.Value)
+                        {
+                            continue;
+                        }
+
+                        string billCycleText = reader[0].ToString().Trim();
+                        if (int.TryParse(billCycleText, out int billCycleValue) && billCycleValue > 0)
+                        {
+                            billCycles.Add(billCycleValue);
+                        }
+                    }
+                }
+            }
+
+            return billCycles;
+        }
+
+        private List<SolarOrdinaryGenerationCapacityPoint> GetGenerationCapacityByCycleFromNetprogrs(OleDbConnection conn, string billCycle)
+        {
+            var groupedByDisplayType = new Dictionary<string, SolarOrdinaryGenerationCapacityPoint>(StringComparer.OrdinalIgnoreCase);
+
+            const string sql = "SELECT bill_cycle, net_type, SUM(cnt), SUM(tot_gen_cap) " +
+                               "FROM netprogrs WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("?", billCycle);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string rawNetType = reader[1] == DBNull.Value ? string.Empty : reader[1].ToString().Trim();
+                        string displayNetType = GetNetTypeDisplayName(rawNetType);
+
+                        if (string.IsNullOrWhiteSpace(displayNetType))
+                        {
+                            continue;
+                        }
+
+                        int accountsCount = reader[2] == DBNull.Value ? 0 : Convert.ToInt32(reader[2]);
+                        decimal capacityKw = reader[3] == DBNull.Value ? 0m : Convert.ToDecimal(reader[3]);
+
+                        if (!groupedByDisplayType.TryGetValue(displayNetType, out SolarOrdinaryGenerationCapacityPoint point))
+                        {
+                            point = new SolarOrdinaryGenerationCapacityPoint
+                            {
+                                BillCycle = billCycle,
+                                NetType = displayNetType,
+                                AccountsCount = 0,
+                                CapacityKw = 0m
+                            };
+
+                            groupedByDisplayType[displayNetType] = point;
+                        }
+
+                        point.AccountsCount += accountsCount;
+                        point.CapacityKw += capacityKw;
+                    }
+                }
+            }
+
+            return groupedByDisplayType.Values
+                                     .OrderByDescending(item => item.CapacityKw)
+                                     .ThenBy(item => item.NetType)
+                                     .ToList();
+        }
+
+        private static int ResolveRequestedBillCycle(string requestedBillCycle, int fallbackBillCycle)
+        {
+            if (!string.IsNullOrWhiteSpace(requestedBillCycle) &&
+                int.TryParse(requestedBillCycle.Trim(), out int parsedBillCycle) &&
+                parsedBillCycle > 0)
+            {
+                return parsedBillCycle;
+            }
+
+            return fallbackBillCycle;
+        }
+
+        private static string GetNetTypeDisplayName(string netType)
+        {
+            switch (netType)
+            {
+                case "1": return "Net Metering";
+                case "2":
+                case "5": return "Net Accounting";
+                case "3": return "Net Plus";
+                case "4": return "Net Plus Plus";
+                default: return string.Empty;
+            }
         }
     }
 }
