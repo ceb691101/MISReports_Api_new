@@ -214,36 +214,44 @@ namespace MISReports_Api.Controllers
             return Ok(meta);
         }
 
-        private static double FetchPivTotal()
+        private static List<object> FetchPivTotal()
         {
             return ExecuteWithTiming("piv-total", () =>
             {
-                double total = 0;
+                var result = new List<object>();
                 using (OracleConnection conn = new OracleConnection(ConnectionString))
                 {
                     conn.Open();
                     string query = @"
-                        select sum(c.grand_total) as PIV_collection
-                        from piv_detail c
-                        join gldeptm a on c.dept_id = a.dept_id
-                        join glcompm b on a.comp_id = b.comp_id
-                        where trunc(c.paid_date) = trunc(sysdate - 1)
-                        and trim(c.status) in ('Q','P','F','FR','FA')
-                        and a.status = 2
-                        and b.status = 2
-                        and (b.comp_id like 'DISCO%' or b.parent_id like 'DISCO%' or b.grp_comp like 'DISCO%')";
+                        select distinct c.paid_date as PIV_Date, sum(c.grand_total) as PIV_collection
+                        from piv_detail c 
+                        where trim(c.status) in ('Q', 'P','F','FR','FA')
+                        and c.paid_date >= ( SELECT TO_DATE((SYSDATE - 7),'dd/mm/yy')  FROM dual ) 
+                        and c.paid_date <= ( SELECT TO_DATE((SYSDATE - 1),'dd/mm/yy')  FROM dual )
+                        and c.dept_id in (
+                            select dept_id from gldeptm where status = 2 and comp_id in (
+                                select comp_id from glcompm
+                                where status = 2 and ((comp_id like 'DISCO%' or parent_id like 'DISCO%' or grp_comp like 'DISCO%') or (comp_id like 'AFMHQ%' or parent_id like 'AFMHQ%' or grp_comp like 'AFMHQ%'))
+                            )
+                        )
+                        group by c.paid_date 
+                        order by c.paid_date desc";
 
                     using (OracleCommand cmd = new OracleCommand(query, conn))
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {
-                        if (reader.Read() && !reader.IsDBNull(0))
+                        while (reader.Read())
                         {
-                            total = Convert.ToDouble(reader.GetValue(0));
+                            result.Add(new
+                            {
+                                date = reader.IsDBNull(0) ? string.Empty : reader.GetDateTime(0).ToString("yyyy-MM-dd"),
+                                amount = reader.IsDBNull(1) ? 0 : Convert.ToDouble(reader.GetValue(1))
+                            });
                         }
                     }
                 }
 
-                return total;
+                return result;
             });
         }
 
@@ -256,17 +264,18 @@ namespace MISReports_Api.Controllers
                 {
                     conn.Open();
                     string query = @"
-                        select distinct
-                            (case
-                                when b.comp_id in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
-                                when b.parent_id in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
-                                when b.grp_comp in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
-                                else ''
-                            end) as Company,
+                        select distinct c.paid_date as PIV_Date,
+                            (Case 
+                                when b.comp_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
+                                when b.parent_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
+                                when b.grp_comp in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
+                                else '' 
+                            end ) as Company,
                             sum(c.grand_total) as PIV_collection
-                        from piv_detail c, gldeptm a, glcompm b
+                        from piv_detail c, gldeptm a, glcompm b 
                         where trim(c.status) in ('Q', 'P','F','FR','FA')
-                        and c.paid_date = (select TO_DATE((SYSDATE - 1),'dd/mm/yy') from dual)
+                        and c.paid_date >= ( SELECT TO_DATE((SYSDATE - 7),'dd/mm/yy')  FROM dual ) 
+                        and c.paid_date <= ( SELECT TO_DATE((SYSDATE - 1),'dd/mm/yy')  FROM dual )
                         and a.comp_id = b.comp_id
                         and c.dept_id = a.dept_id
                         and a.status = 2
@@ -274,23 +283,23 @@ namespace MISReports_Api.Controllers
                         and c.dept_id in (
                             select dept_id from gldeptm where status = 2 and comp_id in (
                                 select comp_id from glcompm
-                                where status = 2 and (comp_id like 'DISCO%' or parent_id like 'DISCO%' or grp_comp like 'DISCO%')
+                                where status = 2 and ((comp_id like 'DISCO%' or parent_id like 'DISCO%' or grp_comp like 'DISCO%') or (comp_id like 'AFMHQ%' or parent_id like 'AFMHQ%' or grp_comp like 'AFMHQ%'))
                             )
                         )
-                        group by
-                            (case
-                                when b.comp_id in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
-                                when b.parent_id in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
-                                when b.grp_comp in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
-                                else ''
-                            end)
-                        order by
-                            (case
-                                when b.comp_id in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
-                                when b.parent_id in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
-                                when b.grp_comp in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
-                                else ''
-                            end)";
+                        group by c.paid_date, 
+                            (Case 
+                                when b.comp_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
+                                when b.parent_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
+                                when b.grp_comp in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
+                                else ''  
+                            end )
+                        order by c.paid_date desc, 
+                            (Case 
+                                when b.comp_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
+                                when b.parent_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
+                                when b.grp_comp in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
+                                else '' 
+                            end )";
 
                     using (OracleCommand cmd = new OracleCommand(query, conn))
                     using (OracleDataReader reader = cmd.ExecuteReader())
@@ -299,8 +308,9 @@ namespace MISReports_Api.Controllers
                         {
                             result.Add(new
                             {
-                                company = reader.IsDBNull(0) ? "Other" : reader.GetString(0),
-                                amount = reader.IsDBNull(1) ? 0 : Convert.ToDouble(reader.GetValue(1))
+                                date = reader.IsDBNull(0) ? string.Empty : reader.GetDateTime(0).ToString("yyyy-MM-dd"),
+                                company = reader.IsDBNull(1) ? "Other" : reader.GetString(1),
+                                amount = reader.IsDBNull(2) ? 0 : Convert.ToDouble(reader.GetValue(2))
                             });
                         }
                     }
