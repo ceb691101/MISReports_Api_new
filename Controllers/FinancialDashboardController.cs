@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Timers;
-using System.Web;
 using System.Web.Http;
 using Oracle.ManagedDataAccess.Client;
 
@@ -14,8 +14,8 @@ namespace MISReports_Api.Controllers
         private static readonly string ConnectionString = System.Configuration.ConfigurationManager
             .ConnectionStrings["HQOracle"].ConnectionString;
 
+        private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
         private const double CacheMinutes = 5;
-        private const double CacheExpiryMinutes = 10;
         private static readonly object RefreshLock = new object();
         private static bool IsRefreshing;
         private static Timer WarmTimer;
@@ -28,11 +28,11 @@ namespace MISReports_Api.Controllers
 
         private static void SetCache<T>(string key, T data)
         {
-            HttpRuntime.Cache.Insert(key, new CachedValue<T>
+            Cache[key] = new CachedValue<T>
             {
                 Value = data,
                 FetchedAt = DateTimeOffset.UtcNow
-            }, null, DateTime.UtcNow.AddMinutes(CacheExpiryMinutes), System.Web.Caching.Cache.NoSlidingExpiration);
+            };
         }
 
         private static T ExecuteWithTiming<T>(string label, Func<T> work)
@@ -51,7 +51,8 @@ namespace MISReports_Api.Controllers
 
         private static CachedValue<T> GetOrReturnStaleAndRefreshWithMetadata<T>(string key, Func<T> factory)
         {
-            var cached = HttpRuntime.Cache.Get(key) as CachedValue<T>;
+            Cache.TryGetValue(key, out var cacheObj);
+            var cached = cacheObj as CachedValue<T>;
             var now = DateTimeOffset.UtcNow;
             var freshWindow = TimeSpan.FromMinutes(CacheMinutes);
 
@@ -167,7 +168,7 @@ namespace MISReports_Api.Controllers
         {
             if (refresh)
             {
-                HttpRuntime.Cache.Remove("piv-total");
+                Cache.TryRemove("piv-total", out _);
             }
 
             var meta = GetOrReturnStaleAndRefreshWithMetadata("piv-total", FetchPivTotal);
@@ -180,7 +181,7 @@ namespace MISReports_Api.Controllers
         {
             if (refresh)
             {
-                HttpRuntime.Cache.Remove("piv-division");
+                Cache.TryRemove("piv-division", out _);
             }
 
             var meta = GetOrReturnStaleAndRefreshWithMetadata("piv-division", FetchPivDivision);
@@ -193,7 +194,7 @@ namespace MISReports_Api.Controllers
         {
             if (refresh)
             {
-                HttpRuntime.Cache.Remove("stock-total");
+                Cache.TryRemove("stock-total", out _);
             }
 
             var meta = GetOrReturnStaleAndRefreshWithMetadata("stock-total", FetchStockTotal);
@@ -206,7 +207,7 @@ namespace MISReports_Api.Controllers
         {
             if (refresh)
             {
-                HttpRuntime.Cache.Remove("stock-division");
+                Cache.TryRemove("stock-division", out _);
             }
 
             var meta = GetOrReturnStaleAndRefreshWithMetadata("stock-division", FetchStockDivision);
