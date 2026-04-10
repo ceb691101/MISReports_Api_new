@@ -13,6 +13,13 @@ namespace MISReports_Api.Controllers
     {
         private readonly ReportCategoryRepository _repository = new ReportCategoryRepository();
 
+        private static string NormalizeCategoryCode(string catCode)
+        {
+            return string.IsNullOrWhiteSpace(catCode)
+                ? null
+                : catCode.Trim().ToUpperInvariant();
+        }
+
         /// <summary>
         /// Get all report categories
         /// </summary>
@@ -36,7 +43,7 @@ namespace MISReports_Api.Controllers
                 return Ok(JObject.Parse(JsonConvert.SerializeObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot get report categories.",
+                    errorMessage = "CANNOT GET REPORT CATEGORIES.",
                     errorDetails = ex.Message
                 })));
             }
@@ -58,18 +65,18 @@ namespace MISReports_Api.Controllers
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "Category code is required."
+                        errorMessage = "CATEGORY CODE IS REQUIRED."
                     }));
                 }
 
-                var result = _repository.GetCategoryByCode(catCode.Trim());
+                var result = _repository.GetCategoryByCode(NormalizeCategoryCode(catCode));
 
                 if (result == null)
                 {
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "Category not found."
+                        errorMessage = "CATEGORY NOT FOUND."
                     }));
                 }
 
@@ -84,7 +91,7 @@ namespace MISReports_Api.Controllers
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot get report category.",
+                    errorMessage = "CANNOT GET REPORT CATEGORY.",
                     errorDetails = ex.Message
                 }));
             }
@@ -106,17 +113,17 @@ namespace MISReports_Api.Controllers
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "Request body is required."
+                        errorMessage = "REQUEST BODY IS REQUIRED."
                     }));
                 }
 
                 var validationErrors = new List<string>();
 
                 if (string.IsNullOrWhiteSpace(request.CatCode))
-                    validationErrors.Add("Category code is required.");
+                    validationErrors.Add("CATEGORY CODE IS REQUIRED.");
 
                 if (string.IsNullOrWhiteSpace(request.CatName))
-                    validationErrors.Add("Category name is required.");
+                    validationErrors.Add("CATEGORY NAME IS REQUIRED.");
 
                 if (validationErrors.Count > 0)
                 {
@@ -128,14 +135,15 @@ namespace MISReports_Api.Controllers
                 }
 
                 var created = _repository.AddOrUpdateCategory(request);
+                var normalizedCatCode = NormalizeCategoryCode(request.CatCode);
 
                 return Ok(JObject.FromObject(new
                 {
                     data = new
                     {
                         success = created,
-                        catCode = request.CatCode?.Trim(),
-                        message = "Category created/updated successfully."
+                        catCode = normalizedCatCode,
+                        message = "CATEGORY CREATED/UPDATED SUCCESSFULLY."
                     },
                     errorMessage = (string)null
                 }));
@@ -145,7 +153,7 @@ namespace MISReports_Api.Controllers
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot create/update category.",
+                    errorMessage = "CANNOT CREATE/UPDATE CATEGORY.",
                     errorDetails = ex.Message
                 }));
             }
@@ -168,7 +176,7 @@ namespace MISReports_Api.Controllers
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "Request body is required."
+                        errorMessage = "REQUEST BODY IS REQUIRED."
                     }));
                 }
 
@@ -177,23 +185,23 @@ namespace MISReports_Api.Controllers
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "Category code is required."
+                        errorMessage = "CATEGORY CODE IS REQUIRED."
                     }));
                 }
 
                 // Set the category code from the URL if not provided in the request
                 if (string.IsNullOrWhiteSpace(request.CatCode))
                 {
-                    request.CatCode = catCode;
+                    request.CatCode = NormalizeCategoryCode(catCode);
                 }
 
                 var validationErrors = new List<string>();
 
                 if (string.IsNullOrWhiteSpace(request.CatCode))
-                    validationErrors.Add("Category code is required.");
+                    validationErrors.Add("CATEGORY CODE IS REQUIRED.");
 
                 if (string.IsNullOrWhiteSpace(request.CatName))
-                    validationErrors.Add("Category name is required.");
+                    validationErrors.Add("CATEGORY NAME IS REQUIRED.");
 
                 if (validationErrors.Count > 0)
                 {
@@ -205,14 +213,15 @@ namespace MISReports_Api.Controllers
                 }
 
                 var updated = _repository.UpdateCategory(request);
+                var normalizedCatCode = NormalizeCategoryCode(request.CatCode);
 
                 return Ok(JObject.FromObject(new
                 {
                     data = new
                     {
                         success = updated,
-                        catCode = request.CatCode?.Trim(),
-                        message = updated ? "Category updated successfully." : "Category not found."
+                        catCode = normalizedCatCode,
+                        message = updated ? "CATEGORY UPDATED SUCCESSFULLY." : "CATEGORY NOT FOUND."
                     },
                     errorMessage = (string)null
                 }));
@@ -222,7 +231,7 @@ namespace MISReports_Api.Controllers
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot update category.",
+                    errorMessage = "CANNOT UPDATE CATEGORY.",
                     errorDetails = ex.Message
                 }));
             }
@@ -244,19 +253,20 @@ namespace MISReports_Api.Controllers
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "Category code is required."
+                        errorMessage = "CATEGORY CODE IS REQUIRED."
                     }));
                 }
 
-                var deleted = _repository.DeleteCategory(catCode.Trim());
+                var normalizedCatCode = NormalizeCategoryCode(catCode);
+                var deleted = _repository.DeleteCategory(normalizedCatCode);
 
                 return Ok(JObject.FromObject(new
                 {
                     data = new
                     {
                         success = deleted,
-                        catCode = catCode.Trim(),
-                        message = deleted ? "Category deleted successfully." : "Category not found."
+                        catCode = normalizedCatCode,
+                        message = deleted ? "CATEGORY DELETED SUCCESSFULLY." : "CATEGORY NOT FOUND."
                     },
                     errorMessage = (string)null
                 }));
@@ -266,7 +276,7 @@ namespace MISReports_Api.Controllers
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot delete category.",
+                    errorMessage = "CANNOT DELETE CATEGORY.",
                     errorDetails = ex.Message
                 }));
             }
