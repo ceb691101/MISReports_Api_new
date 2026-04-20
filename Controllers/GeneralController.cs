@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Http;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
+using MISReports_Api.DAL.General.AreasPosition;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.Models.SolarInformation;
@@ -25,6 +26,7 @@ namespace MISReports_Api.Controllers
         private readonly AreasDao _areasDao = new AreasDao();
         private readonly ProvinceDao _provinceDao = new ProvinceDao();
         private readonly ListOfGovernmentAccountsDao _govAccountsDao = new ListOfGovernmentAccountsDao();
+        private readonly AreasPositionDao _areasPositionDao = new AreasPositionDao();   // ← new
 
         // ------------------------------------------------------------------ //
         // Bill Cycles                                                          //
@@ -528,6 +530,142 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get government accounts report data.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ================================================================== //
+        //  AREAS POSITION                                                      //
+        // ================================================================== //
+
+        // ------------------------------------------------------------------ //
+        // Areas Position — Max Bill Cycle                                     //
+        // GET api/areas-position/max-bill-cycle?areaCode=43                  //
+        // Response: { data: { billCycle: "438" }, errorMessage: null }       //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("areas-position/max-bill-cycle")]
+        public IHttpActionResult GetAreasPositionMaxBillCycle([FromUri] string areaCode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
+
+                if (!_areasPositionDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var billCycle = _areasPositionDao.GetMaxBillCycle(areaCode);
+
+                if (string.IsNullOrEmpty(billCycle))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No bill cycle found for the selected area.",
+                        errorDetails = "The area may have no billing data."
+                    });
+
+                return Ok(new
+                {
+                    data = new { billCycle },
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetAreasPositionMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve max bill cycle.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // Areas Position — Report                                             //
+        // GET api/areas-position/report?areaCode=43                          //
+        //     (optional) &billCycle=438  — omit to auto-resolve max cycle    //
+        //                                                                     //
+        // Response: {                                                         //
+        //   data: {                                                           //
+        //     billCycle: "438",                                               //
+        //     rows: [                                                         //
+        //       {                                                             //
+        //         readerCode,                                                 //
+        //         monthlyBill,                                                //
+        //         totalBalance,                                               //
+        //         noOfMonthsInArrears,                                       //
+        //         noOfAccounts                                                //
+        //       }, ...                                                        //
+        //     ]                                                               //
+        //   },                                                                //
+        //   errorMessage: null                                                //
+        // }                                                                   //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("areas-position/report")]
+        public IHttpActionResult GetAreasPositionReport(
+            [FromUri] string areaCode = null,
+            [FromUri] string billCycle = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
+
+                if (!_areasPositionDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var result = _areasPositionDao.GetAreasPositionReport(new AreasPositionRequest
+                {
+                    AreaCode = areaCode,
+                    BillCycle = billCycle   // null/empty → DAO resolves max automatically
+                });
+
+                if (result == null || result.Rows == null || result.Rows.Count == 0)
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No data found for the selected area.",
+                        errorDetails = "Please check the area code or billing data availability."
+                    });
+
+                return Ok(new
+                {
+                    data = new
+                    {
+                        billCycle = result.BillCycle,
+                        rows = result.Rows
+                    },
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetAreasPositionReport: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve areas position report.",
                     errorDetails = ex.Message
                 });
             }

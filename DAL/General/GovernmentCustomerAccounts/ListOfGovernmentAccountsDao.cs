@@ -1,4 +1,4 @@
-using MISReports_Api.DBAccess;
+﻿using MISReports_Api.DBAccess;
 using MISReports_Api.Models.General;
 using NLog;
 using System;
@@ -156,14 +156,10 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
             try
             {
                 // SQL for Area report - includes all government accounts for the area
-                string sql = @"SELECT a.acct_number, a.cust_fname, a.cust_lname, 
-                                      a.address_1, a.address_2, a.address_3, 
-                                      a.crnt_balance, a.kwh_charge, a.avg_cons 
-                               FROM prn_dat_1 a 
-                               INNER JOIN govt_acct b ON a.acct_number = b.acct_number
-                               WHERE a.area_code = ? 
-                                 AND a.bill_cycle = ? 
-                               ORDER BY a.acct_number";
+                string sql = @"SELECT a.acct_number, a.cust_fname, a.cust_lname, a.address_1, a.address_2, a.address_3, 
+                               a.crnt_balance, a.kwh_charge, a.avg_cons 
+                               FROM prn_dat_1 a, govt_acct b 
+                               WHERE a.area_code = ? AND a.bill_cycle = ? AND a.acct_number = b.acct_number";
 
                 logger.Info($"Executing Area SQL with BillCycle={request.BillCycle}, AreaCode={request.AreaCode}");
 
@@ -209,15 +205,10 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
             try
             {
                 // SQL for Department report - includes government accounts filtered by department
-                string sql = @"SELECT a.acct_number, a.cust_fname, a.cust_lname, 
-                                      a.address_1, a.address_2, a.address_3, 
-                                      a.crnt_balance, a.kwh_charge, a.avg_cons 
-                               FROM prn_dat_1 a 
-                               INNER JOIN govt_acct b ON a.acct_number = b.acct_number
-                               WHERE a.area_code = ? 
-                                 AND a.bill_cycle = ? 
-                                 AND b.dept = ? 
-                               ORDER BY a.acct_number";
+                string sql = @"SELECT a.acct_number, a.cust_fname, a.cust_lname, a.address_1, a.address_2, a.address_3, 
+                               a.crnt_balance, a.kwh_charge, a.avg_cons 
+                               FROM prn_dat_1 a, govt_acct b 
+                               WHERE a.area_code = ? AND a.bill_cycle = ? AND a.acct_number = b.acct_number AND b.dept = ?";
 
                 logger.Info($"Executing Department SQL with BillCycle={request.BillCycle}, " +
                            $"AreaCode={request.AreaCode}, DepartmentCode={request.DepartmentCode}");
