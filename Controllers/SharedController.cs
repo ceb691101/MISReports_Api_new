@@ -3,6 +3,7 @@ using MISReports_Api.DAL.SolarInformation.SolarPVConnections;
 using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
+using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
 using Newtonsoft.Json.Linq;
@@ -27,6 +28,8 @@ namespace MISReports_Api.Controllers
         private readonly PVCapacityBillCycleDao _pVCapacityBillCycleDao = new PVCapacityBillCycleDao();
         private readonly BillCycleFromAreaDao _billCycleFromAreaDao = new BillCycleFromAreaDao();
         private readonly ContractDemandBillCycleDao _contractDemandBillCycle = new ContractDemandBillCycleDao();
+        private readonly ActiveCustSalesOrdBillCycleDao _activeCustSalesOrdBillCycle = new ActiveCustSalesOrdBillCycleDao();
+        private readonly ActiveCustSalesBulkBillCycleDao _activeCustSalesBulkBillCycle = new ActiveCustSalesBulkBillCycleDao();
 
         [HttpGet]
         [Route("ordinary/areas")]
@@ -365,7 +368,7 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("areas/billcycle/max")] //areas/billcycle/max
+        [Route("ordinary/areas/billcycle/min")] // ordinary/areas/billcycle/max  changed to min bill cycle
         public IHttpActionResult GetBillCycleFromArea()
         {
             try
@@ -390,12 +393,62 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("bulk/mon_tot/billcycle/max")] //ContractDemandBulk/billcycle/max
+        [Route("bulk/mon_tot/billcycle/max")] //ContractDemandBulk
         public IHttpActionResult GetContractDemandBillCycle()
         {
             try
             {
-                var result = _contractDemandBillCycle.GetLast24BillCycles();//From netprogrs table in InformixConnection database
+                var result = _contractDemandBillCycle.GetLast24BillCycles();//From mon_tot table in InformixBulkConnection database
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = result.ErrorMessage
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet]
+        [Route("ordinary/consmry/billcycle/max")] //Active Customers and Sales by Tariff
+        public IHttpActionResult GetActiveCustomersSalesOrdBillCycle()
+        {
+            try
+            {
+                var result = _activeCustSalesOrdBillCycle.GetLast36BillCycles();//From consmry table in InformixConnection database
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = result.ErrorMessage
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet]
+        [Route("bulk/account_info/billcycle/max")] //Active Customers and Sales by Tariff
+        public IHttpActionResult GetActiveCustomersSalesBulkBillCycle()
+        {
+            try
+            {
+                var result = _activeCustSalesBulkBillCycle.GetLast36BillCycles();//From account_info table in InformixBulkConnection database
 
                 return Ok(JObject.FromObject(new
                 {

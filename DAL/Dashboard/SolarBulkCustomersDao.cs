@@ -1,8 +1,10 @@
-﻿using MISReports_Api.DBAccess;
+using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
+using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Linq;
 
 namespace MISReports_Api.DAL.Dashboard
 {
@@ -34,20 +36,23 @@ namespace MISReports_Api.DAL.Dashboard
                 {
                     conn.Open();
 
-                    summary.TotalCustomers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type<>'0'");
+                    string targetCycle = GetMaxBillCycle(conn);
+                    if (string.IsNullOrWhiteSpace(targetCycle))
+                    {
+                        summary.ErrorMessage = "No bill cycle found in netmtcons.";
+                        return summary;
+                    }
 
-                    summary.NetType1Customers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='1'");
+                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle);
 
-                    summary.NetType2Customers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='2'");
-
-                    summary.NetType3Customers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='3'");
-
-                    summary.NetType4Customers = ExecuteCount(conn,
-                        "SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='4'");
+                    summary.NetType1Customers = GetCountByNetType(groupedCounts, "1");
+                    summary.NetType2Customers = GetCountByNetType(groupedCounts, "2") + GetCountByNetType(groupedCounts, "5");
+                    summary.NetType3Customers = GetCountByNetType(groupedCounts, "3");
+                    summary.NetType4Customers = GetCountByNetType(groupedCounts, "4");
+                    summary.TotalCustomers = summary.NetType1Customers
+                                           + summary.NetType2Customers
+                                           + summary.NetType3Customers
+                                           + summary.NetType4Customers;
                 }
 
                 return summary;
@@ -62,30 +67,86 @@ namespace MISReports_Api.DAL.Dashboard
 
         public SolarBulkCustomersCount GetTotalCustomersCount()
         {
-            return GetCountResult("SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type<>'0'");
+            return GetCountResult("ALL");
         }
 
         public SolarBulkCustomersCount GetNetType1CustomersCount()
         {
-            return GetCountResult("SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='1'");
+            return GetCountResult("1");
         }
 
         public SolarBulkCustomersCount GetNetType2CustomersCount()
         {
-            return GetCountResult("SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='2'");
+            return GetCountResult("2");
         }
 
         public SolarBulkCustomersCount GetNetType3CustomersCount()
         {
-            return GetCountResult("SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='3'");
+            return GetCountResult("3");
         }
 
         public SolarBulkCustomersCount GetNetType4CustomersCount()
         {
-            return GetCountResult("SELECT COUNT(*) FROM customer WHERE cst_st='0' AND net_type='4'");
+            return GetCountResult("4");
         }
 
-        private SolarBulkCustomersCount GetCountResult(string sql)
+        public SolarBulkGenerationCapacityGraph GetGenerationCapacityGraph(string billCycle = null, int cycles = 12)
+        {
+            var graph = new SolarBulkGenerationCapacityGraph
+            {
+                MaxBillCycle = string.Empty,
+                SelectedBillCycle = string.Empty,
+                AvailableBillCycles = new List<string>(),
+                Records = new List<SolarBulkGenerationCapacityPoint>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                using (var conn = _dbConnection.GetConnection(true))
+                {
+                    conn.Open();
+
+                    string maxBillCycleText = GetMaxBillCycle(conn);
+                    if (!int.TryParse(maxBillCycleText, out int maxBillCycle))
+                    {
+                        graph.ErrorMessage = "No bill cycle found in netmtcons.";
+                        return graph;
+                    }
+
+                    int latestCompletedBillCycle = maxBillCycle - 1;
+                    if (latestCompletedBillCycle <= 0)
+                    {
+                        graph.ErrorMessage = "No completed bill cycle found in netmtcons.";
+                        return graph;
+                    }
+
+                    int safeCycles = cycles <= 0 ? 12 : cycles;
+                    int selectedBillCycle = ResolveRequestedBillCycle(billCycle, latestCompletedBillCycle);
+                    var availableBillCycles = GetAvailableBillCyclesFromNetmtcons(conn, latestCompletedBillCycle, safeCycles);
+
+                    if (!availableBillCycles.Contains(selectedBillCycle) && availableBillCycles.Count > 0)
+                    {
+                        selectedBillCycle = availableBillCycles[0];
+                    }
+
+                    graph.MaxBillCycle = latestCompletedBillCycle.ToString();
+                    graph.SelectedBillCycle = selectedBillCycle.ToString();
+                    graph.AvailableBillCycles = availableBillCycles.Select(cycle => cycle.ToString()).ToList();
+                    graph.Records = GetGenerationCapacityByCycleFromNetmtcons(conn, graph.SelectedBillCycle);
+                }
+
+                return graph;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching solar bulk generation capacity graph");
+                graph.ErrorMessage = ex.Message;
+                return graph;
+            }
+        }
+
+        private SolarBulkCustomersCount GetCountResult(string netType)
         {
             var result = new SolarBulkCustomersCount
             {
@@ -98,7 +159,32 @@ namespace MISReports_Api.DAL.Dashboard
                 using (var conn = _dbConnection.GetConnection(true))
                 {
                     conn.Open();
-                    result.CustomersCount = ExecuteCount(conn, sql);
+
+                    string targetCycle = GetMaxBillCycle(conn);
+                    if (string.IsNullOrWhiteSpace(targetCycle))
+                    {
+                        result.ErrorMessage = "No bill cycle found in netmtcons.";
+                        return result;
+                    }
+
+                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle);
+
+                    if (netType == "ALL")
+                    {
+                        result.CustomersCount = GetCountByNetType(groupedCounts, "1")
+                                              + GetCountByNetType(groupedCounts, "2")
+                                              + GetCountByNetType(groupedCounts, "5")
+                                              + GetCountByNetType(groupedCounts, "3")
+                                              + GetCountByNetType(groupedCounts, "4");
+                    }
+                    else if (netType == "2")
+                    {
+                        result.CustomersCount = GetCountByNetType(groupedCounts, "2") + GetCountByNetType(groupedCounts, "5");
+                    }
+                    else
+                    {
+                        result.CustomersCount = GetCountByNetType(groupedCounts, netType);
+                    }
                 }
 
                 return result;
@@ -111,17 +197,156 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private int ExecuteCount(OleDbConnection conn, string sql)
+        private string GetMaxBillCycle(OleDbConnection conn)
         {
+            const string sql = "SELECT MAX(bill_cycle) FROM netmtcons";
+
             using (var cmd = new OleDbCommand(sql, conn))
             {
                 object result = cmd.ExecuteScalar();
-                if (result == null || result == DBNull.Value)
-                {
-                    return 0;
-                }
+                return result == null || result == DBNull.Value ? string.Empty : result.ToString().Trim();
+            }
+        }
 
-                return Convert.ToInt32(result);
+        private Dictionary<string, int> GetGroupedCountsFromNetmtcons(OleDbConnection conn, string billCycle)
+        {
+            var groupedCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            const string groupedSql = "SELECT bill_cycle, net_type, COUNT(*), SUM(gen_cap) " +
+                                      "FROM netmtcons WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
+
+            using (var cmd = new OleDbCommand(groupedSql, conn))
+            {
+                cmd.Parameters.AddWithValue("?", billCycle);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string netType = reader[1] == DBNull.Value ? string.Empty : reader[1].ToString().Trim();
+                        if (string.IsNullOrWhiteSpace(netType))
+                        {
+                            continue;
+                        }
+
+                        int count = reader[2] == DBNull.Value ? 0 : Convert.ToInt32(reader[2]);
+                        groupedCounts[netType] = count;
+                    }
+                }
+            }
+
+            return groupedCounts;
+        }
+
+        private int GetCountByNetType(Dictionary<string, int> groupedCounts, string netType)
+        {
+            return groupedCounts.TryGetValue(netType, out int count) ? count : 0;
+        }
+
+        private List<int> GetAvailableBillCyclesFromNetmtcons(OleDbConnection conn, int maxAllowedCycle, int takeCount)
+        {
+            var billCycles = new List<int>();
+
+            const string sql = "SELECT DISTINCT bill_cycle FROM netmtcons WHERE bill_cycle <= ? ORDER BY bill_cycle DESC";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("?", maxAllowedCycle.ToString());
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read() && billCycles.Count < takeCount)
+                    {
+                        if (reader[0] == DBNull.Value)
+                        {
+                            continue;
+                        }
+
+                        string billCycleText = reader[0].ToString().Trim();
+                        if (int.TryParse(billCycleText, out int billCycleValue) && billCycleValue > 0)
+                        {
+                            billCycles.Add(billCycleValue);
+                        }
+                    }
+                }
+            }
+
+            return billCycles;
+        }
+
+        private List<SolarBulkGenerationCapacityPoint> GetGenerationCapacityByCycleFromNetmtcons(OleDbConnection conn, string billCycle)
+        {
+            var groupedByDisplayType = new Dictionary<string, SolarBulkGenerationCapacityPoint>(StringComparer.OrdinalIgnoreCase);
+
+            const string sql = "SELECT bill_cycle, net_type, COUNT(*), SUM(gen_cap) " +
+                               "FROM netmtcons WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("?", billCycle);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string rawNetType = reader[1] == DBNull.Value ? string.Empty : reader[1].ToString().Trim();
+                        string displayNetType = GetNetTypeDisplayName(rawNetType);
+
+                        if (string.IsNullOrWhiteSpace(displayNetType))
+                        {
+                            continue;
+                        }
+
+                        int accountsCount = reader[2] == DBNull.Value ? 0 : Convert.ToInt32(reader[2]);
+                        decimal capacityKw = reader[3] == DBNull.Value ? 0m : Convert.ToDecimal(reader[3]);
+
+                        if (!groupedByDisplayType.TryGetValue(displayNetType, out SolarBulkGenerationCapacityPoint point))
+                        {
+                            point = new SolarBulkGenerationCapacityPoint
+                            {
+                                BillCycle = billCycle,
+                                NetType = displayNetType,
+                                AccountsCount = 0,
+                                CapacityKw = 0m
+                            };
+
+                            groupedByDisplayType[displayNetType] = point;
+                        }
+
+                        point.AccountsCount += accountsCount;
+                        point.CapacityKw += capacityKw;
+                    }
+                }
+            }
+
+            return groupedByDisplayType.Values
+                                     .OrderByDescending(item => item.CapacityKw)
+                                     .ThenBy(item => item.NetType)
+                                     .ToList();
+        }
+
+        private static int ResolveRequestedBillCycle(string requestedBillCycle, int fallbackBillCycle)
+        {
+            if (!string.IsNullOrWhiteSpace(requestedBillCycle) &&
+                int.TryParse(requestedBillCycle.Trim(), out int parsedBillCycle) &&
+                parsedBillCycle > 0)
+            {
+                return parsedBillCycle;
+            }
+
+            return fallbackBillCycle;
+        }
+
+        private static string GetNetTypeDisplayName(string netType)
+        {
+            switch (netType)
+            {
+                case "1": return "Net Metering";
+                case "2":
+                case "5": return "Net Accounting";
+                case "3": return "Net Plus";
+                case "4": return "Net Plus Plus";
+                default: return string.Empty;
             }
         }
     }

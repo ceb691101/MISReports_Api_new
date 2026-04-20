@@ -1,10 +1,12 @@
-﻿using System;
+using System;
+using System.Globalization;
+using System.Linq;
 using System.Web.Http;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.Models.Dashboard;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// All three dashboard controllers live in this single file.
+// All dashboard controllers live in this single file. - all controllers in dashboard
 // They cannot be merged into one class because each has a different RoutePrefix.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -20,6 +22,7 @@ namespace MISReports_Api.Controllers.Dashboard
         private readonly BulkCustomersDao _bulkCustomersDao = new BulkCustomersDao();
         private readonly SalesAndCollectionRangeDao _salesAndCollectionRangeDao = new SalesAndCollectionRangeDao();
         private readonly OrdinaryCustomersDao _ordinaryCustomersDao = new OrdinaryCustomersDao();
+        private readonly KioskCollectionDao _kioskCollectionDao = new KioskCollectionDao();
 
         /// <summary>GET api/dashboard/customers/active-count</summary>
         [HttpGet]
@@ -84,8 +87,12 @@ namespace MISReports_Api.Controllers.Dashboard
                 {
                     data = new
                     {
-                        maxBillCycle = result.MaxBillCycle,
-                        records = result.OrdinaryData
+                        records = result.OrdinaryData.Select(rec => new
+                        {
+                            Date = ResolveSalesCollectionDate(rec),
+                            Amount = rec.Collection,
+                            rec.ErrorMessage
+                        })
                     },
                     errorMessage = (string)null
                 });
@@ -112,8 +119,12 @@ namespace MISReports_Api.Controllers.Dashboard
                 {
                     data = new
                     {
-                        maxBillCycle = result.MaxBillCycle,
-                        records = result.BulkData
+                        records = result.BulkData.Select(rec => new
+                        {
+                            Date = ResolveSalesCollectionDate(rec),
+                            Amount = rec.Collection,
+                            rec.ErrorMessage
+                        })
                     },
                     errorMessage = (string)null
                 });
@@ -123,13 +134,82 @@ namespace MISReports_Api.Controllers.Dashboard
                 return Ok(new { data = (object)null, errorMessage = "Cannot get bulk sales and collection data.", errorDetails = ex.Message });
             }
         }
+
+        /// <summary>GET api/dashboard/kiosk-collection?userId=KIOS00&fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd</summary>
+        [HttpGet]
+        [Route("kiosk-collection")]
+        public IHttpActionResult GetKioskCollection([FromUri] string userId = null, [FromUri] string fromDate = null, [FromUri] string toDate = null)
+        {
+            try
+            {
+                if (!_kioskCollectionDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                if (string.IsNullOrWhiteSpace(userId))
+                    return Ok(new { data = (object)null, errorMessage = "userId is required." });
+
+                string resolvedUserId = userId.Trim();
+
+                DateTime resolvedToDate = DateTime.Today.AddDays(-1);
+                if (!string.IsNullOrWhiteSpace(toDate) &&
+                    !DateTime.TryParseExact(toDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resolvedToDate))
+                {
+                    return Ok(new { data = (object)null, errorMessage = "Invalid toDate format. Use yyyy-MM-dd." });
+                }
+
+                DateTime resolvedFromDate = resolvedToDate.AddDays(-7);
+                if (!string.IsNullOrWhiteSpace(fromDate) &&
+                    !DateTime.TryParseExact(fromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resolvedFromDate))
+                {
+                    return Ok(new { data = (object)null, errorMessage = "Invalid fromDate format. Use yyyy-MM-dd." });
+                }
+
+                if (resolvedFromDate > resolvedToDate)
+                    return Ok(new { data = (object)null, errorMessage = "fromDate cannot be greater than toDate." });
+
+                var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId, resolvedFromDate, resolvedToDate);
+
+                return Ok(new
+                {
+                    data = new
+                    {
+                        userId = resolvedUserId,
+                        fromDate = resolvedFromDate.ToString("yyyy-MM-dd"),
+                        toDate = resolvedToDate.ToString("yyyy-MM-dd"),
+                        records
+                    },
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Cannot get kiosk collection data.", errorDetails = ex.Message });
+            }
+        }
+
+        private static string ResolveSalesCollectionDate(SalesAndCollectionModel record)
+        {
+            if (!string.IsNullOrWhiteSpace(record.Date))
+                return record.Date;
+
+            return FormatSalesCollectionDate(record.BillCycle);
+        }
+
+        private static string FormatSalesCollectionDate(int billCycle)
+        {
+            var raw = billCycle.ToString(CultureInfo.InvariantCulture);
+
+            if (raw.Length == 8 && DateTime.TryParseExact(raw, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+                return parsedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            return string.Empty;
+        }
     }
 
 
-    // =========================================================================
-    // 2. SOLAR ORDINARY CUSTOMERS CONTROLLER
+    // SOLAR ORDINARY CUSTOMERS CONTROLLER
     //    Routes: api/dashboard/solar-ordinary-customers/...
-    // =========================================================================
+
     [RoutePrefix("api/dashboard/solar-ordinary-customers")]
     public class SolarOrdinaryCustomersController : ApiController
     {
@@ -150,7 +230,7 @@ namespace MISReports_Api.Controllers.Dashboard
                 return Ok(new
                 {
                     data = new { billCycle = maxBillCycle },
-                    errorMessage = string.IsNullOrWhiteSpace(maxBillCycle) ? "No bill cycle found in netmtcons." : (string)null
+                    errorMessage = string.IsNullOrWhiteSpace(maxBillCycle) ? "No bill cycle found in netprogrs." : (string)null
                 });
             }
             catch (Exception ex)
@@ -197,6 +277,30 @@ namespace MISReports_Api.Controllers.Dashboard
         public IHttpActionResult GetNetType4CustomersCount([FromUri] string billCycle = null)
         {
             return GetCustomersCountResponse(billCycle, _solarOrdinaryCustomersDao.GetNetPlusPlusCustomersCount, "Error retrieving net type 4 customers count.");
+        }
+
+        /// <summary>GET api/dashboard/solar-ordinary-customers/generation-capacity?billCycle=401&cycles=12</summary>
+        [HttpGet]
+        [Route("generation-capacity")]
+        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12)
+        {
+            try
+            {
+                if (!_solarOrdinaryCustomersDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                var data = _solarOrdinaryCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles);
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Error retrieving solar ordinary generation capacity graph.", errorDetails = ex.Message });
+            }
         }
 
         // ── Shared helper ─────────────────────────────────────────────────────
@@ -314,6 +418,30 @@ namespace MISReports_Api.Controllers.Dashboard
             return GetCountResponse(_solarBulkCustomersDao.GetNetType4CustomersCount, "Error retrieving net type 4 solar bulk customers count.");
         }
 
+        /// <summary>GET api/dashboard/solar-bulk-customers/generation-capacity?billCycle=401&cycles=12</summary>
+        [HttpGet]
+        [Route("generation-capacity")]
+        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12)
+        {
+            try
+            {
+                if (!_solarBulkCustomersDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                var data = _solarBulkCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles);
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Error retrieving solar bulk generation capacity graph.", errorDetails = ex.Message });
+            }
+        }
+
         // ── Shared helper ─────────────────────────────────────────────────────
         private IHttpActionResult GetCountResponse(
             Func<SolarBulkCustomersCount> countGetter,
@@ -336,6 +464,21 @@ namespace MISReports_Api.Controllers.Dashboard
             {
                 return Ok(new { data = (object)null, errorMessage = fallbackErrorMessage, errorDetails = ex.Message });
             }
+        }
+
+        private static string NormalizeBillCycle(string billCycle)
+        {
+            if (string.IsNullOrWhiteSpace(billCycle))
+                return null;
+
+            var normalized = billCycle.Trim();
+
+            if ((normalized.StartsWith("{") && normalized.EndsWith("}")) ||
+                normalized.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("undefined", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            return normalized;
         }
     }
 }

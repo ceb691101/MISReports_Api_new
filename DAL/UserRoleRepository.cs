@@ -9,7 +9,7 @@ namespace MISReports_Api.DAL
 {
     public class UserRoleRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
         public List<UserRoleModel> GetUserRole(string epfNo)
         {
@@ -21,8 +21,8 @@ namespace MISReports_Api.DAL
                 {
                     conn.Open();
 
-                    string sql = @"SELECT UPPER(r.roleid) AS RoleId, r.USER_GROUP 
-                                   FROM rep_role_new r 
+                    string sql = @"SELECT UPPER(r.roleid) AS RoleId,USERTYPE, COMPANY, r.USER_GROUP
+                                   FROM rep_role_new r
                                    WHERE r.epf_no = :epf_no";
 
                     using (var cmd = new OracleCommand(sql, conn))
@@ -37,6 +37,8 @@ namespace MISReports_Api.DAL
                                 roles.Add(new UserRoleModel
                                 {
                                     RoleId = reader["RoleId"]?.ToString(),
+                                    USERTYPE = reader["USERTYPE"]?.ToString(),
+                                    COMPANY = reader["COMPANY"]?.ToString(),
                                     UserGroup = reader["USER_GROUP"]?.ToString()
                                 });
                             }
