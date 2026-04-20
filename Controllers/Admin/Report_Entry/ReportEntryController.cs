@@ -12,6 +12,13 @@ namespace MISReports_Api.Controllers
     {
         private readonly ReportEntryRepository _repository = new ReportEntryRepository();
 
+        private static string NormalizeRepId(string repId)
+        {
+            return string.IsNullOrWhiteSpace(repId)
+                ? string.Empty
+                : repId.Trim().ToUpperInvariant();
+        }
+
         [HttpGet]
         [Route("nextid")]
         public IHttpActionResult GetNextReportIdNo()
@@ -66,7 +73,7 @@ namespace MISReports_Api.Controllers
                     }));
                 }
 
-                var result = _repository.FilterReportEntries(repid, catcode);
+                var result = _repository.FilterReportEntries(NormalizeRepId(repid), catcode);
                 return Ok(JObject.FromObject(new
                 {
                     data = result,
@@ -92,6 +99,8 @@ namespace MISReports_Api.Controllers
             {
                 if (request == null)
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Request body is required." }));
+
+                request.RepId = NormalizeRepId(request.RepId);
 
                 if (request.RepIdNo < 0)
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));

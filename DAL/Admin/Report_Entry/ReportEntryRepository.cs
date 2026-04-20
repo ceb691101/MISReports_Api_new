@@ -11,6 +11,13 @@ namespace MISReports_Api.DAL
     {
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
+        private static string NormalizeRepId(string repId)
+        {
+            return string.IsNullOrWhiteSpace(repId)
+                ? string.Empty
+                : repId.Trim().ToUpperInvariant();
+        }
+
         public int GetNextReportIdNo()
         {
             try
@@ -64,7 +71,7 @@ namespace MISReports_Api.DAL
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
                             cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = request.RepId?.Trim();
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(request.RepId);
                             cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
                             cmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
                             cmd.Parameters.Add("favorite", OracleDbType.Int32).Value = favorite;
@@ -379,7 +386,7 @@ namespace MISReports_Api.DAL
                         using (var cmd = new OracleCommand(sql, conn))
                         {
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repid);
                             cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
 
                             using (var reader = cmd.ExecuteReader())
@@ -405,7 +412,7 @@ namespace MISReports_Api.DAL
                         using (var cmd = new OracleCommand(fallbackSql, conn))
                         {
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repid);
                             cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
 
                             using (var reader = cmd.ExecuteReader())

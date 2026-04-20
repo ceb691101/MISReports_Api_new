@@ -18,6 +18,26 @@ namespace MISReports_Api.DAL
                 : catCode.Trim().ToUpperInvariant();
         }
 
+        private static string NormalizeCategoryName(string catName)
+        {
+            if (string.IsNullOrWhiteSpace(catName))
+            {
+                return null;
+            }
+
+            var words = catName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (var i = 0; i < words.Length; i++)
+            {
+                var word = words[i];
+                words[i] = word.Length == 1
+                    ? word.ToUpperInvariant()
+                    : char.ToUpperInvariant(word[0]) + word.Substring(1).ToLowerInvariant();
+            }
+
+            return string.Join(" ", words);
+        }
+
         /// <summary>
         /// Get all report categories
         /// </summary>
@@ -150,10 +170,11 @@ namespace MISReports_Api.DAL
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         var normalizedCatCode = NormalizeCategoryCode(request.CatCode);
+                        var normalizedCatName = NormalizeCategoryName(request.CatName);
 
                         cmd.BindByName = true;
                         cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = normalizedCatCode;
-                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = request.CatName?.Trim();
+                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = normalizedCatName;
 
                         var result = cmd.ExecuteNonQuery();
                         return result > 0;
@@ -193,10 +214,11 @@ namespace MISReports_Api.DAL
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         var normalizedCatCode = NormalizeCategoryCode(request.CatCode);
+                        var normalizedCatName = NormalizeCategoryName(request.CatName);
 
                         cmd.BindByName = true;
                         cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = normalizedCatCode;
-                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = request.CatName?.Trim();
+                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = normalizedCatName;
 
                         var result = cmd.ExecuteNonQuery();
                         return result > 0;

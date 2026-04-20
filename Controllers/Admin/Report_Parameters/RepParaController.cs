@@ -173,6 +173,36 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
         }
 
+        /// <summary>
+        /// DEBUG endpoint — returns raw populated column values from Oracle so you can
+        /// see exactly what the DB stores.  Hit in browser or Postman:
+        ///   GET /api/reppara/debug-pending
+        /// Remove this endpoint once the issue is resolved.
+        /// </summary>
+        [HttpGet]
+        [Route("debug-pending")]
+        public IHttpActionResult DebugPendingParams()
+        {
+            try
+            {
+                var rows = _repository.GetRawPopulatedValues();
+                return Ok(JObject.FromObject(new
+                {
+                    data = rows,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Debug query failed.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
         [HttpPost]
         [Route("delete-reportparams")]
         [Route("DELETE_REPORTPARAMS")]

@@ -18,8 +18,8 @@ namespace MISReports_Api.DAL.Admin.Report_Parameters
 SELECT paraname,
        description,
        CASE
-           WHEN populated = '1' THEN 'Yes'
-           WHEN populated = '0' THEN 'No'
+           WHEN populated = 1 THEN 'Yes'
+           ELSE 'No'
        END AS populated
 FROM rep_report_params_new
 ORDER BY paraname";
@@ -54,18 +54,22 @@ ORDER BY paraname";
             const string selectSql = @"
 SELECT paraname
 FROM rep_report_params_new
-WHERE paraname = :parm_ParaID";
+WHERE UPPER(TRIM(paraname)) = :parm_ParaID";
+
+            const string nextParaIdSql = @"
+SELECT NVL(MAX(paraid), 0) + 1
+FROM rep_report_params_new";
 
             const string insertSql = @"
 INSERT INTO rep_report_params_new (paraid, paraname, description, populated)
-VALUES (0, :parm_ParaID, :parm_ParaDesc, 0)";
+VALUES (:parm_NextParaID, :parm_ParaID, :parm_ParaDesc, 0)";
 
             const string updateSql = @"
 UPDATE rep_report_params_new
 SET description = :parm_ParaDesc
-WHERE paraname = :parm_ParaID";
+WHERE UPPER(TRIM(paraname)) = :parm_ParaID";
 
-            var normalizedParaId = paraId?.Trim();
+            var normalizedParaId = paraId?.Trim()?.ToUpperInvariant();
             var normalizedParaDesc = paraDesc?.Trim();
 
             using (var conn = new OracleConnection(connectionString))
@@ -87,10 +91,22 @@ WHERE paraname = :parm_ParaID";
 
                         if (!found)
                         {
+                            int nextParaId;
+                            using (var nextParaIdCmd = new OracleCommand(nextParaIdSql, conn))
+                            {
+                                nextParaIdCmd.BindByName = true;
+                                nextParaIdCmd.Transaction = transaction;
+                                var nextValue = nextParaIdCmd.ExecuteScalar();
+                                nextParaId = nextValue == null || nextValue == DBNull.Value
+                                    ? 1
+                                    : Convert.ToInt32(nextValue);
+                            }
+
                             using (var insertCmd = new OracleCommand(insertSql, conn))
                             {
                                 insertCmd.BindByName = true;
                                 insertCmd.Transaction = transaction;
+                                insertCmd.Parameters.Add("parm_NextParaID", OracleDbType.Int32).Value = nextParaId;
                                 insertCmd.Parameters.Add("parm_ParaID", OracleDbType.Varchar2).Value = normalizedParaId;
                                 insertCmd.Parameters.Add("parm_ParaDesc", OracleDbType.Varchar2).Value = normalizedParaDesc;
                                 insertCmd.ExecuteNonQuery();
@@ -166,55 +182,31 @@ ORDER BY repid";
 
         public PopulateParamTsResultModel PopulateParamTs(string repId, string paramList)
         {
+            // Step 1: Load all pending parameters (populated = 0, numeric)
             const string selectPendingParamsSql = @"
 SELECT paraname
 FROM rep_report_params_new
-WHERE NVL(TRIM(populated), '0') = '0'
+WHERE populated = 0
   AND TRIM(paraname) IS NOT NULL
 ORDER BY paraid";
 
+            // Step 2: Load all reports
             const string selectAllReportsSql = @"
-SELECT TRIM(repid) AS repid, TRIM(TO_CHAR(repid_no)) AS repid_no, paramlist
-FROM rep_reports_new";
-
-            const string selectReportSql = @"
-SELECT paramlist
+SELECT repid_no, paramlist
 FROM rep_reports_new
-WHERE UPPER(TRIM(repid)) = :parm_repid
-   OR TRIM(TO_CHAR(repid_no)) = :parm_repid_no";
+ORDER BY repid_no";
 
-            const string updateReportByRepIdSql = @"
+            // Step 3: Update a single report's paramlist
+            const string updateReportSql = @"
 UPDATE rep_reports_new
 SET paramlist = :param_list
-WHERE UPPER(TRIM(repid)) = :parm_repid";
+WHERE repid_no = :parm_repid_no";
 
-            const string updateReportByRepIdNoSql = @"
-UPDATE rep_reports_new
-SET paramlist = :param_list
-WHERE TRIM(TO_CHAR(repid_no)) = :parm_repid_no";
-
+            // Step 4: Mark all pending params as populated = 1 (numeric)
             const string markParamsPopulatedSql = @"
 UPDATE rep_report_params_new
-SET populated = '1'
-WHERE NVL(TRIM(populated), '0') = '0'";
-
-            bool isAllReports = string.IsNullOrWhiteSpace(repId) || repId.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase);
-            var candidateRepIds = new List<string>();
-
-            if (!isAllReports)
-            {
-                candidateRepIds = (repId ?? string.Empty)
-                    .Split(new[] { ',', ';', '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(item => item.Trim())
-                    .Where(item => !string.IsNullOrWhiteSpace(item))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                if (candidateRepIds.Count == 0)
-                {
-                    candidateRepIds.Add(repId.Trim());
-                }
-            }
+SET populated = 1
+WHERE populated = 0";
 
             using (var conn = new OracleConnection(connectionString))
             {
@@ -223,200 +215,132 @@ WHERE NVL(TRIM(populated), '0') = '0'";
                 {
                     try
                     {
+                        // ── Step 1: Fetch pending params (populated = 0 numeric) ──────────
                         var pendingParams = new List<string>();
 
-                        using (var selectPendingCmd = new OracleCommand(selectPendingParamsSql, conn))
+                        using (var cmd = new OracleCommand(selectPendingParamsSql, conn))
                         {
-                            selectPendingCmd.BindByName = true;
-                            selectPendingCmd.Transaction = transaction;
-
-                            using (var reader = selectPendingCmd.ExecuteReader())
+                            cmd.Transaction = transaction;
+                            using (var reader = cmd.ExecuteReader())
                             {
                                 while (reader.Read())
                                 {
-                                    var paramName = reader["PARANAME"]?.ToString()?.Trim();
-                                    if (!string.IsNullOrWhiteSpace(paramName))
-                                    {
-                                        pendingParams.Add(paramName);
-                                    }
+                                    var name = reader["PARANAME"]?.ToString()?.Trim();
+                                    if (!string.IsNullOrWhiteSpace(name))
+                                        pendingParams.Add(name);
                                 }
                             }
                         }
 
+                        // Nothing to do — all params already populated
                         if (pendingParams.Count == 0)
                         {
-                            transaction.Commit();
+                            transaction.Rollback();
                             return new PopulateParamTsResultModel
                             {
-                                UpdatedRows = 0,
-                                Success = true,
-                                ProcessedReports = 0,
-                                ProcessedParams = 0,
-                                AppendedParams = 0,
+                                UpdatedRows           = 0,
+                                Success               = true,
+                                ProcessedReports      = 0,
+                                ProcessedParams       = 0,
+                                AppendedParams        = 0,
                                 AlreadyExistingParams = 0
                             };
                         }
 
-                        var reportsToProcess = new List<Tuple<string, string, string>>(); // repid, repid_no, paramlist
-                        
-                        if (isAllReports)
-                        {
-                            using (var cmd = new OracleCommand(selectAllReportsSql, conn))
-                            {
-                                cmd.Transaction = transaction;
-                                using (var reader = cmd.ExecuteReader())
-                                {
-                                    while (reader.Read())
-                                    {
-                                        reportsToProcess.Add(new Tuple<string, string, string>(
-                                            reader["repid"]?.ToString(),
-                                            reader["repid_no"]?.ToString(),
-                                            reader["paramlist"]?.ToString()
-                                        ));
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            using (var selectReportCmd = new OracleCommand(selectReportSql, conn))
-                            {
-                                selectReportCmd.BindByName = true;
-                                selectReportCmd.Transaction = transaction;
-                                
-                                foreach (var candidateRepId in candidateRepIds)
-                                {
-                                    selectReportCmd.Parameters.Clear();
-                                    selectReportCmd.Parameters.Add("parm_repid", OracleDbType.Varchar2).Value = candidateRepId.ToUpperInvariant();
-                                    selectReportCmd.Parameters.Add("parm_repid_no", OracleDbType.Varchar2).Value = candidateRepId;
+                        // ── Step 2: Fetch all reports ─────────────────────────────────────
+                        var reports = new List<Tuple<string, string>>(); // (repid_no, paramlist)
 
-                                    var reportParamList = selectReportCmd.ExecuteScalar();
-                                    if (reportParamList != null && reportParamList != DBNull.Value)
-                                    {
-                                        reportsToProcess.Add(new Tuple<string, string, string>(
-                                            candidateRepId,
-                                            candidateRepId,
-                                            reportParamList.ToString()
-                                        ));
-                                        break; 
-                                    }
+                        using (var cmd = new OracleCommand(selectAllReportsSql, conn))
+                        {
+                            cmd.Transaction = transaction;
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    reports.Add(new Tuple<string, string>(
+                                        reader["REPID_NO"]?.ToString()?.Trim(),
+                                        reader["PARAMLIST"]?.ToString()?.Trim() ?? string.Empty
+                                    ));
                                 }
                             }
                         }
 
-                        if (reportsToProcess.Count == 0)
+                        // ── Step 3: Append pending params to each report ──────────────────
+                        var totalUpdatedRows     = 0;
+                        var totalAppendedParams  = 0;
+                        var totalAlreadyExisting = 0;
+
+                        using (var updateCmd = new OracleCommand(updateReportSql, conn))
                         {
-                            transaction.Commit();
-                            return new PopulateParamTsResultModel
+                            updateCmd.BindByName  = true;
+                            updateCmd.Transaction = transaction;
+
+                            foreach (var report in reports)
                             {
-                                UpdatedRows = 0,
-                                Success = false,
-                                ProcessedParams = pendingParams.Count,
-                                ProcessedReports = 0,
-                                AppendedParams = 0,
-                                AlreadyExistingParams = 0
-                            };
-                        }
+                                var repIdNo          = report.Item1;
+                                var currentParamList = report.Item2;
 
-                        var totalUpdatedRows = 0;
-                        var totalAppendedParams = 0;
-                        var totalAlreadyExistingCount = 0;
-
-                        using (var updateReportByRepIdCmd = new OracleCommand(updateReportByRepIdSql, conn))
-                        using (var updateReportByRepIdNoCmd = new OracleCommand(updateReportByRepIdNoSql, conn))
-                        {
-                            updateReportByRepIdCmd.BindByName = true;
-                            updateReportByRepIdCmd.Transaction = transaction;
-                            
-                            updateReportByRepIdNoCmd.BindByName = true;
-                            updateReportByRepIdNoCmd.Transaction = transaction;
-
-                            foreach (var report in reportsToProcess)
-                            {
-                                var currentParamList = report.Item3?.Trim() ?? string.Empty;
-                                var existingParamNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
+                                // Parse existing param keys (NAME=value format)
+                                var existingKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                                 if (!string.IsNullOrWhiteSpace(currentParamList))
                                 {
-                                    var normalized = currentParamList;
-                                    if (normalized.StartsWith("<"))
+                                    foreach (var token in currentParamList.Split('&'))
                                     {
-                                        normalized = System.Text.RegularExpressions.Regex.Replace(normalized, "^<[^>]*>&?", string.Empty);
-                                    }
-
-                                    foreach (var token in normalized.Split('&'))
-                                    {
-                                        var trimmedToken = token?.Trim();
-                                        if (string.IsNullOrWhiteSpace(trimmedToken)) continue;
-
-                                        var equalIndex = trimmedToken.IndexOf('=');
-                                        var key = equalIndex >= 0 ? trimmedToken.Substring(0, equalIndex).Trim() : trimmedToken;
-
-                                        if (!string.IsNullOrWhiteSpace(key)) existingParamNames.Add(key);
+                                        var t = token?.Trim();
+                                        if (string.IsNullOrWhiteSpace(t)) continue;
+                                        var eqIdx = t.IndexOf('=');
+                                        var key   = eqIdx >= 0 ? t.Substring(0, eqIdx).Trim() : t;
+                                        if (!string.IsNullOrWhiteSpace(key))
+                                            existingKeys.Add(key);
                                     }
                                 }
 
-                                var appendTokens = new List<string>();
-                                foreach (var pendingParam in pendingParams)
+                                // Determine which pending params are missing
+                                var toAppend = new List<string>();
+                                foreach (var param in pendingParams)
                                 {
-                                    if (existingParamNames.Contains(pendingParam))
-                                    {
-                                        totalAlreadyExistingCount++;
-                                    }
+                                    if (existingKeys.Contains(param))
+                                        totalAlreadyExisting++;
                                     else
                                     {
-                                        appendTokens.Add(pendingParam + "=0");
-                                        existingParamNames.Add(pendingParam);
+                                        toAppend.Add(param + "=0");
+                                        existingKeys.Add(param);
                                         totalAppendedParams++;
                                     }
                                 }
 
-                                if (appendTokens.Count > 0)
-                                {
-                                    var finalParamList = currentParamList;
-                                    if (string.IsNullOrWhiteSpace(finalParamList))
-                                        finalParamList = string.Join("&", appendTokens);
-                                    else
-                                        finalParamList = finalParamList.TrimEnd('&') + "&" + string.Join("&", appendTokens);
+                                if (toAppend.Count == 0)
+                                    continue;
 
-                                    OracleCommand updateCmd;
-                                    if (!string.IsNullOrEmpty(report.Item1) && report.Item1 != report.Item2)
-                                    {
-                                        updateCmd = updateReportByRepIdCmd;
-                                        updateCmd.Parameters.Clear();
-                                        updateCmd.Parameters.Add("param_list", OracleDbType.Varchar2).Value = finalParamList;
-                                        updateCmd.Parameters.Add("parm_repid", OracleDbType.Varchar2).Value = report.Item1.ToUpperInvariant();
-                                    }
-                                    else
-                                    {
-                                        updateCmd = updateReportByRepIdNoCmd;
-                                        updateCmd.Parameters.Clear();
-                                        updateCmd.Parameters.Add("param_list", OracleDbType.Varchar2).Value = finalParamList;
-                                        updateCmd.Parameters.Add("parm_repid_no", OracleDbType.Varchar2).Value = report.Item2;
-                                    }
+                                var newParamList = string.IsNullOrWhiteSpace(currentParamList)
+                                    ? string.Join("&", toAppend)
+                                    : currentParamList.TrimEnd('&') + "&" + string.Join("&", toAppend);
 
-                                    totalUpdatedRows += updateCmd.ExecuteNonQuery();
-                                }
+                                updateCmd.Parameters.Clear();
+                                updateCmd.Parameters.Add("param_list",    OracleDbType.Varchar2).Value = newParamList;
+                                updateCmd.Parameters.Add("parm_repid_no", OracleDbType.Varchar2).Value = repIdNo;
+
+                                totalUpdatedRows += updateCmd.ExecuteNonQuery();
                             }
                         }
 
-                        using (var markParamsCmd = new OracleCommand(markParamsPopulatedSql, conn))
+                        // ── Step 4: Mark pending params as populated = 1 ──────────────────
+                        using (var markCmd = new OracleCommand(markParamsPopulatedSql, conn))
                         {
-                            markParamsCmd.BindByName = true;
-                            markParamsCmd.Transaction = transaction;
-                            markParamsCmd.ExecuteNonQuery();
+                            markCmd.Transaction = transaction;
+                            markCmd.ExecuteNonQuery();
                         }
 
                         transaction.Commit();
 
                         return new PopulateParamTsResultModel
                         {
-                            UpdatedRows = totalUpdatedRows,
-                            Success = true,
-                            ProcessedReports = reportsToProcess.Count,
-                            ProcessedParams = pendingParams.Count,
-                            AppendedParams = totalAppendedParams,
-                            AlreadyExistingParams = totalAlreadyExistingCount
+                            UpdatedRows           = totalUpdatedRows,
+                            Success               = true,
+                            ProcessedReports      = reports.Count,
+                            ProcessedParams       = pendingParams.Count,
+                            AppendedParams        = totalAppendedParams,
+                            AlreadyExistingParams = totalAlreadyExisting
                         };
                     }
                     catch
@@ -433,7 +357,7 @@ WHERE NVL(TRIM(populated), '0') = '0'";
             const string sql = @"
 SELECT paraid, paraname, description
 FROM rep_report_params_new
-WHERE populated = '1'
+WHERE populated = 1
 ORDER BY paraid";
 
             var results = new List<ReportParameterListItemModel>();
@@ -495,6 +419,45 @@ WHERE UPPER(TRIM(paraname)) = :parm_ParaID";
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// DEBUG: Returns the raw Oracle value + DUMP() of the populated column for each row.
+        /// This reveals the actual data type (NUMBER vs VARCHAR2) stored in the column.
+        /// Remove once the production issue is fixed.
+        /// </summary>
+        public List<object> GetRawPopulatedValues()
+        {
+            const string sql = @"
+SELECT paraname,
+       TO_CHAR(populated)            AS populated_char,
+       DUMP(populated)               AS populated_dump,
+       CASE WHEN NVL(TO_CHAR(populated),'0') IN ('0','No','no','NO') THEN 'PENDING' ELSE 'DONE' END AS status
+FROM rep_report_params_new
+ORDER BY paraname";
+
+            var results = new List<object>();
+
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+                using (var cmd = new OracleCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        results.Add(new
+                        {
+                            paraName      = reader["PARANAME"]?.ToString(),
+                            populatedChar = reader["POPULATED_CHAR"]?.ToString(),
+                            populatedDump = reader["POPULATED_DUMP"]?.ToString(),
+                            status        = reader["STATUS"]?.ToString()
+                        });
+                    }
+                }
+            }
+
+            return results;
         }
     }
 } 

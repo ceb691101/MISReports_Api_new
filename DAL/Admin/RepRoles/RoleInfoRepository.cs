@@ -108,6 +108,13 @@ namespace MISReports_Api.DAL
             return t.ToUpperInvariant();
         }
 
+        private static string NormalizeRoleId(string roleId)
+        {
+            return string.IsNullOrWhiteSpace(roleId)
+                ? string.Empty
+                : roleId.Trim().ToUpperInvariant();
+        }
+
         public List<RoleInfoModel> GetAdminRoles()
         {
             return GetRolesByUserType("ADMIN%");
@@ -213,6 +220,8 @@ namespace MISReports_Api.DAL
         public bool CreateRole(CreateRoleRequest request)
         {
             var costCentres = NormalizeCostCentres(request);
+            var normalizedRoleId = NormalizeRoleId(request?.RoleId);
+            var normalizedUserType = NormalizeUserType(request?.UserType);
 
             using (var conn = new OracleConnection(connectionString))
             {
@@ -250,9 +259,9 @@ namespace MISReports_Api.DAL
                             cmd.BindByName = true;
 
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
-                            cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = request.RoleId?.Trim();
+                            cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
                             cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = request.RoleName?.Trim();
-                            cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeUserType(request.UserType);
+                            cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
@@ -285,7 +294,7 @@ namespace MISReports_Api.DAL
                                 cmd.Transaction = transaction;
                                 cmd.BindByName = true;
 
-                                cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = request.RoleId?.Trim();
+                                cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
                                 cmd.Parameters.Add("costcentre", OracleDbType.Varchar2).Value = costCentre;
                                 cmd.Parameters.Add("lvl_no", OracleDbType.Int32).Value = lvlNo;
 
@@ -309,6 +318,8 @@ namespace MISReports_Api.DAL
         public bool UpdateRole(CreateRoleRequest request)
         {
             var costCentres = NormalizeCostCentres(request);
+            var normalizedRoleId = NormalizeRoleId(request?.RoleId);
+            var normalizedUserType = NormalizeUserType(request?.UserType);
 
             using (var conn = new OracleConnection(connectionString))
             {
@@ -354,9 +365,9 @@ namespace MISReports_Api.DAL
                             cmd.BindByName = true;
 
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
-                            cmd.Parameters.Add("new_role_id", OracleDbType.Varchar2).Value = request.RoleId?.Trim();
+                            cmd.Parameters.Add("new_role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
                             cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = request.RoleName?.Trim();
-                            cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeUserType(request.UserType);
+                            cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
@@ -406,7 +417,7 @@ namespace MISReports_Api.DAL
                                 insertCmd.Transaction = transaction;
                                 insertCmd.BindByName = true;
 
-                                insertCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = request.RoleId?.Trim();
+                                insertCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
                                 insertCmd.Parameters.Add("costcentre", OracleDbType.Varchar2).Value = costCentre;
                                 insertCmd.Parameters.Add("lvl_no", OracleDbType.Int32).Value = lvlNo;
 
