@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models;
+using MISReports_Api.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -62,20 +62,22 @@ namespace MISReports_Api.DAL
 
                         const string sql = @"
                             INSERT INTO REP_REPORTS_NEW
-                            (REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE)
+                            (REPID_NO, REPID, CATCODE, REPNAME, PARAMLIST, FAVORITE, ACTIVE)
                             VALUES
-                            (:repid_no, :repid, :catcode, :repname, :favorite, :active)";
+                            (:repid_no, :repid, :catcode, :repname, :paramlist, :favorite, :active)";
 
                         using (var cmd = new OracleCommand(sql, conn))
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(request.RepId);
-                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                            cmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
-                            cmd.Parameters.Add("favorite", OracleDbType.Int32).Value = favorite;
-                            cmd.Parameters.Add("active", OracleDbType.Int32).Value = active;
+                            cmd.Parameters.Add("repid_no",  OracleDbType.Int32).Value    = repIdNo;
+                            cmd.Parameters.Add("repid",     OracleDbType.Varchar2).Value  = NormalizeRepId(request.RepId);
+                            cmd.Parameters.Add("catcode",   OracleDbType.Varchar2).Value  = request.CatCode?.Trim();
+                            cmd.Parameters.Add("repname",   OracleDbType.Varchar2).Value  = request.RepName?.Trim();
+                            cmd.Parameters.Add("paramlist", OracleDbType.Varchar2).Value  =
+                                string.IsNullOrWhiteSpace(request.ParamList) ? (object)DBNull.Value : request.ParamList.Trim();
+                            cmd.Parameters.Add("favorite",  OracleDbType.Int32).Value    = favorite;
+                            cmd.Parameters.Add("active",    OracleDbType.Int32).Value    = active;
 
                             cmd.ExecuteNonQuery();
                         }
@@ -192,10 +194,11 @@ namespace MISReports_Api.DAL
                         const string sql = @"
                             UPDATE REP_REPORTS_NEW
                             SET 
-                                CATCODE  = :catcode,
-                                REPNAME  = :repname,
-                                FAVORITE = :favorite,
-                                ACTIVE   = :active
+                                CATCODE   = :catcode,
+                                REPNAME   = :repname,
+                                PARAMLIST = :paramlist,
+                                FAVORITE  = :favorite,
+                                ACTIVE    = :active
                             WHERE 
                                 REPID_NO = :repid_no
                                 AND CATCODE = :current_catcode";
@@ -204,12 +207,14 @@ namespace MISReports_Api.DAL
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                            cmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
-                            cmd.Parameters.Add("favorite", OracleDbType.Int32).Value = favorite;
-                            cmd.Parameters.Add("active", OracleDbType.Int32).Value = active;
-                            cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
-                            cmd.Parameters.Add("current_catcode", OracleDbType.Varchar2).Value = currentCatCode?.Trim();
+                            cmd.Parameters.Add("catcode",        OracleDbType.Varchar2).Value = request.CatCode?.Trim();
+                            cmd.Parameters.Add("repname",        OracleDbType.Varchar2).Value = request.RepName?.Trim();
+                            cmd.Parameters.Add("paramlist",      OracleDbType.Varchar2).Value =
+                                string.IsNullOrWhiteSpace(request.ParamList) ? (object)DBNull.Value : request.ParamList.Trim();
+                            cmd.Parameters.Add("favorite",       OracleDbType.Int32).Value    = favorite;
+                            cmd.Parameters.Add("active",         OracleDbType.Int32).Value    = active;
+                            cmd.Parameters.Add("repid_no",       OracleDbType.Int32).Value    = repIdNo;
+                            cmd.Parameters.Add("current_catcode",OracleDbType.Varchar2).Value = currentCatCode?.Trim();
 
                             var affectedRows = cmd.ExecuteNonQuery();
                             if (affectedRows == 0)
@@ -231,21 +236,24 @@ namespace MISReports_Api.DAL
                                         const string fallbackSql = @"
                                             UPDATE REP_REPORTS_NEW
                                             SET 
-                                                CATCODE  = :catcode,
-                                                REPNAME  = :repname,
-                                                FAVORITE = :favorite,
-                                                ACTIVE   = :active
+                                                CATCODE   = :catcode,
+                                                REPNAME   = :repname,
+                                                PARAMLIST = :paramlist,
+                                                FAVORITE  = :favorite,
+                                                ACTIVE    = :active
                                             WHERE REPID_NO = :repid_no";
 
                                         using (var fallbackCmd = new OracleCommand(fallbackSql, conn))
                                         {
                                             fallbackCmd.Transaction = transaction;
                                             fallbackCmd.BindByName = true;
-                                            fallbackCmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                                            fallbackCmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
-                                            fallbackCmd.Parameters.Add("favorite", OracleDbType.Int32).Value = favorite;
-                                            fallbackCmd.Parameters.Add("active", OracleDbType.Int32).Value = active;
-                                            fallbackCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                                            fallbackCmd.Parameters.Add("catcode",   OracleDbType.Varchar2).Value = request.CatCode?.Trim();
+                                            fallbackCmd.Parameters.Add("repname",   OracleDbType.Varchar2).Value = request.RepName?.Trim();
+                                            fallbackCmd.Parameters.Add("paramlist", OracleDbType.Varchar2).Value =
+                                                string.IsNullOrWhiteSpace(request.ParamList) ? (object)DBNull.Value : request.ParamList.Trim();
+                                            fallbackCmd.Parameters.Add("favorite",  OracleDbType.Int32).Value   = favorite;
+                                            fallbackCmd.Parameters.Add("active",    OracleDbType.Int32).Value   = active;
+                                            fallbackCmd.Parameters.Add("repid_no",  OracleDbType.Int32).Value   = repIdNo;
                                             affectedRows = fallbackCmd.ExecuteNonQuery();
                                         }
                                     }
