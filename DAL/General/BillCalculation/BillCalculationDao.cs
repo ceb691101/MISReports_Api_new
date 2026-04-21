@@ -40,10 +40,10 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@category", category);
-                        //cmd.Parameters.AddWithValue("@toDate", toDate.ToString("yyyy-MM-dd"));
-                        //cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@toDate", toDate.ToString("dd-MM-yyyy"));
-                        cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@toDate", toDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("yyyy-MM-dd"));
+                        //cmd.Parameters.AddWithValue("@toDate", toDate.ToString("dd-MM-yyyy"));
+                        //cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -91,10 +91,10 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@category", category);
-                        //cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("yyyy-MM-dd"));
-                        //cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("dd-MM-yyyy"));
-                        cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("yyyy-MM-dd"));
+                        //cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("dd-MM-yyyy"));
+                        //cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -173,6 +173,8 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     throw new Exception($"No tariff periods found for category {request.Category}");
                 }
 
+                bool skipProRataFixed = tariffPeriods.Count == 1 && totalDays < 54;
+
                 decimal balanceUnits = request.FullUnits;
                 int balanceDays = totalDays;
 
@@ -217,8 +219,8 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     {
                         // Safety check: if no balance days remain, assign all remaining units
                         unitsInPeriod = balanceUnits;
-                        //System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:yyyy-MM-dd} to {periodEnd:yyyy-MM-dd}");
-                        System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:dd-MM-yyyy} to {periodEnd:dd-MM-yyyy}");
+                        System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:yyyy-MM-dd} to {periodEnd:yyyy-MM-dd}");
+                        //System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:dd-MM-yyyy} to {periodEnd:dd-MM-yyyy}");
                     }
                     else
                     {
@@ -249,7 +251,8 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     // Period past to 2024-07-15 → Use 25.00
                     // Period 2024-07-16 to 2025-01-17 → Use 15.00
                     // Period 2025-01-18 to 2025-06-11 → Use 11.00
-                    // Period 2025-06-12 onwards → Use 12.75
+                    // Period 2025-06-12 to 2026-03-31 → Use 12.75
+                    // Period 2026-04-01 onwards → Use 14.00
                     decimal specialRateForPeriod = 0;
                     if (request.Category == 11)
                     {
@@ -257,6 +260,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
                         DateTime specialRate15StartDate = new DateTime(2024, 7, 16);
                         DateTime specialRate15EndDate = new DateTime(2025, 1, 17);
                         DateTime specialRate11EndDate = new DateTime(2025, 6, 11);
+                        DateTime specialRate1275EndDate = new DateTime(2026, 3, 31);
 
                         if (periodStart <= specialRate25EndDate)
                         {
@@ -270,9 +274,13 @@ namespace MISReports_Api.DAL.General.BillCalculation
                         {
                             specialRateForPeriod = 11.00m;
                         }
-                        else
+                        else if (periodStart <= specialRate1275EndDate)
                         {
                             specialRateForPeriod = 12.75m;
+                        }
+                        else
+                        {
+                            specialRateForPeriod = 14.00m;
                         }
                     }
                     // Category 21 - Check if consumption exceeds 300 kWh/month
@@ -377,7 +385,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     periodCalc.KWHCharge = Math.Round(periodTotalCharge, 2);
 
                     // Calculate fixed charge for this period 
-                    periodCalc.FixedCharge = CalculateFixedCharge(tariffBlocks, daysInPeriod, periodCalc.NumberOfUnits, request.Category);
+                    periodCalc.FixedCharge = CalculateFixedCharge(tariffBlocks, daysInPeriod, periodCalc.NumberOfUnits, request.Category, skipProRataFixed);
 
                     result.PeriodCalculations.Add(periodCalc);
 
@@ -441,7 +449,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
         /// <summary>
         /// Calculate fixed charge for a period based on tariff type
         /// </summary>
-        private decimal CalculateFixedCharge(List<TariffInfo> tariffBlocks, int daysInPeriod, decimal unitsInPeriod, int category)
+        private decimal CalculateFixedCharge(List<TariffInfo> tariffBlocks, int daysInPeriod, decimal unitsInPeriod, int category, bool skipProRataFixed = false)
         {
             if (tariffBlocks == null || tariffBlocks.Count == 0)
                 return 0;
@@ -455,6 +463,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
 
             // Calculate number of months
             decimal noMonths = daysInPeriod / 30.0m;
+            bool useFullMonthCharge = skipProRataFixed; // driven by caller, not by daysInPeriod alone
 
             var firstBlock = tariffBlocks[0];
 
@@ -474,29 +483,29 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     if (isHighConsumption && tariff.ToUnits == 0)
                     {
                         // High consumption - use fixed charge from the unlimited block (typically higher rate)
-                        return noMonths * tariff.FixCharge;
+                        return useFullMonthCharge ? tariff.FixCharge : noMonths * tariff.FixCharge;
                     }
                     else if (!isHighConsumption && tariff.ToUnits > 0)
                     {
                         // Low consumption - use fixed charge from the first block (typically lower rate)
-                        return noMonths * tariff.FixCharge;
+                        return useFullMonthCharge ? tariff.FixCharge : noMonths * tariff.FixCharge;
                     }
                 }
 
                 // Fallback to first block if no match found
-                return noMonths * firstBlock.FixCharge;
+                return useFullMonthCharge ? firstBlock.FixCharge : noMonths * firstBlock.FixCharge;
             }
 
             // Type S (Single) - Simple fixed charge (for categories 11, 51, etc.)
             if (firstBlock.TypeFixed == "S" && firstBlock.BasicBlock == "BL" && firstBlock.MinCharge == "N")
             {
-                return noMonths * firstBlock.FixCharge;
+                return useFullMonthCharge ? firstBlock.FixCharge : noMonths * firstBlock.FixCharge;
             }
 
             // Type BA (Basic All) - Single rate for all units
             if (firstBlock.BasicBlock == "BA" && firstBlock.MinCharge == "N")
             {
-                return noMonths * firstBlock.FixCharge;
+                return useFullMonthCharge ? firstBlock.FixCharge : noMonths * firstBlock.FixCharge;
             }
 
             // Type V (Variable) - Block-based fixed charge (for categories 11, 51, etc.)
@@ -516,7 +525,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     // If accumulated block units cover the consumption
                     if (totBlockUnits >= unitsInPeriod || tariff.ToUnits == 0)
                     {
-                        fixedCharge = noMonths * tariff.FixCharge;
+                        fixedCharge = useFullMonthCharge ? tariff.FixCharge : noMonths * tariff.FixCharge;
                         break;
                     }
                 }
@@ -525,7 +534,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
             }
 
             // Default case
-            return noMonths * firstBlock.FixCharge;
+            return useFullMonthCharge ? firstBlock.FixCharge : noMonths * firstBlock.FixCharge;
         }
     }
 }

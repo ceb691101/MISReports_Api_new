@@ -9,7 +9,7 @@ namespace MISReports_Api.DAL
 {
     public class UserRoleRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
         public List<UserRoleModel> GetUserRole(string epfNo)
         {
