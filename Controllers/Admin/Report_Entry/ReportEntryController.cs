@@ -12,6 +12,13 @@ namespace MISReports_Api.Controllers
     {
         private readonly ReportEntryRepository _repository = new ReportEntryRepository();
 
+        private static string NormalizeRepId(string repId)
+        {
+            return string.IsNullOrWhiteSpace(repId)
+                ? string.Empty
+                : repId.Trim().ToUpperInvariant();
+        }
+
         [HttpGet]
         [Route("nextid")]
         public IHttpActionResult GetNextReportIdNo()
@@ -66,7 +73,7 @@ namespace MISReports_Api.Controllers
                     }));
                 }
 
-                var result = _repository.FilterReportEntries(repid, catcode);
+                var result = _repository.FilterReportEntries(NormalizeRepId(repid), catcode);
                 return Ok(JObject.FromObject(new
                 {
                     data = result,
@@ -93,6 +100,11 @@ namespace MISReports_Api.Controllers
                 if (request == null)
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Request body is required." }));
 
+                request.RepId = NormalizeRepId(request.RepId);
+
+                if (request.RepIdNo < 0)
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));
+
                 if (string.IsNullOrWhiteSpace(request.RepId) || string.IsNullOrWhiteSpace(request.CatCode))
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepId and CatCode are required." }));
 
@@ -115,17 +127,21 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpPut]
-        [Route("{repid}")]
-        public IHttpActionResult EditReportEntry(string repid, [FromBody] ReportEntryModel request)
+        [Route("{repIdNo:int}/{catCode}")]
+        public IHttpActionResult EditReportEntry(int repIdNo, string catCode, [FromBody] ReportEntryModel request)
         {
             try
             {
                 if (request == null)
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Request body is required." }));
 
-                request.RepId = repid;
+                if (repIdNo < 0 || request.RepIdNo < 0)
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));
 
-                var success = _repository.EditReportEntry(request);
+                if (string.IsNullOrWhiteSpace(catCode))
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "CatCode is required." }));
+
+                var success = _repository.EditReportEntry(repIdNo, catCode, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = new { success = success, message = success ? "Report entry updated successfully." : "Report entry not found." },
@@ -144,18 +160,49 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpDelete]
-        [Route("{repid}")]
-        public IHttpActionResult DeleteReportEntry(string repid)
+        [Route("{repIdNo:int}/{catCode}")]
+        public IHttpActionResult DeleteReportEntry(int repIdNo, string catCode)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(repid))
-                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepId is required." }));
+                if (repIdNo < 0)
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepIdNo cannot be negative. Use 0 or a positive number." }));
 
-                var success = _repository.DeleteReportEntry(repid);
+                if (string.IsNullOrWhiteSpace(catCode))
+                    return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "CatCode is required." }));
+
+                var deleteStatus = _repository.GetDeleteStatus(repIdNo, catCode);
+                if (deleteStatus == "not_found")
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = new { success = false, message = "Report entry not found." },
+                        errorMessage = (string)null
+                    }));
+                }
+
+                if (deleteStatus == "restricted")
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = new { success = false, message = "Delete not allowed: this report is assigned to roles." },
+                        errorMessage = (string)null
+                    }));
+                }
+
+                if (deleteStatus == "ambiguous")
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = new { success = false, message = "Delete not allowed: multiple entries share this Report ID NO. Please refresh and select the exact row again." },
+                        errorMessage = (string)null
+                    }));
+                }
+
+                var success = _repository.DeleteReportEntry(repIdNo, catCode);
                 return Ok(JObject.FromObject(new
                 {
-                    data = new { success = success, message = success ? "Report entry deleted successfully." : "Report entry not found or is restricted by constraints." },
+                    data = new { success = success, message = success ? "Report entry deleted successfully." : "Failed to delete report entry." },
                     errorMessage = (string)null
                 }));
             }

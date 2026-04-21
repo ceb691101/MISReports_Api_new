@@ -11,6 +11,33 @@ namespace MISReports_Api.DAL
     {
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
+        private static string NormalizeCategoryCode(string catCode)
+        {
+            return string.IsNullOrWhiteSpace(catCode)
+                ? null
+                : catCode.Trim().ToUpperInvariant();
+        }
+
+        private static string NormalizeCategoryName(string catName)
+        {
+            if (string.IsNullOrWhiteSpace(catName))
+            {
+                return null;
+            }
+
+            var words = catName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (var i = 0; i < words.Length; i++)
+            {
+                var word = words[i];
+                words[i] = word.Length == 1
+                    ? word.ToUpperInvariant()
+                    : char.ToUpperInvariant(word[0]) + word.Substring(1).ToLowerInvariant();
+            }
+
+            return string.Join(" ", words);
+        }
+
         /// <summary>
         /// Get all report categories
         /// </summary>
@@ -68,7 +95,9 @@ namespace MISReports_Api.DAL
 
             try
             {
-                if (string.IsNullOrWhiteSpace(catCode))
+                var normalizedCatCode = NormalizeCategoryCode(catCode);
+
+                if (string.IsNullOrWhiteSpace(normalizedCatCode))
                 {
                     return null;
                 }
@@ -80,12 +109,12 @@ namespace MISReports_Api.DAL
                     const string sql = @"
                         SELECT catcode, catname
                         FROM rep_cats_new
-                        WHERE TRIM(catcode) = :catCode";
+                        WHERE UPPER(TRIM(catcode)) = :catCode";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         cmd.BindByName = true;
-                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = catCode?.Trim();
+                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = normalizedCatCode;
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -131,7 +160,7 @@ namespace MISReports_Api.DAL
                     const string sql = @"
                         MERGE INTO rep_cats_new t
                         USING dual
-                        ON (TRIM(t.catcode) = :catCode)
+                        ON (UPPER(TRIM(t.catcode)) = :catCode)
                         WHEN MATCHED THEN
                             UPDATE SET t.catname = :catDesc
                         WHEN NOT MATCHED THEN
@@ -140,9 +169,12 @@ namespace MISReports_Api.DAL
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
+                        var normalizedCatCode = NormalizeCategoryCode(request.CatCode);
+                        var normalizedCatName = NormalizeCategoryName(request.CatName);
+
                         cmd.BindByName = true;
-                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = request.CatName?.Trim();
+                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = normalizedCatCode;
+                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = normalizedCatName;
 
                         var result = cmd.ExecuteNonQuery();
                         return result > 0;
@@ -177,13 +209,16 @@ namespace MISReports_Api.DAL
                     const string sql = @"
                         UPDATE rep_cats_new
                         SET catname = :catDesc
-                        WHERE TRIM(catcode) = :catCode";
+                        WHERE UPPER(TRIM(catcode)) = :catCode";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
+                        var normalizedCatCode = NormalizeCategoryCode(request.CatCode);
+                        var normalizedCatName = NormalizeCategoryName(request.CatName);
+
                         cmd.BindByName = true;
-                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = request.CatName?.Trim();
+                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = normalizedCatCode;
+                        cmd.Parameters.Add("catDesc", OracleDbType.Varchar2).Value = normalizedCatName;
 
                         var result = cmd.ExecuteNonQuery();
                         return result > 0;
@@ -217,12 +252,12 @@ namespace MISReports_Api.DAL
 
                     const string sql = @"
                         DELETE FROM rep_cats_new
-                        WHERE TRIM(catcode) = :catCode";
+                        WHERE UPPER(TRIM(catcode)) = :catCode";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         cmd.BindByName = true;
-                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = catCode?.Trim();
+                        cmd.Parameters.Add("catCode", OracleDbType.Varchar2).Value = NormalizeCategoryCode(catCode);
 
                         var result = cmd.ExecuteNonQuery();
                         return result > 0;

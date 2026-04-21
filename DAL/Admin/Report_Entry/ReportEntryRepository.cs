@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models;
+using MISReports_Api.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,13 @@ namespace MISReports_Api.DAL
     public class ReportEntryRepository
     {
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+
+        private static string NormalizeRepId(string repId)
+        {
+            return string.IsNullOrWhiteSpace(repId)
+                ? string.Empty
+                : repId.Trim().ToUpperInvariant();
+        }
 
         public int GetNextReportIdNo()
         {
@@ -40,22 +47,37 @@ namespace MISReports_Api.DAL
                 {
                     try
                     {
+                        if (request.RepIdNo < 0)
+                        {
+                            throw new ArgumentOutOfRangeException("RepIdNo", "RepIdNo cannot be negative.");
+                        }
+
+                        var repIdNo = request.RepIdNo;
+                        var favorite = request.Favorite == 1 ? 1 : 0;
+                        var active = request.Active == 1 ? 1 : 0;
+                        if (active == 0)
+                        {
+                            favorite = 0;
+                        }
+
                         const string sql = @"
                             INSERT INTO REP_REPORTS_NEW
-                            (REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE)
+                            (REPID_NO, REPID, CATCODE, REPNAME, PARAMLIST, FAVORITE, ACTIVE)
                             VALUES
-                            (:repid_no, :repid, :catcode, :repname, :favorite, :active)";
+                            (:repid_no, :repid, :catcode, :repname, :paramlist, :favorite, :active)";
 
                         using (var cmd = new OracleCommand(sql, conn))
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = request.RepIdNo;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = request.RepId?.Trim();
-                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                            cmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
-                            cmd.Parameters.Add("favorite", OracleDbType.Int32).Value = request.Favorite;
-                            cmd.Parameters.Add("active", OracleDbType.Int32).Value = request.Active;
+                            cmd.Parameters.Add("repid_no",  OracleDbType.Int32).Value    = repIdNo;
+                            cmd.Parameters.Add("repid",     OracleDbType.Varchar2).Value  = NormalizeRepId(request.RepId);
+                            cmd.Parameters.Add("catcode",   OracleDbType.Varchar2).Value  = request.CatCode?.Trim();
+                            cmd.Parameters.Add("repname",   OracleDbType.Varchar2).Value  = request.RepName?.Trim();
+                            cmd.Parameters.Add("paramlist", OracleDbType.Varchar2).Value  =
+                                string.IsNullOrWhiteSpace(request.ParamList) ? (object)DBNull.Value : request.ParamList.Trim();
+                            cmd.Parameters.Add("favorite",  OracleDbType.Int32).Value    = favorite;
+                            cmd.Parameters.Add("active",    OracleDbType.Int32).Value    = active;
 
                             cmd.ExecuteNonQuery();
                         }
@@ -73,7 +95,87 @@ namespace MISReports_Api.DAL
             }
         }
 
-        public bool EditReportEntry(ReportEntryModel request)
+        public string GetDeleteStatus(int repIdNo, string catCode)
+        {
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                const string existsSql = @"
+                    SELECT COUNT(1)
+                    FROM REP_REPORTS_NEW
+                    WHERE REPID_NO = :repid_no
+                    AND CATCODE = :catcode";
+
+                using (var existsCmd = new OracleCommand(existsSql, conn))
+                {
+                    existsCmd.BindByName = true;
+                    existsCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                    existsCmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catCode?.Trim();
+                    var existsCount = Convert.ToInt32(existsCmd.ExecuteScalar());
+                    if (existsCount > 0)
+                    {
+                        const string restrictedExactSql = @"
+                            SELECT COUNT(1)
+                            FROM REP_REPORTS_NEW r
+                            INNER JOIN DACONS16.REP_ROLES_REP_NEW rr
+                                ON rr.REPID = r.REPID
+                               AND rr.CATCODE = r.CATCODE
+                            WHERE r.REPID_NO = :repid_no
+                            AND r.CATCODE = :catcode";
+
+                        using (var restrictedExactCmd = new OracleCommand(restrictedExactSql, conn))
+                        {
+                            restrictedExactCmd.BindByName = true;
+                            restrictedExactCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                            restrictedExactCmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catCode?.Trim();
+                            var restrictedExactCount = Convert.ToInt32(restrictedExactCmd.ExecuteScalar());
+                            return restrictedExactCount > 0 ? "restricted" : "ok";
+                        }
+                    }
+                }
+
+                const string countByRepIdSql = @"
+                    SELECT COUNT(1)
+                    FROM REP_REPORTS_NEW
+                    WHERE REPID_NO = :repid_no";
+
+                using (var countByRepIdCmd = new OracleCommand(countByRepIdSql, conn))
+                {
+                    countByRepIdCmd.BindByName = true;
+                    countByRepIdCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                    var countByRepId = Convert.ToInt32(countByRepIdCmd.ExecuteScalar());
+
+                    if (countByRepId == 0)
+                    {
+                        return "not_found";
+                    }
+
+                    if (countByRepId > 1)
+                    {
+                        return "ambiguous";
+                    }
+                }
+
+                const string restrictedFallbackSql = @"
+                    SELECT COUNT(1)
+                    FROM REP_REPORTS_NEW r
+                    INNER JOIN DACONS16.REP_ROLES_REP_NEW rr
+                        ON rr.REPID = r.REPID
+                       AND rr.CATCODE = r.CATCODE
+                    WHERE r.REPID_NO = :repid_no";
+
+                using (var restrictedFallbackCmd = new OracleCommand(restrictedFallbackSql, conn))
+                {
+                    restrictedFallbackCmd.BindByName = true;
+                    restrictedFallbackCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                    var restrictedFallbackCount = Convert.ToInt32(restrictedFallbackCmd.ExecuteScalar());
+                    return restrictedFallbackCount > 0 ? "restricted" : "ok";
+                }
+            }
+        }
+
+        public bool EditReportEntry(int repIdNo, string currentCatCode, ReportEntryModel request)
         {
             using (var conn = new OracleConnection(connectionString))
             {
@@ -82,31 +184,86 @@ namespace MISReports_Api.DAL
                 {
                     try
                     {
+                        var favorite = request.Favorite == 1 ? 1 : 0;
+                        var active = request.Active == 1 ? 1 : 0;
+                        if (active == 0)
+                        {
+                            favorite = 0;
+                        }
+
                         const string sql = @"
                             UPDATE REP_REPORTS_NEW
                             SET 
-                                CATCODE  = :catcode,
-                                REPNAME  = :repname,
-                                FAVORITE = :favorite,
-                                ACTIVE   = :active
+                                CATCODE   = :catcode,
+                                REPNAME   = :repname,
+                                PARAMLIST = :paramlist,
+                                FAVORITE  = :favorite,
+                                ACTIVE    = :active
                             WHERE 
-                                REPID = :repid";
+                                REPID_NO = :repid_no
+                                AND CATCODE = :current_catcode";
 
                         using (var cmd = new OracleCommand(sql, conn))
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = request.CatCode?.Trim();
-                            cmd.Parameters.Add("repname", OracleDbType.Varchar2).Value = request.RepName?.Trim();
-                            cmd.Parameters.Add("favorite", OracleDbType.Int32).Value = request.Favorite;
-                            cmd.Parameters.Add("active", OracleDbType.Int32).Value = request.Active;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = request.RepId?.Trim();
+                            cmd.Parameters.Add("catcode",        OracleDbType.Varchar2).Value = request.CatCode?.Trim();
+                            cmd.Parameters.Add("repname",        OracleDbType.Varchar2).Value = request.RepName?.Trim();
+                            cmd.Parameters.Add("paramlist",      OracleDbType.Varchar2).Value =
+                                string.IsNullOrWhiteSpace(request.ParamList) ? (object)DBNull.Value : request.ParamList.Trim();
+                            cmd.Parameters.Add("favorite",       OracleDbType.Int32).Value    = favorite;
+                            cmd.Parameters.Add("active",         OracleDbType.Int32).Value    = active;
+                            cmd.Parameters.Add("repid_no",       OracleDbType.Int32).Value    = repIdNo;
+                            cmd.Parameters.Add("current_catcode",OracleDbType.Varchar2).Value = currentCatCode?.Trim();
 
                             var affectedRows = cmd.ExecuteNonQuery();
                             if (affectedRows == 0)
                             {
-                                transaction.Rollback();
-                                return false; // Not found
+                                const string countSql = @"
+                                    SELECT COUNT(1)
+                                    FROM REP_REPORTS_NEW
+                                    WHERE REPID_NO = :repid_no";
+
+                                using (var countCmd = new OracleCommand(countSql, conn))
+                                {
+                                    countCmd.Transaction = transaction;
+                                    countCmd.BindByName = true;
+                                    countCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                                    var countByRepIdNo = Convert.ToInt32(countCmd.ExecuteScalar());
+
+                                    if (countByRepIdNo == 1)
+                                    {
+                                        const string fallbackSql = @"
+                                            UPDATE REP_REPORTS_NEW
+                                            SET 
+                                                CATCODE   = :catcode,
+                                                REPNAME   = :repname,
+                                                PARAMLIST = :paramlist,
+                                                FAVORITE  = :favorite,
+                                                ACTIVE    = :active
+                                            WHERE REPID_NO = :repid_no";
+
+                                        using (var fallbackCmd = new OracleCommand(fallbackSql, conn))
+                                        {
+                                            fallbackCmd.Transaction = transaction;
+                                            fallbackCmd.BindByName = true;
+                                            fallbackCmd.Parameters.Add("catcode",   OracleDbType.Varchar2).Value = request.CatCode?.Trim();
+                                            fallbackCmd.Parameters.Add("repname",   OracleDbType.Varchar2).Value = request.RepName?.Trim();
+                                            fallbackCmd.Parameters.Add("paramlist", OracleDbType.Varchar2).Value =
+                                                string.IsNullOrWhiteSpace(request.ParamList) ? (object)DBNull.Value : request.ParamList.Trim();
+                                            fallbackCmd.Parameters.Add("favorite",  OracleDbType.Int32).Value   = favorite;
+                                            fallbackCmd.Parameters.Add("active",    OracleDbType.Int32).Value   = active;
+                                            fallbackCmd.Parameters.Add("repid_no",  OracleDbType.Int32).Value   = repIdNo;
+                                            affectedRows = fallbackCmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                }
+
+                                if (affectedRows == 0)
+                                {
+                                    transaction.Rollback();
+                                    return false; // Not found
+                                }
                             }
                         }
 
@@ -123,7 +280,7 @@ namespace MISReports_Api.DAL
             }
         }
 
-        public bool DeleteReportEntry(string repid)
+        public bool DeleteReportEntry(int repIdNo, string catCode)
         {
             using (var conn = new OracleConnection(connectionString))
             {
@@ -134,24 +291,52 @@ namespace MISReports_Api.DAL
                     {
                         const string sql = @"
                             DELETE FROM REP_REPORTS_NEW
-                            WHERE REPID = :repid
-                            AND NOT EXISTS (
-                                SELECT 1 
-                                FROM DACONS16.REP_ROLES_REP_NEW 
-                                WHERE REPID = :repid
-                            )";
+                            WHERE REPID_NO = :repid_no
+                            AND CATCODE = :catcode";
 
                         using (var cmd = new OracleCommand(sql, conn))
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
-                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
+                            cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catCode?.Trim();
 
                             var affectedRows = cmd.ExecuteNonQuery();
                             if (affectedRows == 0)
                             {
-                                transaction.Rollback();
-                                return false; // Not found or constraints failed
+                                const string countSql = @"
+                                    SELECT COUNT(1)
+                                    FROM REP_REPORTS_NEW
+                                    WHERE REPID_NO = :repid_no";
+
+                                using (var countCmd = new OracleCommand(countSql, conn))
+                                {
+                                    countCmd.Transaction = transaction;
+                                    countCmd.BindByName = true;
+                                    countCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                                    var countByRepIdNo = Convert.ToInt32(countCmd.ExecuteScalar());
+
+                                    if (countByRepIdNo == 1)
+                                    {
+                                        const string fallbackDeleteSql = @"
+                                            DELETE FROM REP_REPORTS_NEW
+                                            WHERE REPID_NO = :repid_no";
+
+                                        using (var fallbackDeleteCmd = new OracleCommand(fallbackDeleteSql, conn))
+                                        {
+                                            fallbackDeleteCmd.Transaction = transaction;
+                                            fallbackDeleteCmd.BindByName = true;
+                                            fallbackDeleteCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                                            affectedRows = fallbackDeleteCmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                }
+
+                                if (affectedRows == 0)
+                                {
+                                    transaction.Rollback();
+                                    return false; // Not found
+                                }
                             }
                         }
 
@@ -179,30 +364,80 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                        SELECT REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
-                        FROM REP_REPORTS_NEW
-                        WHERE REPID = :repid
-                        AND CATCODE = :catcode";
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        WHERE r.REPID = :repid
+                        AND r.CATCODE = :catcode";
 
-                    using (var cmd = new OracleCommand(sql, conn))
+                    string fallbackSql = @"
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r1.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        LEFT JOIN REP_REPORTS_NEW1 r1
+                            ON UPPER(TRIM(r1.REPID)) = UPPER(TRIM(r.REPID))
+                        WHERE r.REPID = :repid
+                        AND r.CATCODE = :catcode";
+
+                    try
                     {
-                        cmd.BindByName = true;
-                        cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = repid?.Trim();
-                        cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
-
-                        using (var reader = cmd.ExecuteReader())
+                        using (var cmd = new OracleCommand(sql, conn))
                         {
-                            while (reader.Read())
+                            cmd.BindByName = true;
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repid);
+                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
+
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                results.Add(new ReportEntryModel
+                                while (reader.Read())
                                 {
-                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
-                                    RepId = reader["REPID"]?.ToString()?.Trim(),
-                                    CatCode = reader["CATCODE"]?.ToString()?.Trim(),
-                                    RepName = reader["REPNAME"]?.ToString()?.Trim(),
-                                    Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
-                                    Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
-                                });
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    catch (OracleException ex) when (ex.Number == 904)
+                    {
+                        using (var cmd = new OracleCommand(fallbackSql, conn))
+                        {
+                            cmd.BindByName = true;
+                            cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repid);
+                            cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catcode?.Trim();
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
                             }
                         }
                     }
@@ -228,25 +463,70 @@ namespace MISReports_Api.DAL
                     conn.Open();
 
                     string sql = @"
-                        SELECT REPID_NO, REPID, CATCODE, REPNAME, FAVORITE, ACTIVE
-                        FROM REP_REPORTS_NEW
-                        ORDER BY REPID_NO";
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        ORDER BY r.REPID_NO";
 
-                    using (var cmd = new OracleCommand(sql, conn))
+                    string fallbackSql = @"
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r1.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        LEFT JOIN REP_REPORTS_NEW1 r1
+                            ON UPPER(TRIM(r1.REPID)) = UPPER(TRIM(r.REPID))
+                        ORDER BY r.REPID_NO";
+
+                    try
                     {
-                        using (var reader = cmd.ExecuteReader())
+                        using (var cmd = new OracleCommand(sql, conn))
                         {
-                            while (reader.Read())
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                results.Add(new ReportEntryModel
+                                while (reader.Read())
                                 {
-                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
-                                    RepId = reader["REPID"]?.ToString()?.Trim(),
-                                    CatCode = reader["CATCODE"]?.ToString()?.Trim(),
-                                    RepName = reader["REPNAME"]?.ToString()?.Trim(),
-                                    Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
-                                    Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
-                                });
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    catch (OracleException ex) when (ex.Number == 904)
+                    {
+                        using (var cmd = new OracleCommand(fallbackSql, conn))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    results.Add(new ReportEntryModel
+                                    {
+                                        RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                        RepId = reader["REPID"]?.ToString()?.Trim(),
+                                        CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                        RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                        ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                        Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                        Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                    });
+                                }
                             }
                         }
                     }

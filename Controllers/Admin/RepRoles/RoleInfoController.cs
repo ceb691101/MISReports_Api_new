@@ -13,6 +13,13 @@ namespace MISReports_Api.Controllers
     {
         private readonly RoleInfoRepository _repository = new RoleInfoRepository();
 
+        private static string NormalizeUpper(string value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? string.Empty
+                : value.Trim().ToUpperInvariant();
+        }
+
         private static bool HasCostCentres(CreateRoleRequest request)
         {
             return (request?.CostCentres != null && request.CostCentres.Exists(value => !string.IsNullOrWhiteSpace(value)))
@@ -83,6 +90,9 @@ namespace MISReports_Api.Controllers
                         errorMessage = "Request body is required."
                     }));
                 }
+
+                request.RoleId = NormalizeUpper(request.RoleId);
+                request.UserType = NormalizeUpper(request.UserType);
 
                 var validationErrors = new List<string>();
 
@@ -164,6 +174,9 @@ namespace MISReports_Api.Controllers
                 request.OriginalEpfNo = string.IsNullOrWhiteSpace(request.OriginalEpfNo)
                     ? epfNo
                     : request.OriginalEpfNo;
+
+                request.RoleId = NormalizeUpper(request.RoleId);
+                request.UserType = NormalizeUpper(request.UserType);
 
                 var validationErrors = new List<string>();
 
