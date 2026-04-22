@@ -161,6 +161,8 @@ namespace MISReports_Api.Controllers.Dashboard
                     data = new
                     {
                         userId = resolvedUserId,
+                        fromDate = resolvedFromDate.ToString("yyyy-MM-dd"),
+                        toDate = resolvedToDate.ToString("yyyy-MM-dd"),
                         records
                     },
                     errorMessage = (string)null
