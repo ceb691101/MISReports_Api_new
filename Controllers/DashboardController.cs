@@ -135,10 +135,10 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        /// <summary>GET api/dashboard/kiosk-collection?userId=KIOS00&fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd</summary>
+        /// <summary>GET api/dashboard/kiosk-collection?userId=KIOS00</summary>
         [HttpGet]
         [Route("kiosk-collection")]
-        public IHttpActionResult GetKioskCollection([FromUri] string userId = null, [FromUri] string fromDate = null, [FromUri] string toDate = null)
+        public IHttpActionResult GetKioskCollection([FromUri] string userId = null)
         {
             try
             {
@@ -150,22 +150,9 @@ namespace MISReports_Api.Controllers.Dashboard
 
                 string resolvedUserId = userId.Trim();
 
+                // Fixed range for kiosk: last 7 days ending yesterday.
                 DateTime resolvedToDate = DateTime.Today.AddDays(-1);
-                if (!string.IsNullOrWhiteSpace(toDate) &&
-                    !DateTime.TryParseExact(toDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resolvedToDate))
-                {
-                    return Ok(new { data = (object)null, errorMessage = "Invalid toDate format. Use yyyy-MM-dd." });
-                }
-
                 DateTime resolvedFromDate = resolvedToDate.AddDays(-7);
-                if (!string.IsNullOrWhiteSpace(fromDate) &&
-                    !DateTime.TryParseExact(fromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out resolvedFromDate))
-                {
-                    return Ok(new { data = (object)null, errorMessage = "Invalid fromDate format. Use yyyy-MM-dd." });
-                }
-
-                if (resolvedFromDate > resolvedToDate)
-                    return Ok(new { data = (object)null, errorMessage = "fromDate cannot be greater than toDate." });
 
                 var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId, resolvedFromDate, resolvedToDate);
 
@@ -201,6 +188,8 @@ namespace MISReports_Api.Controllers.Dashboard
 
             if (raw.Length == 8 && DateTime.TryParseExact(raw, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
                 return parsedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            //if (raw.Length == 8 && DateTime.TryParseExact(raw, "ddMMyyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+            //    return parsedDate.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
 
             return string.Empty;
         }

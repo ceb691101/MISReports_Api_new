@@ -65,6 +65,7 @@ namespace MISReports_Api.DAL.Dashboard
             try
             {
                 logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
+                //logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
 
                 rows = QueryKioskCollection(userId: userId, fromDate: fromDate, toDate: toDate);
 
@@ -131,6 +132,7 @@ namespace MISReports_Api.DAL.Dashboard
                     return string.Empty;
 
                 return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
+                //return Convert.ToDateTime(value).ToString("dd-MM-yyyy");
             }
             catch (IndexOutOfRangeException)
             {
