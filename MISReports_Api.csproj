@@ -391,6 +391,7 @@
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesOrdBillCycleDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\SalesByTariffDao.cs" />
     <Compile Include="DAL\General\BillCalculation\BillCalculationDao.cs" />
+    <Compile Include="DAL\General\ListingofCustomer\ListingofCustomerDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
@@ -534,6 +535,7 @@
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
     <Compile Include="Models\General\AreasPositionModel.cs" />
+    <Compile Include="Models\General\ListingofcustomerModel .cs" />
     <Compile Include="Models\General\ListOfGovernmentAccountsModel.cs" />
     <Compile Include="Models\General\ActiveCustomersModel.cs" />
     <Compile Include="Models\General\BillCalculationModel.cs" />

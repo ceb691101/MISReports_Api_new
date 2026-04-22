@@ -1,6 +1,7 @@
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
+using MISReports_Api.DAL.General.ListingOfCustomer;
 using MISReports_Api.DAL.General.AreasPosition;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
@@ -25,6 +26,9 @@ namespace MISReports_Api.Controllers
     ///   - Sales by Tariff Ordinary and Bulk (area / province / region / entireceb)
     ///   - Sales and Collection Range
     ///   - SMS Registered Range
+    ///   - Government Accounts (area / department)
+    ///   - Areas Position
+    ///   - Listing of Customers (area, with optional filters)
     ///
     /// Route prefix: api
     /// </summary>
@@ -32,27 +36,31 @@ namespace MISReports_Api.Controllers
     public class GeneralController : ApiController
     {
         // ── DAO fields ────────────────────────────────────────────────────────
-        private readonly ContractDemandBulkDao            _contractDemandBulkDao    = new ContractDemandBulkDao();
+        private readonly ContractDemandBulkDao _contractDemandBulkDao = new ContractDemandBulkDao();
         private readonly ContractDemandBillCycleDao _billCycleDao = new ContractDemandBillCycleDao();
-        private readonly SalesAndCollectionRangeDao       _dao                      = new SalesAndCollectionRangeDao();
-        private readonly RegisteredCustomersBillCycleDao  _smsDao                   = new RegisteredCustomersBillCycleDao();
+        private readonly SalesAndCollectionRangeDao _dao = new SalesAndCollectionRangeDao();
+        private readonly RegisteredCustomersBillCycleDao _smsDao = new RegisteredCustomersBillCycleDao();
 
-        private readonly ActiveCustomersOrdinaryDao       _activeCustomersOrdinaryDao = new ActiveCustomersOrdinaryDao();
-        private readonly ActiveCustomersBulkDao           _activeCustomersBulkDao     = new ActiveCustomersBulkDao();
+        private readonly ActiveCustomersOrdinaryDao _activeCustomersOrdinaryDao = new ActiveCustomersOrdinaryDao();
+        private readonly ActiveCustomersBulkDao _activeCustomersBulkDao = new ActiveCustomersBulkDao();
 
-        private readonly SalesByTariffOrdinaryDao         _salesByTariffOrdinaryDao   = new SalesByTariffOrdinaryDao();
-        private readonly SalesByTariffBulkDao             _salesByTariffBulkDao       = new SalesByTariffBulkDao();
-        private readonly AreasDao _areasDao = new AreasDao();
-        private readonly ProvinceDao _provinceDao = new ProvinceDao();
+        private readonly SalesByTariffOrdinaryDao _salesByTariffOrdinaryDao = new SalesByTariffOrdinaryDao();
+        private readonly SalesByTariffBulkDao _salesByTariffBulkDao = new SalesByTariffBulkDao();
+
         private readonly ListOfGovernmentAccountsDao _govAccountsDao = new ListOfGovernmentAccountsDao();
         private readonly AreasPositionDao _areasPositionDao = new AreasPositionDao();
-        
+        private readonly ListingOfCustomerDao _listingOfCustomerDao = new ListingOfCustomerDao();
+
+
+        // ================================================================== //
+        //  BILL CYCLES                                                         //
+        // ================================================================== //
+
         // ------------------------------------------------------------------ //
-        // Bill Cycles                                                          //
-        // GET api/contract-demand/bill-cycles                                  //
-        // Response: { data: { MaxBillCycle: "438",                            //
-        //                     BillCycles: ["Jan 2026", "Dec 2025", ...] },    //
-        //             errorMessage: null }                                     //
+        // GET api/contract-demand/bill-cycles                                 //
+        // Response: { data: { MaxBillCycle: "438",                           //
+        //                     BillCycles: ["Jan 2026", ...] },               //
+        //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -79,107 +87,14 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        // ------------------------------------------------------------------ //
-        // Areas                                                                //
-        // GET api/shared/areas                                                 //
-        // Response: { data: [ { areaCode, areaName }, ... ],                 //
-        //             errorMessage: null }                                     //
-        // ------------------------------------------------------------------ //
 
-        [HttpGet]
-        [Route("shared/areas")]
-        public IHttpActionResult GetAreas()
-        {
-            try
-            {
-                if (!_areasDao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-
-                var data = _areasDao.GetAreas();
-
-                if (data == null || data.Count == 0)
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "No areas found.",
-                        errorDetails = "The areas table may be empty."
-                    });
-
-                return Ok(new { data = data, errorMessage = (string)null });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetAreas: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve areas.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
+        // ================================================================== //
+        //  CONTRACT DEMAND BULK                                                //
+        // ================================================================== //
 
         // ------------------------------------------------------------------ //
-        // Provinces                                                            //
-        // GET api/shared/provinces                                             //
-        // Response: { data: [ { provinceCode, provinceName }, ... ],         //
-        //             errorMessage: null }                                     //
-        // ------------------------------------------------------------------ //
-
-        [HttpGet]
-        [Route("shared/provinces")]
-        public IHttpActionResult GetProvinces()
-        {
-            try
-            {
-                if (!_provinceDao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-
-                var data = _provinceDao.GetProvince();
-
-                if (data == null || data.Count == 0)
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "No provinces found.",
-                        errorDetails = "The provinces table may be empty."
-                    });
-
-                return Ok(new { data = data, errorMessage = (string)null });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetProvinces: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve provinces.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
-
-        // ------------------------------------------------------------------ //
-        // Contract Demand Bulk — Area                                          //
-        // GET api/contract-demand/bulk/area?billCycle=438&areaCode=43         //
-        // Response: { data: [ ...CustomerRecords... ], errorMessage: null }   //
-        //                                                                      //
-        // NOTE: data is a FLAT ARRAY — not a nested object.                   //
-        //       Frontend reads: const records = json?.data ?? []              //
+        // GET api/contract-demand/bulk/area?billCycle=438&areaCode=43        //
+        // Response: { data: [ ...CustomerRecords... ], errorMessage: null }  //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -204,11 +119,8 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // Contract Demand Bulk — Province                                      //
-        // GET api/contract-demand/bulk/province?billCycle=438&provCode=D      //
-        // Response: { data: [ ...CustomerRecords... ], errorMessage: null }   //
-        //                                                                      //
-        // NOTE: data is a FLAT ARRAY — not a nested object.                   //
+        // GET api/contract-demand/bulk/province?billCycle=438&provCode=D     //
+        // Response: { data: [ ...CustomerRecords... ], errorMessage: null }  //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -232,13 +144,6 @@ namespace MISReports_Api.Controllers
             });
         }
 
-        // ------------------------------------------------------------------ //
-        // Shared report processor                                              //
-        // IMPORTANT: Returns data as a flat List<> directly under "data".     //
-        //            Do NOT wrap it in { records, summary, title, ... }.      //
-        //            The frontend maps json.data as CustomerRecord[].         //
-        // ------------------------------------------------------------------ //
-
         private IHttpActionResult ProcessContractDemandRequest(SecDepositConDemandRequest request)
         {
             try
@@ -251,7 +156,6 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     });
 
-                // Returns List<SecDepositConDemandBulkModel>
                 var data = _contractDemandBulkDao.GetContractDemandBulkReport(request);
 
                 if (data == null || data.Count == 0)
@@ -262,10 +166,9 @@ namespace MISReports_Api.Controllers
                         errorDetails = "Please check the bill cycle and location code."
                     });
 
-                // ✅ Return flat array directly — frontend does: json.data as CustomerRecord[]
                 return Ok(new
                 {
-                    data = data,   // List<SecDepositConDemandBulkModel>
+                    data = data,
                     errorMessage = (string)null
                 });
             }
@@ -283,12 +186,16 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  ORDINARY – No. of Consumers by Tariff (Active Customers)
-        //
-        //  GET api/activeCustomers/ordinary
-        //      ?fromCycle=2401A&toCycle=2406A&reportType=area|province|region|entireceb
-        // ════════════════════════════════════════════════════════════════════
+
+        // ================================================================== //
+        //  ACTIVE CUSTOMERS                                                    //
+        // ================================================================== //
+
+        // ------------------------------------------------------------------ //
+        // GET api/activeCustomers/ordinary                                    //
+        //     ?fromCycle=2401A&toCycle=2406A                                  //
+        //     &reportType=area|province|region|entireceb                      //
+        // ------------------------------------------------------------------ //
 
         [HttpGet]
         [Route("activeCustomers/ordinary")]
@@ -298,10 +205,9 @@ namespace MISReports_Api.Controllers
             [FromUri] string reportType)
         {
             var validationErrors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(fromCycle))   validationErrors.Add("fromCycle is required.");
-            if (string.IsNullOrWhiteSpace(toCycle))     validationErrors.Add("toCycle is required.");
-            if (string.IsNullOrWhiteSpace(reportType))  validationErrors.Add("reportType is required.");
+            if (string.IsNullOrWhiteSpace(fromCycle)) validationErrors.Add("fromCycle is required.");
+            if (string.IsNullOrWhiteSpace(toCycle)) validationErrors.Add("toCycle is required.");
+            if (string.IsNullOrWhiteSpace(reportType)) validationErrors.Add("reportType is required.");
 
             if (validationErrors.Count > 0)
                 return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
@@ -309,19 +215,19 @@ namespace MISReports_Api.Controllers
             var request = new ActiveCustomersRequest
             {
                 FromCycle = fromCycle.Trim(),
-                ToCycle   = toCycle.Trim()
+                ToCycle = toCycle.Trim()
             };
 
             switch (reportType.Trim().ToLower())
             {
-                case "area":       request.ReportType = ActiveCustomersReportType.Area;       break;
-                case "province":   request.ReportType = ActiveCustomersReportType.Province;   break;
-                case "region":     request.ReportType = ActiveCustomersReportType.Region;     break;
-                case "entireceb":  request.ReportType = ActiveCustomersReportType.EntireCEB;  break;
+                case "area": request.ReportType = ActiveCustomersReportType.Area; break;
+                case "province": request.ReportType = ActiveCustomersReportType.Province; break;
+                case "region": request.ReportType = ActiveCustomersReportType.Region; break;
+                case "entireceb": request.ReportType = ActiveCustomersReportType.EntireCEB; break;
                 default:
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Invalid reportType.",
                         errorDetails = "Valid values: area, province, region, entireceb."
                     });
@@ -330,13 +236,12 @@ namespace MISReports_Api.Controllers
             return ProcessActiveCustomersOrdinaryRequest(request);
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  BULK – No. of Consumers by Tariff (Active Customers)
-        //
-        //  GET api/activeCustomers/bulk
-        //      ?fromCycle=2401&toCycle=2406&reportType=area|province|region|entireceb
-        //  TM1 is always excluded by the DAO layer.
-        // ════════════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------------ //
+        // GET api/activeCustomers/bulk                                        //
+        //     ?fromCycle=2401&toCycle=2406                                    //
+        //     &reportType=area|province|region|entireceb                      //
+        // TM1 is always excluded by the DAO layer.                           //
+        // ------------------------------------------------------------------ //
 
         [HttpGet]
         [Route("activeCustomers/bulk")]
@@ -346,10 +251,9 @@ namespace MISReports_Api.Controllers
             [FromUri] string reportType)
         {
             var validationErrors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(fromCycle))   validationErrors.Add("fromCycle is required.");
-            if (string.IsNullOrWhiteSpace(toCycle))     validationErrors.Add("toCycle is required.");
-            if (string.IsNullOrWhiteSpace(reportType))  validationErrors.Add("reportType is required.");
+            if (string.IsNullOrWhiteSpace(fromCycle)) validationErrors.Add("fromCycle is required.");
+            if (string.IsNullOrWhiteSpace(toCycle)) validationErrors.Add("toCycle is required.");
+            if (string.IsNullOrWhiteSpace(reportType)) validationErrors.Add("reportType is required.");
 
             if (validationErrors.Count > 0)
                 return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
@@ -357,19 +261,19 @@ namespace MISReports_Api.Controllers
             var request = new ActiveCustomersRequest
             {
                 FromCycle = fromCycle.Trim(),
-                ToCycle   = toCycle.Trim()
+                ToCycle = toCycle.Trim()
             };
 
             switch (reportType.Trim().ToLower())
             {
-                case "area":       request.ReportType = ActiveCustomersReportType.Area;       break;
-                case "province":   request.ReportType = ActiveCustomersReportType.Province;   break;
-                case "region":     request.ReportType = ActiveCustomersReportType.Region;     break;
-                case "entireceb":  request.ReportType = ActiveCustomersReportType.EntireCEB;  break;
+                case "area": request.ReportType = ActiveCustomersReportType.Area; break;
+                case "province": request.ReportType = ActiveCustomersReportType.Province; break;
+                case "region": request.ReportType = ActiveCustomersReportType.Region; break;
+                case "entireceb": request.ReportType = ActiveCustomersReportType.EntireCEB; break;
                 default:
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Invalid reportType.",
                         errorDetails = "Valid values: area, province, region, entireceb."
                     });
@@ -385,7 +289,7 @@ namespace MISReports_Api.Controllers
                 if (!_activeCustomersOrdinaryDao.TestConnection(out string connError))
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Ordinary database connection failed.",
                         errorDetails = connError
                     });
@@ -397,7 +301,7 @@ namespace MISReports_Api.Controllers
             {
                 return Ok(new
                 {
-                    data         = (object)null,
+                    data = (object)null,
                     errorMessage = "Cannot retrieve active customers (ordinary) report data.",
                     errorDetails = ex.Message
                 });
@@ -411,7 +315,7 @@ namespace MISReports_Api.Controllers
                 if (!_activeCustomersBulkDao.TestConnection(out string connError))
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Bulk database connection failed.",
                         errorDetails = connError
                     });
@@ -423,64 +327,37 @@ namespace MISReports_Api.Controllers
             {
                 return Ok(new
                 {
-                    data         = (object)null,
+                    data = (object)null,
                     errorMessage = "Cannot retrieve active customers (bulk) report data.",
                     errorDetails = ex.Message
                 });
             }
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  SALES COLLECTION RANGE
-        // ════════════════════════════════════════════════════════════════════
 
-        [HttpGet]
-        [Route("salesCollection/range")]
-        public IHttpActionResult GetRange()
-        {
-            try
-            {
-                if (!_dao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data         = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
+        // ================================================================== //
+        //  SMS REGISTERED RANGE                                                //
+        // ================================================================== //
 
-                var result = _dao.GetSalesAndCollectionRange();
-                return Ok(new { data = result, errorMessage = (string)null });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new
-                {
-                    data         = (object)null,
-                    errorMessage = "Cannot retrieve sales and collection range data.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
-
-        // ════════════════════════════════════════════════════════════════════
-        //  SMS REGISTERED RANGE
-        // ════════════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------------ //
+        // GET api/original/smsRegisteredRange                                 //
+        //     ?fromCycle=...&toCycle=...&reportType=...&typeCode=...          //
+        // ------------------------------------------------------------------ //
 
         [HttpGet]
         [Route("original/smsRegisteredRange")]
         public IHttpActionResult GetSMSRegisteredRange(
-            [FromUri] string fromCycle  = null,
-            [FromUri] string toCycle    = null,
+            [FromUri] string fromCycle = null,
+            [FromUri] string toCycle = null,
             [FromUri] string reportType = null,
-            [FromUri] string typeCode   = null)
+            [FromUri] string typeCode = null)
         {
             try
             {
                 var validationErrors = new List<string>();
-
-                if (string.IsNullOrWhiteSpace(fromCycle))   validationErrors.Add("From bill cycle is required.");
-                if (string.IsNullOrWhiteSpace(toCycle))     validationErrors.Add("To bill cycle is required.");
-                if (string.IsNullOrWhiteSpace(reportType))  validationErrors.Add("Report type is required.");
+                if (string.IsNullOrWhiteSpace(fromCycle)) validationErrors.Add("From bill cycle is required.");
+                if (string.IsNullOrWhiteSpace(toCycle)) validationErrors.Add("To bill cycle is required.");
+                if (string.IsNullOrWhiteSpace(reportType)) validationErrors.Add("Report type is required.");
 
                 if (validationErrors.Count > 0)
                     return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
@@ -488,9 +365,9 @@ namespace MISReports_Api.Controllers
                 var request = new SMSUsageRequest
                 {
                     FromBillCycle = fromCycle,
-                    ToBillCycle   = toCycle,
-                    ReportType    = reportType,
-                    TypeCode      = typeCode
+                    ToBillCycle = toCycle,
+                    ReportType = reportType,
+                    TypeCode = typeCode
                 };
 
                 var monthlyData = _smsDao.GetSMSCountRange(request);
@@ -498,7 +375,7 @@ namespace MISReports_Api.Controllers
                 if (monthlyData == null || monthlyData.Count == 0)
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "No data available for the specified criteria.",
                         errorDetails = "Please check the bill cycle range and location code."
                     });
@@ -507,7 +384,7 @@ namespace MISReports_Api.Controllers
                 {
                     data = new Models.SMSRegisteredCustomersModel
                     {
-                        LocationName  = string.IsNullOrEmpty(typeCode) ? "Entire CEB" : typeCode,
+                        LocationName = string.IsNullOrEmpty(typeCode) ? "Entire CEB" : typeCode,
                         MonthlyCounts = monthlyData
                     },
                     errorMessage = (string)null
@@ -520,20 +397,23 @@ namespace MISReports_Api.Controllers
 
                 return Ok(new
                 {
-                    data         = (object)null,
+                    data = (object)null,
                     errorMessage = "Cannot retrieve SMS registered range data.",
                     errorDetails = ex.Message
                 });
             }
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  ORDINARY – Sales by Tariff
-        //
-        //  GET api/salesByTariff/ordinary
-        //      ?fromCycle=439&toCycle=449&reportType=area|province|region|entireceb
-        //  Aggregated field: KwhSales (sum of cons_kwh).
-        // ════════════════════════════════════════════════════════════════════
+
+        // ================================================================== //
+        //  SALES BY TARIFF                                                     //
+        // ================================================================== //
+
+        // ------------------------------------------------------------------ //
+        // GET api/salesByTariff/ordinary                                      //
+        //     ?fromCycle=439&toCycle=449                                       //
+        //     &reportType=area|province|region|entireceb                      //
+        // ------------------------------------------------------------------ //
 
         [HttpGet]
         [Route("salesByTariff/ordinary")]
@@ -543,10 +423,9 @@ namespace MISReports_Api.Controllers
             [FromUri] string reportType)
         {
             var validationErrors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(fromCycle))   validationErrors.Add("fromCycle is required.");
-            if (string.IsNullOrWhiteSpace(toCycle))     validationErrors.Add("toCycle is required.");
-            if (string.IsNullOrWhiteSpace(reportType))  validationErrors.Add("reportType is required.");
+            if (string.IsNullOrWhiteSpace(fromCycle)) validationErrors.Add("fromCycle is required.");
+            if (string.IsNullOrWhiteSpace(toCycle)) validationErrors.Add("toCycle is required.");
+            if (string.IsNullOrWhiteSpace(reportType)) validationErrors.Add("reportType is required.");
 
             if (validationErrors.Count > 0)
                 return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
@@ -554,19 +433,19 @@ namespace MISReports_Api.Controllers
             var request = new SalesByTariffRequest
             {
                 FromCycle = fromCycle.Trim(),
-                ToCycle   = toCycle.Trim()
+                ToCycle = toCycle.Trim()
             };
 
             switch (reportType.Trim().ToLower())
             {
-                case "area":       request.ReportType = SalesByTariffReportType.Area;       break;
-                case "province":   request.ReportType = SalesByTariffReportType.Province;   break;
-                case "region":     request.ReportType = SalesByTariffReportType.Region;     break;
-                case "entireceb":  request.ReportType = SalesByTariffReportType.EntireCEB;  break;
+                case "area": request.ReportType = SalesByTariffReportType.Area; break;
+                case "province": request.ReportType = SalesByTariffReportType.Province; break;
+                case "region": request.ReportType = SalesByTariffReportType.Region; break;
+                case "entireceb": request.ReportType = SalesByTariffReportType.EntireCEB; break;
                 default:
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Invalid reportType.",
                         errorDetails = "Valid values: area, province, region, entireceb."
                     });
@@ -575,13 +454,12 @@ namespace MISReports_Api.Controllers
             return ProcessSalesByTariffOrdinaryRequest(request);
         }
 
-        // ════════════════════════════════════════════════════════════════════
-        //  BULK – Sales by Tariff
-        //
-        //  GET api/salesByTariff/bulk
-        //      ?fromCycle=439&toCycle=449&reportType=area|province|region|entireceb
-        //  TM1 is always excluded. Aggregated field: KwhSales (sum of kwh_units).
-        // ════════════════════════════════════════════════════════════════════
+        // ------------------------------------------------------------------ //
+        // GET api/salesByTariff/bulk                                          //
+        //     ?fromCycle=439&toCycle=449                                       //
+        //     &reportType=area|province|region|entireceb                      //
+        // TM1 is always excluded. Aggregated field: KwhSales (sum kwh_units). //
+        // ------------------------------------------------------------------ //
 
         [HttpGet]
         [Route("salesByTariff/bulk")]
@@ -591,10 +469,9 @@ namespace MISReports_Api.Controllers
             [FromUri] string reportType)
         {
             var validationErrors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(fromCycle))   validationErrors.Add("fromCycle is required.");
-            if (string.IsNullOrWhiteSpace(toCycle))     validationErrors.Add("toCycle is required.");
-            if (string.IsNullOrWhiteSpace(reportType))  validationErrors.Add("reportType is required.");
+            if (string.IsNullOrWhiteSpace(fromCycle)) validationErrors.Add("fromCycle is required.");
+            if (string.IsNullOrWhiteSpace(toCycle)) validationErrors.Add("toCycle is required.");
+            if (string.IsNullOrWhiteSpace(reportType)) validationErrors.Add("reportType is required.");
 
             if (validationErrors.Count > 0)
                 return Ok(new { data = (object)null, errorMessage = string.Join("; ", validationErrors) });
@@ -602,19 +479,19 @@ namespace MISReports_Api.Controllers
             var request = new SalesByTariffRequest
             {
                 FromCycle = fromCycle.Trim(),
-                ToCycle   = toCycle.Trim()
+                ToCycle = toCycle.Trim()
             };
 
             switch (reportType.Trim().ToLower())
             {
-                case "area":       request.ReportType = SalesByTariffReportType.Area;       break;
-                case "province":   request.ReportType = SalesByTariffReportType.Province;   break;
-                case "region":     request.ReportType = SalesByTariffReportType.Region;     break;
-                case "entireceb":  request.ReportType = SalesByTariffReportType.EntireCEB;  break;
+                case "area": request.ReportType = SalesByTariffReportType.Area; break;
+                case "province": request.ReportType = SalesByTariffReportType.Province; break;
+                case "region": request.ReportType = SalesByTariffReportType.Region; break;
+                case "entireceb": request.ReportType = SalesByTariffReportType.EntireCEB; break;
                 default:
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Invalid reportType.",
                         errorDetails = "Valid values: area, province, region, entireceb."
                     });
@@ -630,7 +507,7 @@ namespace MISReports_Api.Controllers
                 if (!_salesByTariffOrdinaryDao.TestConnection(out string connError))
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Ordinary database connection failed.",
                         errorDetails = connError
                     });
@@ -642,7 +519,7 @@ namespace MISReports_Api.Controllers
             {
                 return Ok(new
                 {
-                    data         = (object)null,
+                    data = (object)null,
                     errorMessage = "Cannot retrieve sales by tariff (ordinary) report data.",
                     errorDetails = ex.Message
                 });
@@ -656,7 +533,7 @@ namespace MISReports_Api.Controllers
                 if (!_salesByTariffBulkDao.TestConnection(out string connError))
                     return Ok(new
                     {
-                        data         = (object)null,
+                        data = (object)null,
                         errorMessage = "Bulk database connection failed.",
                         errorDetails = connError
                     });
@@ -668,14 +545,19 @@ namespace MISReports_Api.Controllers
             {
                 return Ok(new
                 {
-                    data         = (object)null,
+                    data = (object)null,
                     errorMessage = "Cannot retrieve sales by tariff (bulk) report data.",
                     errorDetails = ex.Message
                 });
             }
         }
+
+
+        // ================================================================== //
+        //  GOVERNMENT ACCOUNTS                                                 //
+        // ================================================================== //
+
         // ------------------------------------------------------------------ //
-        // Government Accounts - Max Bill Cycle                               //
         // GET api/government-accounts/max-bill-cycle?areaCode=43             //
         // Response: { data: { maxBillCycle: "438" }, errorMessage: null }    //
         // ------------------------------------------------------------------ //
@@ -714,7 +596,8 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine($"ERROR GetMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
 
                 return Ok(new
                 {
@@ -726,8 +609,7 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // Government Accounts - Departments                                  //
-        // GET api/government-accounts/departments                           //
+        // GET api/government-accounts/departments                            //
         // Response: { data: [ { departmentCode, departmentName }, ... ],    //
         //             errorMessage: null }                                   //
         // ------------------------------------------------------------------ //
@@ -760,7 +642,8 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.WriteLine($"ERROR GetDepartments: {ex.Message}\n{ex.StackTrace}");
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetDepartments: {ex.Message}\n{ex.StackTrace}");
 
                 return Ok(new
                 {
@@ -772,7 +655,6 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // Government Accounts - Area Report                                  //
         // GET api/government-accounts/area?billCycle=438&areaCode=43        //
         // Response: { data: [ ...GovernmentAccountRecords... ],             //
         //             errorMessage: null }                                   //
@@ -800,9 +682,8 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // Government Accounts - Department Report                           //
-        // GET api/government-accounts/department?billCycle=438&areaCode=43  //
-        //     &departmentCode=ABC                                           //
+        // GET api/government-accounts/department                             //
+        //     ?billCycle=438&areaCode=43&departmentCode=ABC                  //
         // Response: { data: [ ...GovernmentAccountRecords... ],             //
         //             errorMessage: null }                                   //
         // ------------------------------------------------------------------ //
@@ -831,11 +712,6 @@ namespace MISReports_Api.Controllers
             });
         }
 
-        // ------------------------------------------------------------------ //
-        // Shared government accounts report processor                        //
-        // IMPORTANT: Returns data as a flat List<> directly under "data".   //
-        // ------------------------------------------------------------------ //
-
         private IHttpActionResult ProcessGovernmentAccountsRequest(GovernmentAccountRequest request)
         {
             try
@@ -848,7 +724,6 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     });
 
-                // Returns List<ListOfGovernmentAccountsModel>
                 var data = _govAccountsDao.GetGovernmentAccountsReport(request);
 
                 if (data == null || data.Count == 0)
@@ -859,10 +734,9 @@ namespace MISReports_Api.Controllers
                         errorDetails = "Please check the bill cycle, area code, and department code."
                     });
 
-                // Return flat array directly
                 return Ok(new
                 {
-                    data = data,   // List<ListOfGovernmentAccountsModel>
+                    data = data,
                     errorMessage = (string)null
                 });
             }
@@ -880,12 +754,12 @@ namespace MISReports_Api.Controllers
             }
         }
 
+
         // ================================================================== //
         //  AREAS POSITION                                                      //
         // ================================================================== //
 
         // ------------------------------------------------------------------ //
-        // Areas Position — Max Bill Cycle                                     //
         // GET api/areas-position/max-bill-cycle?areaCode=43                  //
         // Response: { data: { billCycle: "438" }, errorMessage: null }       //
         // ------------------------------------------------------------------ //
@@ -938,25 +812,16 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // Areas Position — Report                                             //
-        // GET api/areas-position/report?areaCode=43                          //
-        //     (optional) &billCycle=438  — omit to auto-resolve max cycle    //
-        //                                                                     //
-        // Response: {                                                         //
-        //   data: {                                                           //
-        //     billCycle: "438",                                               //
-        //     rows: [                                                         //
-        //       {                                                             //
-        //         readerCode,                                                 //
-        //         monthlyBill,                                                //
-        //         totalBalance,                                               //
-        //         noOfMonthsInArrears,                                       //
-        //         noOfAccounts                                                //
-        //       }, ...                                                        //
-        //     ]                                                               //
-        //   },                                                                //
-        //   errorMessage: null                                                //
-        // }                                                                   //
+        // GET api/areas-position/report?areaCode=43[&billCycle=438]          //
+        // Omit billCycle to auto-resolve max cycle.                           //
+        // Response: {                                                          //
+        //   data: {                                                            //
+        //     billCycle: "438",                                                //
+        //     rows: [ { readerCode, monthlyBill, totalBalance,                //
+        //               noOfMonthsInArrears, noOfAccounts }, ... ]            //
+        //   },                                                                 //
+        //   errorMessage: null                                                 //
+        // }                                                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -1011,6 +876,252 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot retrieve areas position report.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ================================================================== //
+        //  LISTING OF CUSTOMERS                                                //
+        // ================================================================== //
+
+        // ------------------------------------------------------------------ //
+        // Max Bill Cycle                                                       //
+        // GET api/listing-of-customers/max-bill-cycle?areaCode=43            //
+        // Response: { data: { billCycle: "438" }, errorMessage: null }       //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("listing-of-customers/max-bill-cycle")]
+        public IHttpActionResult GetListingOfCustomersMaxBillCycle([FromUri] string areaCode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
+
+                if (!_listingOfCustomerDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var billCycle = _listingOfCustomerDao.GetMaxBillCycle(areaCode);
+
+                if (string.IsNullOrEmpty(billCycle))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No bill cycle found for the selected area.",
+                        errorDetails = "The area may have no billing data."
+                    });
+
+                return Ok(new
+                {
+                    data = new { billCycle },
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetListingOfCustomersMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve max bill cycle.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // Filter Dropdowns                                                     //
+        // GET api/listing-of-customers/filters?areaCode=43&billCycle=438     //
+        // Response: {                                                          //
+        //   data: {                                                            //
+        //     billCycle,                                                       //
+        //     tariffs, transformers, phases, connectionTypes,                  //
+        //     readerCodes, dailyPacks, depots                                  //
+        //   },                                                                 //
+        //   errorMessage: null                                                 //
+        // }                                                                    //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("listing-of-customers/filters")]
+        public IHttpActionResult GetListingOfCustomersFilters(
+            [FromUri] string areaCode = null,
+            [FromUri] string billCycle = null)
+        {
+            try
+            {
+                var errors = new List<string>();
+                if (string.IsNullOrWhiteSpace(areaCode)) errors.Add("Area code is required.");
+                if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+
+                if (errors.Count > 0)
+                    return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
+
+                if (!_listingOfCustomerDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var filters = _listingOfCustomerDao.GetFilters(areaCode, billCycle);
+
+                if (!string.IsNullOrEmpty(filters.ErrorMessage))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Error loading filter options.",
+                        errorDetails = filters.ErrorMessage
+                    });
+
+                return Ok(new
+                {
+                    data = filters,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetListingOfCustomersFilters: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot load filter options.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // POST api/listing-of-customers/report                                //
+        //                                                                      //
+        // Request body (Content-Type: application/json):                       //
+        // {                                                                     //
+        //   "areaCode":            "43",       ← required                     //
+        //   "billCycle":           "438",      ← required                     //
+        //   "useTariff":           true,                                        //
+        //   "tariff":              "R1",                                        //
+        //   "useTransformer":      false,                                       //
+        //   "transformer":         null,                                        //
+        //   "usePhase":            false,                                       //
+        //   "phase":               null,                                        //
+        //   "useConnectionType":   false,                                       //
+        //   "connectionType":      null,                                        //
+        //   "useReaderCode":       false,                                       //
+        //   "readerCode":          null,                                        //
+        //   "useDailyPack":        false,                                       //
+        //   "dailyPackNo":         null,                                        //
+        //   "useDepot":            false,                                       //
+        //   "depot":               null,                                        //
+        //   "useBalance":          true,                                        //
+        //   "balanceOperator":     ">=",                                        //
+        //   "balanceAmount":       "1000",                                      //
+        //   "useLastPaymentDate":  false,                                       //
+        //   "lastPaymentOperator": null,                                        //
+        //   "lastPaymentDate":     null,                                        //
+        //   "useArrearsPosition":  true,                                        //
+        //   "arrearsOperator":     ">=",                                        //
+        //   "arrearsPosition":     "1"                                          //
+        // }                                                                     //
+        //                                                                      //
+        // Response: { data: [ ...ListingOfCustomerModel... ],                 //
+        //             errorMessage: null }                                     //
+        // ------------------------------------------------------------------ //
+
+        [HttpPost]
+        [Route("listing-of-customers/report")]
+        public IHttpActionResult GetListingOfCustomersReport()
+        {
+            // Read and deserialise the JSON body manually
+            ListingOfCustomerRequest request;
+
+            try
+            {
+                var bodyJson = Request.Content.ReadAsStringAsync().Result;
+
+                if (string.IsNullOrWhiteSpace(bodyJson))
+                    return Ok(new { data = (object)null, errorMessage = "Request body is required." });
+
+                request = Newtonsoft.Json.JsonConvert.DeserializeObject<ListingOfCustomerRequest>(bodyJson);
+
+                if (request == null)
+                    return Ok(new { data = (object)null, errorMessage = "Request body could not be parsed." });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Invalid JSON in request body.",
+                    errorDetails = ex.Message
+                });
+            }
+
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(request.AreaCode)) errors.Add("Area code is required.");
+            if (string.IsNullOrWhiteSpace(request.BillCycle)) errors.Add("Bill cycle is required.");
+
+            if (errors.Count > 0)
+                return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
+
+            request.AreaCode = request.AreaCode.Trim();
+            request.BillCycle = request.BillCycle.Trim();
+
+            return ProcessListingOfCustomersRequest(request);
+        }
+
+        /// <summary>Shared processor — keeps action methods thin.</summary>
+        private IHttpActionResult ProcessListingOfCustomersRequest(ListingOfCustomerRequest request)
+        {
+            try
+            {
+                if (!_listingOfCustomerDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                // Returns List<ListingOfCustomerModel>
+                var data = _listingOfCustomerDao.GetListingOfCustomerReport(request);
+
+                if (data == null || data.Count == 0)
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No data found for the selected criteria.",
+                        errorDetails = "Please check the bill cycle, area code, and filter values."
+                    });
+
+                // Return flat array — frontend maps: json.data as ListingOfCustomerModel[]
+                return Ok(new
+                {
+                    data = data,   // List<ListingOfCustomerModel>
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR ProcessListingOfCustomersRequest: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get listing of customers report data.",
                     errorDetails = ex.Message
                 });
             }
