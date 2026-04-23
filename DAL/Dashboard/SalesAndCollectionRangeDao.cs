@@ -252,19 +252,19 @@ namespace MISReports_Api.DAL.Dashboard
 
                 for (var day = fromDate.Date; day <= toDate.Date; day = day.AddDays(1))
                 {
-                   var amount = dailyCollection.TryGetValue(day, out var value) ? value : 0m;
+                    var amount = dailyCollection.TryGetValue(day, out var value) ? value : 0m;
 
-                   rows.Add(new SalesAndCollectionModel
-                   {
-                       Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                       //Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
-                       // Keep contract-compatible int field using yyyyMMdd for daily series.
-                       BillCycle = int.Parse(day.ToString("yyyyMMdd", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-                       //BillCycle = int.Parse(day.ToString("ddMMyyyy", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-                       Collection = amount,
-                       Sales = amount,
-                       ErrorMessage = string.Empty
-                   });
+                    rows.Add(new SalesAndCollectionModel
+                    {
+                        Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        //Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
+                        // Keep contract-compatible int field using yyyyMMdd for daily series.
+                        BillCycle = int.Parse(day.ToString("yyyyMMdd", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+                        //BillCycle = int.Parse(day.ToString("ddMMyyyy", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+                        Collection = amount,
+                        Sales = amount,
+                        ErrorMessage = string.Empty
+                    });
                 }
                 logger.Info($"=== END GetSalesAndCollectionByDateRange billType={billType} (rows: {rows.Count}) ===");
                 return rows;
