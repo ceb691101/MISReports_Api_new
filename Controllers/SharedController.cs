@@ -368,7 +368,7 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("areas/billcycle/max")] //areas/billcycle/max
+        [Route("ordinary/areas/billcycle/min")] // ordinary/areas/billcycle/max  changed to min bill cycle
         public IHttpActionResult GetBillCycleFromArea()
         {
             try
