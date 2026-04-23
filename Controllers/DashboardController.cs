@@ -89,7 +89,7 @@ namespace MISReports_Api.Controllers.Dashboard
                     {
                         records = result.OrdinaryData.Select(rec => new
                         {
-                            Date = ResolveSalesCollectionDate(rec),
+                            Date = rec.Date,
                             Amount = rec.Collection,
                             rec.ErrorMessage
                         })
@@ -121,7 +121,7 @@ namespace MISReports_Api.Controllers.Dashboard
                     {
                         records = result.BulkData.Select(rec => new
                         {
-                            Date = ResolveSalesCollectionDate(rec),
+                            Date = rec.Date,
                             Amount = rec.Collection,
                             rec.ErrorMessage
                         })
@@ -152,9 +152,9 @@ namespace MISReports_Api.Controllers.Dashboard
 
                 // Fixed range for kiosk: last 7 days ending yesterday.
                 DateTime resolvedToDate = DateTime.Today.AddDays(-1);
-                DateTime resolvedFromDate = resolvedToDate.AddDays(-7);
+                DateTime resolvedFromDate = resolvedToDate.AddDays(-6);
 
-                var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId, resolvedFromDate, resolvedToDate);
+                var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId);
 
                 return Ok(new
                 {
@@ -174,25 +174,6 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        private static string ResolveSalesCollectionDate(SalesAndCollectionModel record)
-        {
-            if (!string.IsNullOrWhiteSpace(record.Date))
-                return record.Date;
-
-            return FormatSalesCollectionDate(record.BillCycle);
-        }
-
-        private static string FormatSalesCollectionDate(int billCycle)
-        {
-            var raw = billCycle.ToString(CultureInfo.InvariantCulture);
-
-            if (raw.Length == 8 && DateTime.TryParseExact(raw, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
-                return parsedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            //if (raw.Length == 8 && DateTime.TryParseExact(raw, "ddMMyyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
-            //    return parsedDate.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
-
-            return string.Empty;
-        }
     }
 
 
