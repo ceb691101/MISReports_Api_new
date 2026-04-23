@@ -37,11 +37,9 @@ namespace MISReports_Api.DAL.Dashboard
         // ------------------------------------------------------------------ //
 
         /// <summary>
-        /// Fetches sales &amp; collection data for a dynamic 8-cycle range.
-        /// The range is derived as  [maxBillCycle - 7 .. maxBillCycle]
-        /// where maxBillCycle comes from  SELECT MAX(bill_cycle) FROM receive_position
-        /// (Ordinary DB).  Both ordinary (bill_type='O') and bulk (bill_type='B')
-        /// rows are read from the same Ordinary database.
+        /// Fetches daily sales and collection totals for the last 7 days
+        /// (from day-before-today back to 6 days earlier).
+        /// Ordinary (bill_type='O') and bulk (bill_type='B') are queried separately.
         /// </summary>
         public SalesAndCollectionRangeResult GetSalesAndCollectionRange()
         {
@@ -51,11 +49,9 @@ namespace MISReports_Api.DAL.Dashboard
             {
                 logger.Info("=== START GetSalesAndCollectionRange ===");
 
-                // Return a rolling 7-day window ending on day-before-today.
+                // Match financial dashboard logic: include [today-7 .. today-1].
+                DateTime fromDate = DateTime.Today.AddDays(-7);
                 DateTime toDate = DateTime.Today.AddDays(-1);
-                DateTime fromDate = toDate.AddDays(-6);
-
-                result.MaxBillCycle = 0;
 
                 result.OrdinaryData = GetOrdinarySalesAndCollectionByDateRange(fromDate, toDate);
                 logger.Info($"Ordinary records fetched: {result.OrdinaryData.Count}");
@@ -77,95 +73,6 @@ namespace MISReports_Api.DAL.Dashboard
         // Private helpers
         // ------------------------------------------------------------------ //
 
-        /// <summary>
-        /// Returns the maximum bill_cycle value from receive_position (Ordinary DB).
-        /// </summary>
-        private int GetMaxBillCycle(OleDbConnection conn)
-        {
-            const string sql = "SELECT MAX(bill_cycle) FROM receive_position";
-
-            try
-            {
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    var scalar = cmd.ExecuteScalar();
-
-                    if (scalar == null || scalar == DBNull.Value)
-                    {
-                        logger.Warn("MAX(bill_cycle) returned NULL; defaulting to 0");
-                        return 0;
-                    }
-
-                    return Convert.ToInt32(scalar);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error fetching MAX(bill_cycle) from receive_position");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Runs the parameterised collection/sales query for the given bill_type.
-        /// </summary>
-        /// <param name="conn">Open OleDb connection.</param>
-        /// <param name="minCycle">Lower bound of the bill_cycle range (inclusive).</param>
-        /// <param name="maxCycle">Upper bound of the bill_cycle range (inclusive).</param>
-        /// <param name="billType">'O' for Ordinary customers, 'B' for Bulk customers.</param>
-        private List<SalesAndCollectionModel> GetByBillType(
-            OleDbConnection conn,
-            int minCycle,
-            int maxCycle,
-            string billType)
-        {
-            var rows = new List<SalesAndCollectionModel>();
-
-            // OleDb uses positional '?' placeholders
-            const string sql = @"
-                SELECT   bill_cycle,
-                         SUM(payments) AS collection,
-                         SUM(mon_chg)  AS sales
-                FROM     receive_position
-                WHERE    bill_cycle  >= ?
-                  AND    bill_cycle  <= ?
-                  AND    bill_type    = ?
-                GROUP BY bill_cycle
-                ORDER BY bill_cycle";
-
-            try
-            {
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("?", minCycle);
-                    cmd.Parameters.AddWithValue("?", maxCycle);
-                    cmd.Parameters.AddWithValue("?", billType);
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            rows.Add(new SalesAndCollectionModel
-                            {
-                                Date = string.Empty,
-                                BillCycle = GetIntValue(reader, "bill_cycle"),
-                                Collection = GetDecimalValue(reader, "collection"),
-                                Sales = GetDecimalValue(reader, "sales"),
-                                ErrorMessage = string.Empty
-                            });
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, $"Error fetching sales & collection for bill_type='{billType}'");
-                throw;
-            }
-
-            return rows;
-        }
-
         private List<SalesAndCollectionModel> GetOrdinarySalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate)
         {
             return GetSalesAndCollectionByDateRange(fromDate, toDate, "O");
@@ -179,7 +86,6 @@ namespace MISReports_Api.DAL.Dashboard
         private List<SalesAndCollectionModel> GetSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string billType)
         {
             var dailyCollection = new Dictionary<DateTime, decimal>();
-            var toDateExclusive = toDate.Date.AddDays(1);
 
             const string posCollectionSql = @"
                 SELECT c.trans_date,
@@ -189,7 +95,7 @@ namespace MISReports_Api.DAL.Dashboard
                   AND c.bill_type = ?
                   AND c.trans_type = 0
                   AND c.trans_date >= ?
-                  AND c.trans_date < ?
+                                    AND c.trans_date <= ?
                 GROUP BY 1
                 ORDER BY 1";
 
@@ -200,7 +106,7 @@ namespace MISReports_Api.DAL.Dashboard
                 WHERE b.area_code = p.area_code
                   AND b.bank_code = c.bank_code
                   AND b.cash_date >= ?
-                  AND b.cash_date < ?
+                                    AND b.cash_date <= ?
                   AND b.bill_type = ?
                 GROUP BY 1
                 ORDER BY 1";
@@ -211,7 +117,7 @@ namespace MISReports_Api.DAL.Dashboard
                 FROM crdtauth b, areas p
                 WHERE b.area_code = p.area_code
                   AND b.cash_date >= ?
-                  AND b.cash_date < ?
+                                    AND b.cash_date <= ?
                   AND b.bill_type = ?
                 GROUP BY 1
                 ORDER BY 1";
@@ -228,7 +134,7 @@ namespace MISReports_Api.DAL.Dashboard
                         conn: posConn,
                         sql: posCollectionSql,
                         destination: dailyCollection,
-                        parameters: new object[] { billType, fromDate.Date, toDateExclusive });
+                        parameters: new object[] { billType, fromDate.Date, toDate.Date });
                 }
 
                 using (var bankConn = new OdbcConnection(_bankPaymentConnectionString))
@@ -239,13 +145,13 @@ namespace MISReports_Api.DAL.Dashboard
                         conn: bankConn,
                         sql: bankCashSql,
                         destination: dailyCollection,
-                        parameters: new object[] { fromDate.Date, toDateExclusive, billType });
+                        parameters: new object[] { fromDate.Date, toDate.Date, billType });
 
                     AddDateAmountRowsFromOdbc(
                         conn: bankConn,
                         sql: cardCashSql,
                         destination: dailyCollection,
-                        parameters: new object[] { fromDate.Date, toDateExclusive, billType });
+                        parameters: new object[] { fromDate.Date, toDate.Date, billType });
                 }
 
                 var rows = new List<SalesAndCollectionModel>();
@@ -257,12 +163,7 @@ namespace MISReports_Api.DAL.Dashboard
                     rows.Add(new SalesAndCollectionModel
                     {
                         Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                        //Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
-                        // Keep contract-compatible int field using yyyyMMdd for daily series.
-                        BillCycle = int.Parse(day.ToString("yyyyMMdd", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
-                        //BillCycle = int.Parse(day.ToString("ddMMyyyy", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
                         Collection = amount,
-                        Sales = amount,
                         ErrorMessage = string.Empty
                     });
                 }
