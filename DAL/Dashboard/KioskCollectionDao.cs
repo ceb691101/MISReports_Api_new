@@ -58,16 +58,18 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public List<KioskCollectionModel> GetKioskCollection(string userId, DateTime fromDate, DateTime toDate)
+        public List<KioskCollectionModel> GetKioskCollection(string userId)
         {
             var rows = new List<KioskCollectionModel>();
 
             try
             {
+                var toDate = DateTime.Today.AddDays(-1);
+                var fromDate = toDate.AddDays(-6);
                 logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
                 //logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
 
-                rows = QueryKioskCollection(userId: userId, fromDate: fromDate, toDate: toDate);
+                rows = QueryKioskCollection(userId: userId);
 
                 logger.Info($"=== END GetKioskCollection (Success) - {rows.Count} records ===");
                 return rows;
@@ -79,18 +81,18 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private List<KioskCollectionModel> QueryKioskCollection(string userId, DateTime fromDate, DateTime toDate)
+        private List<KioskCollectionModel> QueryKioskCollection(string userId)
         {
             var rows = new List<KioskCollectionModel>();
 
-            // to include all times on toDate when trans_date is datetime.
+                        // Match financial dashboard logic: use DB-side rolling window for the last 7 days ending yesterday.
             const string sql = @"
-                SELECT trans_date,
+                                SELECT DATE(trans_date) AS trans_date,
                        SUM(trans_amt) AS collection
                 FROM   cus_tran
                                 WHERE  userid = ?
-                                    AND  trans_date >= ?
-                                    AND  trans_date <  ?
+                                    AND  trans_date >= TODAY - 7
+                                    AND  trans_date <  TODAY
                   AND  bill_type = 'O'
                 GROUP BY 1
                 ORDER BY 1";
@@ -102,8 +104,6 @@ namespace MISReports_Api.DAL.Dashboard
                 using (var cmd = new OdbcCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("?", userId);
-                    cmd.Parameters.AddWithValue("?", fromDate.Date);
-                    cmd.Parameters.AddWithValue("?", toDate.Date.AddDays(1));
 
                     using (var reader = cmd.ExecuteReader())
                     {
