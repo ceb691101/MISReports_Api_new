@@ -36,11 +36,13 @@ namespace MISReports_Api.Controllers
 
         [HttpGet]
         [Route("")]
-        public IHttpActionResult GetAllReportEntries()
+        public IHttpActionResult GetAllReportEntries([FromUri] string catcode = null)
         {
             try
             {
-                var result = _repository.GetAllReportEntries();
+                var result = string.IsNullOrWhiteSpace(catcode)
+                    ? _repository.GetAllReportEntries()
+                    : _repository.GetReportEntriesByCategory(catcode);
                 return Ok(JObject.FromObject(new
                 {
                     data = result,
@@ -107,6 +109,24 @@ namespace MISReports_Api.Controllers
 
                 if (string.IsNullOrWhiteSpace(request.RepId) || string.IsNullOrWhiteSpace(request.CatCode))
                     return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "RepId and CatCode are required." }));
+
+                if (_repository.ExistsByRepIdNoAndRepId(request.RepIdNo, request.RepId))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = new { success = false },
+                        errorMessage = "Same Report ID NO and Report ID already exists."
+                    }));
+                }
+
+                if (_repository.ExistsByRepIdAndCategory(request.RepId, request.CatCode))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = new { success = false },
+                        errorMessage = "Report already exists for this category."
+                    }));
+                }
 
                 var success = _repository.AddReportEntry(request);
                 return Ok(JObject.FromObject(new

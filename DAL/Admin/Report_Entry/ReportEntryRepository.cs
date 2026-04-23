@@ -95,6 +95,151 @@ namespace MISReports_Api.DAL
             }
         }
 
+        public bool ExistsByRepIdAndCategory(string repId, string catCode)
+        {
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT COUNT(1)
+                    FROM REP_REPORTS_NEW
+                    WHERE REPID = :repid
+                    AND CATCODE = :catcode";
+
+                using (var cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repId);
+                    cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catCode?.Trim();
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
+        }
+
+        public bool ExistsByRepIdNoAndRepId(int repIdNo, string repId)
+        {
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT COUNT(1)
+                    FROM REP_REPORTS_NEW
+                    WHERE REPID_NO = :repid_no
+                    AND REPID = :repid";
+
+                using (var cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                    cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repId);
+                    return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
+        }
+
+        public ReportEntryModel GetReportEntryByKey(int repIdNo, string catCode)
+        {
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT REPID_NO,
+                           REPID,
+                           CATCODE,
+                           REPNAME,
+                           NVL(PARAMLIST, '') AS PARAMLIST,
+                           FAVORITE,
+                           ACTIVE
+                    FROM REP_REPORTS_NEW
+                    WHERE REPID_NO = :repid_no
+                    AND CATCODE = :catcode";
+
+                using (var cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                    cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = catCode?.Trim();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            return null;
+                        }
+
+                        return new ReportEntryModel
+                        {
+                            RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                            RepId = reader["REPID"]?.ToString()?.Trim(),
+                            CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                            RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                            ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                            Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                            Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                        };
+                    }
+                }
+            }
+        }
+
+        public int GetRoleUsageCountByRepId(string repId)
+        {
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT COUNT(ROLEID)
+                    FROM DACONS16.REP_ROLES_REP_NEW
+                    WHERE REPID = :repid";
+
+                using (var cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repId);
+                    return Convert.ToInt32(cmd.ExecuteScalar());
+                }
+            }
+        }
+
+        public List<string> GetUsedCategoryCodesByRepId(string repId)
+        {
+            var categories = new List<string>();
+
+            using (var conn = new OracleConnection(connectionString))
+            {
+                conn.Open();
+
+                const string sql = @"
+                    SELECT DISTINCT CATCODE
+                    FROM DACONS16.REP_ROLES_REP_NEW
+                    WHERE REPID = :repid";
+
+                using (var cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("repid", OracleDbType.Varchar2).Value = NormalizeRepId(repId);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var category = reader["CATCODE"]?.ToString()?.Trim();
+                            if (!string.IsNullOrWhiteSpace(category))
+                            {
+                                categories.Add(category);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return categories;
+        }
+
         public string GetDeleteStatus(int repIdNo, string catCode)
         {
             using (var conn = new OracleConnection(connectionString))
@@ -535,6 +680,61 @@ namespace MISReports_Api.DAL
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error in GetAllReportEntries: {ex.Message}");
+                throw;
+            }
+
+            return results;
+        }
+
+        public List<ReportEntryModel> GetReportEntriesByCategory(string catCode)
+        {
+            var results = new List<ReportEntryModel>();
+
+            try
+            {
+                using (var conn = new OracleConnection(connectionString))
+                {
+                    conn.Open();
+
+                    const string sql = @"
+                        SELECT r.REPID_NO,
+                               r.REPID,
+                               r.CATCODE,
+                               r.REPNAME,
+                               NVL(r.PARAMLIST, '') AS PARAMLIST,
+                               r.FAVORITE,
+                               r.ACTIVE
+                        FROM REP_REPORTS_NEW r
+                        WHERE UPPER(TRIM(r.CATCODE)) = UPPER(TRIM(:catcode))
+                        ORDER BY r.REPNAME";
+
+                    using (var cmd = new OracleCommand(sql, conn))
+                    {
+                        cmd.BindByName = true;
+                        cmd.Parameters.Add("catcode", OracleDbType.Varchar2).Value = string.IsNullOrWhiteSpace(catCode) ? "" : catCode.Trim();
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                results.Add(new ReportEntryModel
+                                {
+                                    RepIdNo = reader["REPID_NO"] != DBNull.Value ? Convert.ToInt32(reader["REPID_NO"]) : 0,
+                                    RepId = reader["REPID"]?.ToString()?.Trim(),
+                                    CatCode = reader["CATCODE"]?.ToString()?.Trim(),
+                                    RepName = reader["REPNAME"]?.ToString()?.Trim(),
+                                    ParamList = reader["PARAMLIST"]?.ToString()?.Trim(),
+                                    Favorite = reader["FAVORITE"] != DBNull.Value ? Convert.ToInt32(reader["FAVORITE"]) : 0,
+                                    Active = reader["ACTIVE"] != DBNull.Value ? Convert.ToInt32(reader["ACTIVE"]) : 0
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetReportEntriesByCategory: {ex.Message}");
                 throw;
             }
 

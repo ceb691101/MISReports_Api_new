@@ -15,7 +15,8 @@ namespace MISReports_Api.DAL.Admin.Report_Parameters
         public List<ReportParameterListItemModel> GetAllReportParams()
         {
             const string sql = @"
-SELECT paraname,
+SELECT paraid,
+       paraname,
        description,
        CASE
            WHEN populated = 1 THEN 'Yes'
@@ -38,6 +39,7 @@ ORDER BY paraname";
 
                         results.Add(new ReportParameterListItemModel
                         {
+                            ParaId = reader["PARAID"]?.ToString()?.Trim(),
                             ParaName = reader["PARANAME"]?.ToString()?.Trim(),
                             Description = reader["DESCRIPTION"]?.ToString()?.Trim(),
                             Populated = string.Equals(populatedText, "Yes", StringComparison.OrdinalIgnoreCase)
