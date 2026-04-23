@@ -384,6 +384,10 @@
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
+    <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
+    <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
+    <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
+    <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
     <Compile Include="DAL\General\AreasPosition\AreasPositionDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
@@ -529,6 +533,10 @@
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
+    <Compile Include="Models\FinancialDashboard\CachedValueModel.cs" />
+    <Compile Include="Models\FinancialDashboard\PivDivisionModel.cs" />
+    <Compile Include="Models\FinancialDashboard\PivTotalModel.cs" />
+    <Compile Include="Models\FinancialDashboard\StockDivisionModel.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
     <Compile Include="Models\Debtors\BillCycleModel.cs" />
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
@@ -718,7 +726,9 @@
     <Folder Include="App_Data\" />
     <Folder Include="Controllers\Admin\" />
     <Folder Include="DAL\Admin\" />
+    <Folder Include="DAL\FinancialDashboard\" />
     <Folder Include="Models\Admin\" />
+    <Folder Include="Models\FinancialDashboard\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

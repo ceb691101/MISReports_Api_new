@@ -5,26 +5,23 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web.Http;
-using Oracle.ManagedDataAccess.Client;
+using MISReports_Api.DAL.FinancialDashboard;
+using MISReports_Api.Models.FinancialDashboard;
 
 namespace MISReports_Api.Controllers
 {
     public class FinancialDashboardController : ApiController
     {
-        private static readonly string ConnectionString = System.Configuration.ConfigurationManager
-            .ConnectionStrings["HQOracle"].ConnectionString;
+        private static readonly PivTotalDao PivTotalDao = new PivTotalDao();
+        private static readonly PivDivisionDao PivDivisionDao = new PivDivisionDao();
+        private static readonly StockTotalDao StockTotalDao = new StockTotalDao();
+        private static readonly StockDivisionDao StockDivisionDao = new StockDivisionDao();
 
         private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
         private const double CacheMinutes = 5;
         private static readonly object RefreshLock = new object();
         private static bool IsRefreshing;
         private static Timer WarmTimer;
-
-        private class CachedValue<T>
-        {
-            public T Value { get; set; }
-            public DateTimeOffset FetchedAt { get; set; }
-        }
 
         private static void SetCache<T>(string key, T data)
         {
@@ -132,10 +129,10 @@ namespace MISReports_Api.Controllers
 
             try
             {
-                var totalTask = Task.Run(() => FetchPivTotal());
-                var divTask = Task.Run(() => FetchPivDivision());
-                var stockTotalTask = Task.Run(() => FetchStockTotal());
-                var stockDivTask = Task.Run(() => FetchStockDivision());
+                var totalTask = Task.Run(() => ExecuteWithTiming("piv-total", PivTotalDao.Fetch));
+                var divTask = Task.Run(() => ExecuteWithTiming("piv-division", PivDivisionDao.Fetch));
+                var stockTotalTask = Task.Run(() => ExecuteWithTiming("stock-total", StockTotalDao.Fetch));
+                var stockDivTask = Task.Run(() => ExecuteWithTiming("stock-division", StockDivisionDao.Fetch));
 
                 await Task.WhenAll(totalTask, divTask, stockTotalTask, stockDivTask);
 
@@ -171,7 +168,8 @@ namespace MISReports_Api.Controllers
                 Cache.TryRemove("piv-total", out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("piv-total", FetchPivTotal);
+            var meta = GetOrReturnStaleAndRefreshWithMetadata("piv-total", () =>
+                ExecuteWithTiming("piv-total", PivTotalDao.Fetch));
             return Ok(meta);
         }
 
@@ -184,7 +182,8 @@ namespace MISReports_Api.Controllers
                 Cache.TryRemove("piv-division", out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("piv-division", FetchPivDivision);
+            var meta = GetOrReturnStaleAndRefreshWithMetadata("piv-division", () =>
+                ExecuteWithTiming("piv-division", PivDivisionDao.Fetch));
             return Ok(meta);
         }
 
@@ -197,7 +196,8 @@ namespace MISReports_Api.Controllers
                 Cache.TryRemove("stock-total", out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("stock-total", FetchStockTotal);
+            var meta = GetOrReturnStaleAndRefreshWithMetadata("stock-total", () =>
+                ExecuteWithTiming("stock-total", StockTotalDao.Fetch));
             return Ok(meta);
         }
 
@@ -210,205 +210,9 @@ namespace MISReports_Api.Controllers
                 Cache.TryRemove("stock-division", out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("stock-division", FetchStockDivision);
+            var meta = GetOrReturnStaleAndRefreshWithMetadata("stock-division", () =>
+                ExecuteWithTiming("stock-division", StockDivisionDao.Fetch));
             return Ok(meta);
-        }
-
-        private static List<object> FetchPivTotal()
-        {
-            return ExecuteWithTiming("piv-total", () =>
-            {
-                var result = new List<object>();
-                using (OracleConnection conn = new OracleConnection(ConnectionString))
-                {
-                    conn.Open();
-                    string query = @"
-                        select distinct c.paid_date as PIV_Date, sum(c.grand_total) as PIV_collection
-                        from piv_detail c 
-                        where trim(c.status) in ('Q', 'P','F','FR','FA')
-                        and c.paid_date >= ( SELECT TO_DATE((SYSDATE - 7),'dd/mm/yy')  FROM dual ) 
-                        and c.paid_date <= ( SELECT TO_DATE((SYSDATE - 1),'dd/mm/yy')  FROM dual )
-                        and c.dept_id in (
-                            select dept_id from gldeptm where status = 2 and comp_id in (
-                                select comp_id from glcompm
-                                where status = 2 and ((comp_id like 'DISCO%' or parent_id like 'DISCO%' or grp_comp like 'DISCO%') or (comp_id like 'AFMHQ%' or parent_id like 'AFMHQ%' or grp_comp like 'AFMHQ%'))
-                            )
-                        )
-                        group by c.paid_date 
-                        order by c.paid_date desc";
-
-                    using (OracleCommand cmd = new OracleCommand(query, conn))
-                    using (OracleDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            result.Add(new
-                            {
-                                date = reader.IsDBNull(0) ? string.Empty : reader.GetDateTime(0).ToString("yyyy-MM-dd"),
-                                amount = reader.IsDBNull(1) ? 0 : Convert.ToDouble(reader.GetValue(1))
-                            });
-                        }
-                    }
-                }
-
-                return result;
-            });
-        }
-
-        private static List<object> FetchPivDivision()
-        {
-            return ExecuteWithTiming("piv-division", () =>
-            {
-                var result = new List<object>();
-                using (OracleConnection conn = new OracleConnection(ConnectionString))
-                {
-                    conn.Open();
-                    string query = @"
-                        select distinct c.paid_date as PIV_Date,
-                            (Case 
-                                when b.comp_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
-                                when b.parent_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
-                                when b.grp_comp in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
-                                else '' 
-                            end ) as Company,
-                            sum(c.grand_total) as PIV_collection
-                        from piv_detail c, gldeptm a, glcompm b 
-                        where trim(c.status) in ('Q', 'P','F','FR','FA')
-                        and c.paid_date >= ( SELECT TO_DATE((SYSDATE - 7),'dd/mm/yy')  FROM dual ) 
-                        and c.paid_date <= ( SELECT TO_DATE((SYSDATE - 1),'dd/mm/yy')  FROM dual )
-                        and a.comp_id = b.comp_id
-                        and c.dept_id = a.dept_id
-                        and a.status = 2
-                        and b.status = 2
-                        and c.dept_id in (
-                            select dept_id from gldeptm where status = 2 and comp_id in (
-                                select comp_id from glcompm
-                                where status = 2 and ((comp_id like 'DISCO%' or parent_id like 'DISCO%' or grp_comp like 'DISCO%') or (comp_id like 'AFMHQ%' or parent_id like 'AFMHQ%' or grp_comp like 'AFMHQ%'))
-                            )
-                        )
-                        group by c.paid_date, 
-                            (Case 
-                                when b.comp_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
-                                when b.parent_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
-                                when b.grp_comp in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
-                                else ''  
-                            end )
-                        order by c.paid_date desc, 
-                            (Case 
-                                when b.comp_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.comp_id,0,1)||substr(b.comp_id,6,1)
-                                when b.parent_id in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.parent_id,0,1)||substr(b.parent_id,6,1)
-                                when b.grp_comp in ( 'DISCO1','DISCO2','DISCO3','DISCO4','AFMHQ') then substr(b.grp_comp,0,1)||substr(b.grp_comp,6,1)
-                                else '' 
-                            end )";
-
-                    using (OracleCommand cmd = new OracleCommand(query, conn))
-                    using (OracleDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            result.Add(new
-                            {
-                                date = reader.IsDBNull(0) ? string.Empty : reader.GetDateTime(0).ToString("yyyy-MM-dd"),
-                                company = reader.IsDBNull(1) ? "Other" : reader.GetString(1),
-                                amount = reader.IsDBNull(2) ? 0 : Convert.ToDouble(reader.GetValue(2))
-                            });
-                        }
-                    }
-                }
-
-                return result;
-            });
-        }
-
-        private static double FetchStockTotal()
-        {
-            return ExecuteWithTiming("stock-total", () =>
-            {
-                double total = 0;
-                using (OracleConnection conn = new OracleConnection(ConnectionString))
-                {
-                    conn.Open();
-                    string query = @"
-                        select distinct sum(c.qty_on_hand * c.unit_price) as Stock_value
-                        from inwrhmtm c
-                        where c.status = 2 and c.grade_cd = 'NEW'
-                        and c.dept_id in (
-                            select dept_id from gldeptm where status = 2 and comp_id in (
-                                select comp_id from glcompm
-                                where status = 2 and (comp_id like 'DISCO%' or parent_id like 'DISCO%' or grp_comp like 'DISCO%')
-                            )
-                        )";
-
-                    using (OracleCommand cmd = new OracleCommand(query, conn))
-                    using (OracleDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read() && !reader.IsDBNull(0))
-                        {
-                            total = Convert.ToDouble(reader.GetValue(0));
-                        }
-                    }
-                }
-
-                return total;
-            });
-        }
-
-        private static List<object> FetchStockDivision()
-        {
-            return ExecuteWithTiming("stock-division", () =>
-            {
-                var result = new List<object>();
-                using (OracleConnection conn = new OracleConnection(ConnectionString))
-                {
-                    conn.Open();
-                    string query = @"
-                        select
-                            (case
-                                when trim(b.comp_id) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.comp_id),1,1)||substr(trim(b.comp_id),6,1)
-                                when trim(b.parent_id) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.parent_id),1,1)||substr(trim(b.parent_id),6,1)
-                                when trim(b.grp_comp) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.grp_comp),1,1)||substr(trim(b.grp_comp),6,1)
-                                else ''
-                            end) as Company,
-                            sum(c.qty_on_hand * c.unit_price) as Stock_value
-                        from inwrhmtm c
-                        join gldeptm a on c.dept_id = a.dept_id
-                        join glcompm b on a.comp_id = b.comp_id
-                        where c.status = 2
-                        and c.grade_cd = 'NEW'
-                        and a.status = 2
-                        and b.status = 2
-                        and (b.comp_id like 'DISCO%' or b.parent_id like 'DISCO%' or b.grp_comp like 'DISCO%')
-                        group by
-                            (case
-                                when trim(b.comp_id) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.comp_id),1,1)||substr(trim(b.comp_id),6,1)
-                                when trim(b.parent_id) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.parent_id),1,1)||substr(trim(b.parent_id),6,1)
-                                when trim(b.grp_comp) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.grp_comp),1,1)||substr(trim(b.grp_comp),6,1)
-                                else ''
-                            end)
-                        order by
-                            (case
-                                when trim(b.comp_id) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.comp_id),1,1)||substr(trim(b.comp_id),6,1)
-                                when trim(b.parent_id) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.parent_id),1,1)||substr(trim(b.parent_id),6,1)
-                                when trim(b.grp_comp) in ('DISCO1','DISCO2','DISCO3','DISCO4') then substr(trim(b.grp_comp),1,1)||substr(trim(b.grp_comp),6,1)
-                                else ''
-                            end)";
-
-                    using (OracleCommand cmd = new OracleCommand(query, conn))
-                    using (OracleDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            result.Add(new
-                            {
-                                company = reader.IsDBNull(0) ? "Other" : reader.GetString(0),
-                                amount = reader.IsDBNull(1) ? 0 : Convert.ToDouble(reader.GetValue(1))
-                            });
-                        }
-                    }
-                }
-
-                return result;
-            });
         }
     }
 }
