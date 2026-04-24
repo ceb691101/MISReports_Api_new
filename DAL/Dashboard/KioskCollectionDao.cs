@@ -58,7 +58,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public List<KioskCollectionModel> GetKioskCollection(string userId)
+        public List<KioskCollectionModel> GetKioskCollection(string userId, string region = null)
         {
             var rows = new List<KioskCollectionModel>();
 
@@ -69,7 +69,7 @@ namespace MISReports_Api.DAL.Dashboard
                 logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
                 //logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
 
-                rows = QueryKioskCollection(userId: userId);
+                rows = QueryKioskCollection(userId: userId, region: region);
 
                 logger.Info($"=== END GetKioskCollection (Success) - {rows.Count} records ===");
                 return rows;
@@ -81,21 +81,34 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private List<KioskCollectionModel> QueryKioskCollection(string userId)
+        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region)
         {
             var rows = new List<KioskCollectionModel>();
 
-                        // Match financial dashboard logic: use DB-side rolling window for the last 7 days ending yesterday.
-            const string sql = @"
-                                SELECT DATE(trans_date) AS trans_date,
-                       SUM(trans_amt) AS collection
-                FROM   cus_tran
-                                WHERE  userid = ?
-                                    AND  trans_date >= TODAY - 7
-                                    AND  trans_date <  TODAY
-                  AND  bill_type = 'O'
-                GROUP BY 1
-                ORDER BY 1";
+            bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+            string sql = hasRegionFilter
+                    ? @"
+                                                                SELECT DATE(c.trans_date) AS trans_date,
+                                             SUM(c.trans_amt) AS collection
+                                FROM   cus_tran c, areas a
+                                                                WHERE  c.userid = ?
+                                                                        AND  c.trans_date >= TODAY - 7
+                                                                        AND  c.trans_date <  TODAY
+                                    AND  c.bill_type = 'O'
+                                    AND  c.area_code = a.area_code
+                                    AND  a.region = ?
+                                GROUP BY 1
+                                ORDER BY 1"
+                    : @"
+                                                                SELECT DATE(trans_date) AS trans_date,
+                                             SUM(trans_amt) AS collection
+                                FROM   cus_tran
+                                                                WHERE  userid = ?
+                                                                        AND  trans_date >= TODAY - 7
+                                                                        AND  trans_date <  TODAY
+                                    AND  bill_type = 'O'
+                                GROUP BY 1
+                                ORDER BY 1";
 
             using (var conn = new OdbcConnection(_connectionString))
             {
@@ -104,6 +117,10 @@ namespace MISReports_Api.DAL.Dashboard
                 using (var cmd = new OdbcCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("?", userId);
+                    if (hasRegionFilter)
+                    {
+                        cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                    }
 
                     using (var reader = cmd.ExecuteReader())
                     {
