@@ -279,6 +279,12 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\Admin\ReportCategory\ReportCategoryController.cs" />
+    <Compile Include="Controllers\Admin\Report_Entry\ReportEntryController.cs" />
+    <Compile Include="Controllers\Admin\Report_Parameters\RepParaController.cs" />
+    <Compile Include="Controllers\Admin\Report_Parameters\ReportParametersV2Controller.cs" />
+    <Compile Include="Controllers\Admin\Report_Role\RoleCrudController.cs" />
+    <Compile Include="Controllers\Admin\RepRoles\RoleInfoController.cs" />
     <Compile Include="Controllers\BillCalculationController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
@@ -375,6 +381,13 @@
     <Compile Include="Controllers\WorkInProgController\ProjectAgeAnalysisController.cs" />
     <Compile Include="Controllers\WorkInProgController\ProjectCommitmentSummaryController.cs" />
     <Compile Include="Controllers\WorkInProgController\WorkInProgressCompletedCostCenterwiseController.cs" />
+    <Compile Include="DAL\Admin\ReportCategory\ReportCategoryRepository.cs" />
+    <Compile Include="DAL\Admin\Report_Entry\ReportEntryRepository.cs" />
+    <Compile Include="DAL\Admin\Report_Parameters\IReportParameterRepository.cs" />
+    <Compile Include="DAL\Admin\Report_Parameters\RepParaRepository.cs" />
+    <Compile Include="DAL\Admin\Report_Parameters\ReportParameterRepository.cs" />
+    <Compile Include="DAL\Admin\Report_Role\RoleCrudRepository.cs" />
+    <Compile Include="DAL\Admin\RepRoles\RoleInfoRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
@@ -519,6 +532,15 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\BillCycleHelper.cs" />
+    <Compile Include="Models\Admin\ReportCategory\CreateReportCategoryRequest.cs" />
+    <Compile Include="Models\Admin\ReportCategory\ReportCategoryModel.cs" />
+    <Compile Include="Models\Admin\Report_Entry\ReportEntryModel.cs" />
+    <Compile Include="Models\Admin\Report_Parameters\ReportParameterApiModels.cs" />
+    <Compile Include="Models\Admin\Report_Parameters\RepParaModel.cs" />
+    <Compile Include="Models\Admin\Report_Role\RoleCrudDtos.cs" />
+    <Compile Include="Models\Admin\RepRoles\CreateRoleRequest.cs" />
+    <Compile Include="Models\Admin\RepRoles\RoleInfoModel.cs" />
+    <Compile Include="Models\Admin\RepRoles\RoleLookupModels.cs" />
     <Compile Include="Models\Cash Book\CashBookCCReportModel.cs" />
     <Compile Include="Models\Cash Book\CashBookReportModel.cs" />
     <Compile Include="Models\Cash Book\DocumentInquiryModel.cs" />
@@ -648,6 +670,8 @@
     <Compile Include="Models\WorkInProgress\ProjectCommitmentSummaryModel.cs" />
     <Compile Include="Models\WorkInProgress\WorkInProgressCompletedCostCenterwisemodel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Admin\Report_Parameters\IReportParameterService.cs" />
+    <Compile Include="Services\Admin\Report_Parameters\ReportParameterService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
@@ -714,9 +738,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Controllers\Admin\" />
-    <Folder Include="DAL\Admin\" />
-    <Folder Include="Models\Admin\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
