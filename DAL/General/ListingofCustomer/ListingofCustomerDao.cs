@@ -246,9 +246,16 @@ namespace MISReports_Api.DAL.General.ListingOfCustomer
                 && !string.IsNullOrWhiteSpace(req.LastPaymentDate)
                 && IsValidOperator(req.LastPaymentOperator))
             {
-                sb.Append($" AND lst_pmt_date {req.LastPaymentOperator} ?");
-                parameters.Add(req.LastPaymentDate);
-                logger.Info($"Filter: lst_pmt_date {req.LastPaymentOperator} {req.LastPaymentDate}");
+                if (DateTime.TryParse(req.LastPaymentDate, out DateTime parsedDate))
+                {
+                    sb.Append($" AND lst_pmt_date {req.LastPaymentOperator} ?");
+                    parameters.Add(parsedDate.ToString("yyyy-MM-dd")); // ✅ formatted
+                    logger.Info($"Filter: lst_pmt_date {req.LastPaymentOperator} {parsedDate:yyyy-MM-dd}");
+                }
+                else
+                {
+                    logger.Warn("Invalid LastPaymentDate format");
+                }
             }
 
             if (req.UseArrearsPosition
