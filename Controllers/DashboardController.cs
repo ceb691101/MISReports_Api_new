@@ -23,6 +23,7 @@ namespace MISReports_Api.Controllers.Dashboard
         private readonly SalesAndCollectionRangeDao _salesAndCollectionRangeDao = new SalesAndCollectionRangeDao();
         private readonly OrdinaryCustomersDao _ordinaryCustomersDao = new OrdinaryCustomersDao();
         private readonly KioskCollectionDao _kioskCollectionDao = new KioskCollectionDao();
+        private readonly TopCustomersDao _topCustomersDao = new TopCustomersDao();
 
         /// <summary>GET api/dashboard/customers/active-count</summary>
         [HttpGet]
@@ -172,6 +173,69 @@ namespace MISReports_Api.Controllers.Dashboard
             {
                 return Ok(new { data = (object)null, errorMessage = "Cannot get kiosk collection data.", errorDetails = ex.Message });
             }
+        }
+
+        /// <summary>GET api/dashboard/top-customers/billcycle/max</summary>
+        [HttpGet]
+        [Route("top-customers/billcycle/max")]
+        public IHttpActionResult GetTopCustomersMaxBillCycle()
+        {
+            try
+            {
+                if (!_topCustomersDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                var maxBillCycle = _topCustomersDao.GetLatestBillCycle();
+
+                return Ok(new
+                {
+                    data = new { billCycle = maxBillCycle },
+                    errorMessage = string.IsNullOrWhiteSpace(maxBillCycle) ? "No bill cycle found in mon_tot." : (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Error retrieving max bill cycle.", errorDetails = ex.Message });
+            }
+        }
+
+        /// <summary>GET api/dashboard/top-customers/list?billCycle=450&take=10</summary>
+        [HttpGet]
+        [Route("top-customers/list")]
+        public IHttpActionResult GetTopCustomers([FromUri] string billCycle = null, [FromUri] int take = 0)
+        {
+            try
+            {
+                if (!_topCustomersDao.TestConnection(out string connError))
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+
+                var data = _topCustomersDao.GetTopCustomers(NormalizeBillCycle(billCycle), take);
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Cannot get top customers data.", errorDetails = ex.Message });
+            }
+        }
+
+        private static string NormalizeBillCycle(string billCycle)
+        {
+            if (string.IsNullOrWhiteSpace(billCycle))
+                return null;
+
+            var normalized = billCycle.Trim();
+
+            if ((normalized.StartsWith("{") && normalized.EndsWith("}")) ||
+                normalized.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+                normalized.Equals("undefined", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            return normalized;
         }
 
         private static string NormalizeRegion(string region)
@@ -483,4 +547,6 @@ namespace MISReports_Api.Controllers.Dashboard
             return normalized == "ALL" ? null : normalized;
         }
     }
+
+
 }

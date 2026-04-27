@@ -382,6 +382,7 @@
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
+    <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
@@ -524,6 +525,7 @@
     <Compile Include="Models\Dashboard\KioskCollectionModel.cs" />
     <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
+    <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
