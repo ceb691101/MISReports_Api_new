@@ -51,6 +51,7 @@ namespace MISReports_Api.DAL.Dashboard
                     conn.Open();
 
                     string targetBillCycle = ResolveTargetBillCycle(conn, billCycle);
+                    int safeTake = take <= 0 ? 10 : take;
                     response.BillCycle = targetBillCycle;
 
                     if (string.IsNullOrWhiteSpace(targetBillCycle))
@@ -60,11 +61,7 @@ namespace MISReports_Api.DAL.Dashboard
                     }
 
                     var records = GetTopCustomersFromMonTot(conn, targetBillCycle);
-
-                    if (take > 0)
-                    {
-                        records = records.Take(take).ToList();
-                    }
+                    records = records.Take(safeTake).ToList();
 
                     response.Records = records;
                 }

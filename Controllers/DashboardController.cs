@@ -199,10 +199,10 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        /// <summary>GET api/dashboard/top-customers/list?billCycle=450&take=10</summary>
+        /// <summary>GET api/dashboard/top-customers/list (defaults to latest bill cycle and top 10)</summary>
         [HttpGet]
         [Route("top-customers/list")]
-        public IHttpActionResult GetTopCustomers([FromUri] string billCycle = null, [FromUri] int take = 0)
+        public IHttpActionResult GetTopCustomers([FromUri] string billCycle = null, [FromUri] int take = 10)
         {
             try
             {
