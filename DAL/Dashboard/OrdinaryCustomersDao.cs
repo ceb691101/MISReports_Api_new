@@ -16,13 +16,13 @@ namespace MISReports_Api.DAL.Dashboard
             return _dbConnection.TestConnection(out errorMessage, false); // Use ordinary connection
         }
 
-        public OrdinaryCustomers GetOrdinaryCustomersCount(string currentBillCycle, string region = null)
+        public OrdinaryCustomers GetOrdinaryCustomersCount(string region = null)
         {
-            var result = new OrdinaryCustomers { TotalCount = 0, BillCycle = currentBillCycle };
+            var result = new OrdinaryCustomers { TotalCount = 0, BillCycle = "" };
 
             try
             {
-                logger.Info($"=== START GetOrdinaryCustomersCount for Cycle: {currentBillCycle} ===");
+                logger.Info("=== START GetOrdinaryCustomersCount ===");
 
                 using (var conn = _dbConnection.GetConnection(false)) // false = ordinary connection
                 {
@@ -45,13 +45,12 @@ namespace MISReports_Api.DAL.Dashboard
                         }
                     }
 
-                    int targetCycle = maxBillCycle - 2;
-                    result.BillCycle = targetCycle.ToString();
+                    result.BillCycle = (maxBillCycle - 2).ToString();
 
                     string sql = @"select sum(c.cnt)
                                 from consmry c, areas a
                                 where c.area_code = a.area_code
-                                and c.bill_cycle = ?";
+                                and c.bill_cycle = (select max(bill_cycle) from areas) - 2";
 
                     if (!string.IsNullOrWhiteSpace(region))
                     {
@@ -60,8 +59,6 @@ namespace MISReports_Api.DAL.Dashboard
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("?", targetCycle);
-
                         if (!string.IsNullOrWhiteSpace(region))
                         {
                             cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());

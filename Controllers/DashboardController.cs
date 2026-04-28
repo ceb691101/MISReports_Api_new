@@ -49,20 +49,17 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        /// <summary>GET api/dashboard/ordinary-customers-summary?billCycle=0</summary>
+        /// <summary>GET api/dashboard/ordinary-customers-summary?region={region}</summary>
         [HttpGet]
         [Route("ordinary-customers-summary")]
-        public IHttpActionResult GetOrdinaryCustomersSummary([FromUri] string billCycle, [FromUri] string region = null)
+        public IHttpActionResult GetOrdinaryCustomersSummary([FromUri] string region = null)
         {
-            if (string.IsNullOrWhiteSpace(billCycle))
-                return Ok(new { data = (object)null, errorMessage = "Bill cycle is required." });
-
             try
             {
                 if (!_ordinaryCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _ordinaryCustomersDao.GetOrdinaryCustomersCount(billCycle, NormalizeRegion(region));
+                var data = _ordinaryCustomersDao.GetOrdinaryCustomersCount(NormalizeRegion(region));
 
                 return Ok(new { data, errorMessage = (string)null });
             }
