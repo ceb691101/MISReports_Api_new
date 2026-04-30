@@ -18,7 +18,7 @@ namespace MISReports_Api.DAL.Dashboard
             return _dbConnection.TestConnection(out errorMessage, true);
         }
 
-        public SolarBulkCustomersSummary GetSummary()
+        public SolarBulkCustomersSummary GetSummary(string region = null)
         {
             var summary = new SolarBulkCustomersSummary
             {
@@ -43,7 +43,7 @@ namespace MISReports_Api.DAL.Dashboard
                         return summary;
                     }
 
-                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle);
+                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle, region);
 
                     summary.NetType1Customers = GetCountByNetType(groupedCounts, "1");
                     summary.NetType2Customers = GetCountByNetType(groupedCounts, "2") + GetCountByNetType(groupedCounts, "5");
@@ -65,32 +65,32 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public SolarBulkCustomersCount GetTotalCustomersCount()
+        public SolarBulkCustomersCount GetTotalCustomersCount(string region = null)
         {
-            return GetCountResult("ALL");
+            return GetCountResult("ALL", region);
         }
 
-        public SolarBulkCustomersCount GetNetType1CustomersCount()
+        public SolarBulkCustomersCount GetNetType1CustomersCount(string region = null)
         {
-            return GetCountResult("1");
+            return GetCountResult("1", region);
         }
 
-        public SolarBulkCustomersCount GetNetType2CustomersCount()
+        public SolarBulkCustomersCount GetNetType2CustomersCount(string region = null)
         {
-            return GetCountResult("2");
+            return GetCountResult("2", region);
         }
 
-        public SolarBulkCustomersCount GetNetType3CustomersCount()
+        public SolarBulkCustomersCount GetNetType3CustomersCount(string region = null)
         {
-            return GetCountResult("3");
+            return GetCountResult("3", region);
         }
 
-        public SolarBulkCustomersCount GetNetType4CustomersCount()
+        public SolarBulkCustomersCount GetNetType4CustomersCount(string region = null)
         {
-            return GetCountResult("4");
+            return GetCountResult("4", region);
         }
 
-        public SolarBulkGenerationCapacityGraph GetGenerationCapacityGraph(string billCycle = null, int cycles = 12)
+        public SolarBulkGenerationCapacityGraph GetGenerationCapacityGraph(string billCycle = null, int cycles = 12, string region = null)
         {
             var graph = new SolarBulkGenerationCapacityGraph
             {
@@ -123,7 +123,7 @@ namespace MISReports_Api.DAL.Dashboard
 
                     int safeCycles = cycles <= 0 ? 12 : cycles;
                     int selectedBillCycle = ResolveRequestedBillCycle(billCycle, latestCompletedBillCycle);
-                    var availableBillCycles = GetAvailableBillCyclesFromNetmtcons(conn, latestCompletedBillCycle, safeCycles);
+                    var availableBillCycles = GetAvailableBillCyclesFromNetmtcons(conn, latestCompletedBillCycle, safeCycles, region);
 
                     if (!availableBillCycles.Contains(selectedBillCycle) && availableBillCycles.Count > 0)
                     {
@@ -133,7 +133,7 @@ namespace MISReports_Api.DAL.Dashboard
                     graph.MaxBillCycle = latestCompletedBillCycle.ToString();
                     graph.SelectedBillCycle = selectedBillCycle.ToString();
                     graph.AvailableBillCycles = availableBillCycles.Select(cycle => cycle.ToString()).ToList();
-                    graph.Records = GetGenerationCapacityByCycleFromNetmtcons(conn, graph.SelectedBillCycle);
+                    graph.Records = GetGenerationCapacityByCycleFromNetmtcons(conn, graph.SelectedBillCycle, region);
                 }
 
                 return graph;
@@ -146,7 +146,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private SolarBulkCustomersCount GetCountResult(string netType)
+        private SolarBulkCustomersCount GetCountResult(string netType, string region)
         {
             var result = new SolarBulkCustomersCount
             {
@@ -167,7 +167,7 @@ namespace MISReports_Api.DAL.Dashboard
                         return result;
                     }
 
-                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle);
+                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle, region);
 
                     if (netType == "ALL")
                     {
@@ -208,16 +208,22 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private Dictionary<string, int> GetGroupedCountsFromNetmtcons(OleDbConnection conn, string billCycle)
+        private Dictionary<string, int> GetGroupedCountsFromNetmtcons(OleDbConnection conn, string billCycle, string region)
         {
             var groupedCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            const string groupedSql = "SELECT bill_cycle, net_type, COUNT(*), SUM(gen_cap) " +
-                                      "FROM netmtcons WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
+            bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+            string groupedSql = hasRegionFilter
+                ? "SELECT n.bill_cycle, n.net_type, COUNT(*), SUM(n.gen_cap) FROM netmtcons n, areas a WHERE n.bill_cycle = ? AND n.area_cd = a.area_code AND a.region = ? GROUP BY 1,2 ORDER BY 2,1"
+                : "SELECT bill_cycle, net_type, COUNT(*), SUM(gen_cap) FROM netmtcons WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
 
             using (var cmd = new OleDbCommand(groupedSql, conn))
             {
                 cmd.Parameters.AddWithValue("?", billCycle);
+                if (hasRegionFilter)
+                {
+                    cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                }
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -243,15 +249,22 @@ namespace MISReports_Api.DAL.Dashboard
             return groupedCounts.TryGetValue(netType, out int count) ? count : 0;
         }
 
-        private List<int> GetAvailableBillCyclesFromNetmtcons(OleDbConnection conn, int maxAllowedCycle, int takeCount)
+        private List<int> GetAvailableBillCyclesFromNetmtcons(OleDbConnection conn, int maxAllowedCycle, int takeCount, string region)
         {
             var billCycles = new List<int>();
 
-            const string sql = "SELECT DISTINCT bill_cycle FROM netmtcons WHERE bill_cycle <= ? ORDER BY bill_cycle DESC";
+            bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+            string sql = hasRegionFilter
+                ? "SELECT DISTINCT n.bill_cycle FROM netmtcons n, areas a WHERE n.bill_cycle <= ? AND n.area_cd = a.area_code AND a.region = ? ORDER BY n.bill_cycle DESC"
+                : "SELECT DISTINCT bill_cycle FROM netmtcons WHERE bill_cycle <= ? ORDER BY bill_cycle DESC";
 
             using (var cmd = new OleDbCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("?", maxAllowedCycle.ToString());
+                if (hasRegionFilter)
+                {
+                    cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                }
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -274,16 +287,22 @@ namespace MISReports_Api.DAL.Dashboard
             return billCycles;
         }
 
-        private List<SolarBulkGenerationCapacityPoint> GetGenerationCapacityByCycleFromNetmtcons(OleDbConnection conn, string billCycle)
+        private List<SolarBulkGenerationCapacityPoint> GetGenerationCapacityByCycleFromNetmtcons(OleDbConnection conn, string billCycle, string region)
         {
             var groupedByDisplayType = new Dictionary<string, SolarBulkGenerationCapacityPoint>(StringComparer.OrdinalIgnoreCase);
 
-            const string sql = "SELECT bill_cycle, net_type, COUNT(*), SUM(gen_cap) " +
-                               "FROM netmtcons WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
+            bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+            string sql = hasRegionFilter
+                ? "SELECT n.bill_cycle, n.net_type, COUNT(*), SUM(n.gen_cap) FROM netmtcons n, areas a WHERE n.bill_cycle = ? AND n.area_cd = a.area_code AND a.region = ? GROUP BY 1,2 ORDER BY 2,1"
+                : "SELECT bill_cycle, net_type, COUNT(*), SUM(gen_cap) FROM netmtcons WHERE bill_cycle = ? GROUP BY 1,2 ORDER BY 2,1";
 
             using (var cmd = new OleDbCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("?", billCycle);
+                if (hasRegionFilter)
+                {
+                    cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                }
 
                 using (var reader = cmd.ExecuteReader())
                 {

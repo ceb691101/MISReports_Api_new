@@ -23,7 +23,7 @@ namespace MISReports_Api.DAL.Dashboard
         /// <summary>
         /// Get active customer count (cst_st='0')
         /// </summary>
-        public int GetActiveCustomerCount()
+        public int GetActiveCustomerCount(string region = null)
         {
             try
             {
@@ -33,10 +33,25 @@ namespace MISReports_Api.DAL.Dashboard
                 {
                     conn.Open();
 
-                    string sql = "SELECT COUNT(*) FROM customer WHERE cst_st='0'";
+                    string sql;
+                    bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+
+                    if (hasRegionFilter)
+                    {
+                        sql = "SELECT COUNT(*) FROM customer c, areas a WHERE c.cst_st='0' AND c.area_cd = a.area_code AND a.region = ?";
+                    }
+                    else
+                    {
+                        sql = "SELECT COUNT(*) FROM customer WHERE cst_st='0'";
+                    }
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
+                        if (hasRegionFilter)
+                        {
+                            cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                        }
+
                         var result = cmd.ExecuteScalar();
                         int count = result != DBNull.Value ? Convert.ToInt32(result) : 0;
 

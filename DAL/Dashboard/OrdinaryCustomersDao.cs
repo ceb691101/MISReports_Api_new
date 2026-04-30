@@ -16,7 +16,7 @@ namespace MISReports_Api.DAL.Dashboard
             return _dbConnection.TestConnection(out errorMessage, false); // Use ordinary connection
         }
 
-        public OrdinaryCustomers GetOrdinaryCustomersCount(string currentBillCycle)
+        public OrdinaryCustomers GetOrdinaryCustomersCount(string currentBillCycle, string region = null)
         {
             var result = new OrdinaryCustomers { TotalCount = 0, BillCycle = currentBillCycle };
 
@@ -48,12 +48,25 @@ namespace MISReports_Api.DAL.Dashboard
                     int targetCycle = maxBillCycle - 2;
                     result.BillCycle = targetCycle.ToString();
 
-                    string sql = @"select sum(cnt)
-                                from consmry
-                                where bill_cycle = (select max(bill_cycle) from areas) - 2";
+                    string sql = @"select sum(c.cnt)
+                                from consmry c, areas a
+                                where c.area_code = a.area_code
+                                and c.bill_cycle = ?";
+
+                    if (!string.IsNullOrWhiteSpace(region))
+                    {
+                        sql += " and a.region = ?";
+                    }
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
+                        cmd.Parameters.AddWithValue("?", targetCycle);
+
+                        if (!string.IsNullOrWhiteSpace(region))
+                        {
+                            cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                        }
+
                         var dbValue = cmd.ExecuteScalar();
                         if (dbValue != DBNull.Value && dbValue != null)
                         {

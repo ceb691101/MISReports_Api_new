@@ -58,15 +58,18 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public List<KioskCollectionModel> GetKioskCollection(string userId, DateTime fromDate, DateTime toDate)
+        public List<KioskCollectionModel> GetKioskCollection(string userId, string region = null)
         {
             var rows = new List<KioskCollectionModel>();
 
             try
             {
+                var toDate = DateTime.Today.AddDays(-1);
+                var fromDate = toDate.AddDays(-6);
                 logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
+                //logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
 
-                rows = QueryKioskCollection(userId: userId, fromDate: fromDate, toDate: toDate);
+                rows = QueryKioskCollection(userId: userId, region: region);
 
                 logger.Info($"=== END GetKioskCollection (Success) - {rows.Count} records ===");
                 return rows;
@@ -78,21 +81,34 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private List<KioskCollectionModel> QueryKioskCollection(string userId, DateTime fromDate, DateTime toDate)
+        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region)
         {
             var rows = new List<KioskCollectionModel>();
 
-            // to include all times on toDate when trans_date is datetime.
-            const string sql = @"
-                SELECT trans_date,
-                       SUM(trans_amt) AS collection
-                FROM   cus_tran
-                                WHERE  userid = ?
-                                    AND  trans_date >= ?
-                                    AND  trans_date <  ?
-                  AND  bill_type = 'O'
-                GROUP BY 1
-                ORDER BY 1";
+            bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+            string sql = hasRegionFilter
+                    ? @"
+                                                                SELECT DATE(c.trans_date) AS trans_date,
+                                             SUM(c.trans_amt) AS collection
+                                FROM   cus_tran c, areas a
+                                                                WHERE  c.userid = ?
+                                                                        AND  c.trans_date >= TODAY - 7
+                                                                        AND  c.trans_date <  TODAY
+                                    AND  c.bill_type = 'O'
+                                    AND  c.area_code = a.area_code
+                                    AND  a.region = ?
+                                GROUP BY 1
+                                ORDER BY 1"
+                    : @"
+                                                                SELECT DATE(trans_date) AS trans_date,
+                                             SUM(trans_amt) AS collection
+                                FROM   cus_tran
+                                                                WHERE  userid = ?
+                                                                        AND  trans_date >= TODAY - 7
+                                                                        AND  trans_date <  TODAY
+                                    AND  bill_type = 'O'
+                                GROUP BY 1
+                                ORDER BY 1";
 
             using (var conn = new OdbcConnection(_connectionString))
             {
@@ -101,8 +117,10 @@ namespace MISReports_Api.DAL.Dashboard
                 using (var cmd = new OdbcCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("?", userId);
-                    cmd.Parameters.AddWithValue("?", fromDate.Date);
-                    cmd.Parameters.AddWithValue("?", toDate.Date.AddDays(1));
+                    if (hasRegionFilter)
+                    {
+                        cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                    }
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -131,6 +149,7 @@ namespace MISReports_Api.DAL.Dashboard
                     return string.Empty;
 
                 return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
+                //return Convert.ToDateTime(value).ToString("dd-MM-yyyy");
             }
             catch (IndexOutOfRangeException)
             {
