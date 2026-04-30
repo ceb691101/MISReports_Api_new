@@ -49,20 +49,17 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        /// <summary>GET api/dashboard/ordinary-customers-summary?billCycle=0</summary>
+        /// <summary>GET api/dashboard/ordinary-customers-summary?region={region}</summary>
         [HttpGet]
         [Route("ordinary-customers-summary")]
-        public IHttpActionResult GetOrdinaryCustomersSummary([FromUri] string billCycle, [FromUri] string region = null)
+        public IHttpActionResult GetOrdinaryCustomersSummary([FromUri] string region = null)
         {
-            if (string.IsNullOrWhiteSpace(billCycle))
-                return Ok(new { data = (object)null, errorMessage = "Bill cycle is required." });
-
             try
             {
                 if (!_ordinaryCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _ordinaryCustomersDao.GetOrdinaryCustomersCount(billCycle, NormalizeRegion(region));
+                var data = _ordinaryCustomersDao.GetOrdinaryCustomersCount(NormalizeRegion(region));
 
                 return Ok(new { data, errorMessage = (string)null });
             }
@@ -199,17 +196,18 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        /// <summary>GET api/dashboard/top-customers/list (defaults to latest bill cycle and top 10)</summary>
+        /// <summary>GET api/dashboard/top-customers/list (fetches latest bill cycle and top 10 customers)</summary>
         [HttpGet]
         [Route("top-customers/list")]
-        public IHttpActionResult GetTopCustomers([FromUri] string billCycle = null, [FromUri] int take = 10)
+        public IHttpActionResult GetTopCustomers()
         {
             try
             {
                 if (!_topCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _topCustomersDao.GetTopCustomers(NormalizeBillCycle(billCycle), take);
+                // Always fetch the max bill cycle and return top 10 customers
+                var data = _topCustomersDao.GetTopCustomers(null, 10);
 
                 return Ok(new
                 {
