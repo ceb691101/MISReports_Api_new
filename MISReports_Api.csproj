@@ -346,6 +346,7 @@
     <Compile Include="Controllers\SharedController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarBillingController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarPendingJobsController.cs" />
+    <Compile Include="Controllers\AnalysisController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVPaidReportController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVtobePaidReportController.cs" />
@@ -385,6 +386,7 @@
     <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
+    <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesOrdBillCycleDao.cs" />
@@ -528,6 +530,7 @@
     <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
+    <Compile Include="Models\Analysis\SolarAgeAnalysisModel.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
     <Compile Include="Models\Debtors\BillCycleModel.cs" />
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
