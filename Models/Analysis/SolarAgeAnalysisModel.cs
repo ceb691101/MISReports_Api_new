@@ -20,6 +20,48 @@ namespace MISReports_Api.Models.Analysis
         public string Address3 { get; set; }
         public string AgreementDate { get; set; }
         public long AgeDays { get; set; }
+
+        // Computed properties for frontend display
+        public string Name
+        {
+            get
+            {
+                var firstName = (CustomerFirstName ?? string.Empty).Trim();
+                var lastName = (CustomerLastName ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+                    return string.Empty;
+                return $"{firstName} {lastName}".Trim();
+            }
+        }
+
+        public string Address
+        {
+            get
+            {
+                var parts = new[]
+                {
+                    (Address1 ?? string.Empty).Trim(),
+                    (Address2 ?? string.Empty).Trim(),
+                    (Address3 ?? string.Empty).Trim()
+                };
+                return string.Join(", ", System.Linq.Enumerable.Where(parts, p => !string.IsNullOrWhiteSpace(p)));
+            }
+        }
+
+        public string InitialAgreementDate
+        {
+            get { return AgreementDate ?? string.Empty; }
+        }
+
+        public double? AgeInYears
+        {
+            get
+            {
+                if (AgeDays <= 0)
+                    return null;
+                return System.Math.Round(AgeDays / 365.25, 2);
+            }
+        }
     }
 
     public class SolarAgeAnalysisRequest

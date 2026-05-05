@@ -79,8 +79,36 @@ namespace MISReports_Api.DAL.Analysis
                 throw new ArgumentException("Data source is required.");
             }
 
-            string connStr = string.Format(templateSetting.ConnectionString, dataSource.Trim());
-            logger.Info($"Built connection string with data source '{dataSource.Trim()}'");
+            // Normalize dataSource: ensure it has the form "<database>@<server>".
+            // If only server is provided (no @), assume the billing database name "billing".
+            // If the database part looks like a POS DB (starts with "pos"), replace it with "billing".
+            string ds = dataSource.Trim();
+            try
+            {
+                if (!ds.Contains("@"))
+                {
+                    ds = $"billing@{ds}";
+                }
+                else
+                {
+                    var parts = ds.Split(new[] { '@' }, 2);
+                    var dbPart = parts[0];
+                    var srvPart = parts[1];
+                    if (!string.IsNullOrWhiteSpace(dbPart) && dbPart.Trim().ToLowerInvariant().StartsWith("pos"))
+                    {
+                        dbPart = "billing";
+                        ds = dbPart + "@" + srvPart;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, $"Failed to normalize data source '{dataSource}'; using original value.");
+                ds = dataSource.Trim();
+            }
+
+            string connStr = string.Format(templateSetting.ConnectionString, ds);
+            logger.Info($"Built connection string with data source '{ds}'");
             return connStr;
         }
 
