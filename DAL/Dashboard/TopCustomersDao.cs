@@ -51,7 +51,7 @@ namespace MISReports_Api.DAL.Dashboard
                     conn.Open();
 
                     string targetBillCycle = ResolveTargetBillCycle(conn, billCycle);
-                    int safeTake = take <= 0 ? 10 : take;
+                    int safeTake = take <= 0 ? 100 : take;
                     response.BillCycle = targetBillCycle;
 
                     if (string.IsNullOrWhiteSpace(targetBillCycle))
