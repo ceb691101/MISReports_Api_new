@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DBAccess;
+using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
