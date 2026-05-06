@@ -353,6 +353,7 @@
     <Compile Include="Controllers\SharedController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarBillingController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarPendingJobsController.cs" />
+    <Compile Include="Controllers\AnalysisController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVPaidReportController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVtobePaidReportController.cs" />
@@ -399,6 +400,7 @@
     <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
+    <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
@@ -559,6 +561,7 @@
     <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
+    <Compile Include="Models\Analysis\SolarAgeAnalysisModel.cs" />
     <Compile Include="Models\FinancialDashboard\CachedValueModel.cs" />
     <Compile Include="Models\FinancialDashboard\PivDivisionModel.cs" />
     <Compile Include="Models\FinancialDashboard\PivTotalModel.cs" />
