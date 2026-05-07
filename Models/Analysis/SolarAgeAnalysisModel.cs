@@ -13,6 +13,7 @@ namespace MISReports_Api.Models.Analysis
         public string AccountNumber { get; set; }
         public string NetTypeCode { get; set; }
         public string NetType { get; set; }
+        public string PanelCapacity { get; set; }
         public string CustomerFirstName { get; set; }
         public string CustomerLastName { get; set; }
         public string Address1 { get; set; }

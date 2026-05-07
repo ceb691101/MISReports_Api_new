@@ -375,6 +375,7 @@ namespace MISReports_Api.DAL.Analysis
                                     AccountNumber = GetStringValue(reader, 0),
                                     NetTypeCode = GetStringValue(reader, 1),
                                     NetType = GetNetTypeDisplayName(GetStringValue(reader, 1)),
+                                    PanelCapacity = GetStringValue(reader, 8),
                                     CustomerFirstName = GetStringValue(reader, 2),
                                     CustomerLastName = GetStringValue(reader, 3),
                                     Address1 = GetStringValue(reader, 4),
@@ -395,6 +396,106 @@ namespace MISReports_Api.DAL.Analysis
             catch (Exception ex)
             {
                 logger.Error(ex, "Error while fetching solar age analysis data");
+                result.ErrorMessage = ex.Message;
+                return result;
+            }
+        }
+
+        public SolarAgeAnalysisResult GetFullReport(SolarAgeAnalysisRequest request)
+        {
+            var result = new SolarAgeAnalysisResult
+            {
+                AreaCode = request?.AreaCode,
+                BillCycle = request?.BillCycle,
+                AgeBand = "all",
+                Records = new List<SolarAgeCustomerModel>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (request == null)
+                {
+                    throw new ArgumentNullException(nameof(request));
+                }
+
+                ValidateAreaCode(request.AreaCode);
+
+                if (string.IsNullOrWhiteSpace(request.BillCycle) || !IsDigitsOnly(request.BillCycle))
+                {
+                    throw new ArgumentException("Bill cycle is required and must be numeric.");
+                }
+
+                string serverName = GetProvinceDatabaseServer(request.AreaCode);
+                string billingConnectionString = BuildConnectionString(serverName);
+
+                string tableName = $"electric_{request.AreaCode.Trim()}";
+                string sql = $@"SELECT n.acct_number,
+                                       n.net_type,
+                                       c.cust_fname,
+                                       c.cust_lname,
+                                       c.address_1,
+                                       c.address_2,
+                                       c.address_3,
+                                       m.agrmnt_date,
+                                       m.gen_cap
+                                FROM netmtcons n,
+                                     {tableName} e,
+                                     netmeter m,
+                                     customers c
+                                WHERE n.bill_cycle = ?
+                                  AND n.area_code = ?
+                                  AND e.cust_status <> '9'
+                                  AND n.acct_number = e.acct_number
+                                  AND m.acct_number = e.acct_number
+                                  AND c.acct_number = e.acct_number
+                                ORDER BY n.net_type, m.agrmnt_date";
+
+                using (var conn = new OleDbConnection(billingConnectionString))
+                {
+                    conn.Open();
+
+                    using (var cmd = new OleDbCommand(sql, conn))
+                    {
+                        cmd.CommandTimeout = 300;
+                        cmd.Parameters.AddWithValue("?", request.BillCycle.Trim());
+                        cmd.Parameters.AddWithValue("?", request.AreaCode.Trim());
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string agreementDateText = GetStringValue(reader, 7);
+                                DateTime? agreementDate = ParseDate(agreementDateText);
+
+                                result.Records.Add(new SolarAgeCustomerModel
+                                {
+                                    AccountNumber = GetStringValue(reader, 0),
+                                    NetTypeCode = GetStringValue(reader, 1),
+                                    NetType = GetNetTypeDisplayName(GetStringValue(reader, 1)),
+                                    PanelCapacity = GetStringValue(reader, 8),
+                                    CustomerFirstName = GetStringValue(reader, 2),
+                                    CustomerLastName = GetStringValue(reader, 3),
+                                    Address1 = GetStringValue(reader, 4),
+                                    Address2 = GetStringValue(reader, 5),
+                                    Address3 = GetStringValue(reader, 6),
+                                    AgreementDate = agreementDate.HasValue
+                                        ? agreementDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                                        : agreementDateText,
+                                    AgeDays = agreementDate.HasValue
+                                        ? (long)Math.Max(0, (DateTime.Today.Date - agreementDate.Value.Date).TotalDays)
+                                        : 0
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching solar age full report data");
                 result.ErrorMessage = ex.Message;
                 return result;
             }

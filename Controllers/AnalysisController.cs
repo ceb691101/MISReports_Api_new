@@ -172,5 +172,60 @@ namespace MISReports_Api.Controllers
 				}));
 			}
 		}
+
+		[HttpGet]
+		[Route("full-report")]
+		public IHttpActionResult GetFullReport(
+			[FromUri] string areaCode,
+			[FromUri] string billCycle)
+		{
+			var validationErrors = new List<string>();
+
+			if (string.IsNullOrWhiteSpace(areaCode))
+			{
+				validationErrors.Add("Area code is required.");
+			}
+
+			if (string.IsNullOrWhiteSpace(billCycle))
+			{
+				validationErrors.Add("Bill cycle is required.");
+			}
+
+			if (validationErrors.Count > 0)
+			{
+				return Ok(JObject.FromObject(new
+				{
+					data = (object)null,
+					errorMessage = string.Join("; ", validationErrors)
+				}));
+			}
+
+			try
+			{
+				var request = new SolarAgeAnalysisRequest
+				{
+					AreaCode = areaCode.Trim(),
+					BillCycle = billCycle.Trim(),
+					AgeBand = "all"
+				};
+
+				var result = _solarAgeAnalysisDao.GetFullReport(request);
+
+				return Ok(JObject.FromObject(new
+				{
+					data = result,
+					errorMessage = result.ErrorMessage
+				}));
+			}
+			catch (Exception ex)
+			{
+				return Ok(JObject.FromObject(new
+				{
+					data = (object)null,
+					errorMessage = "Cannot get solar age full report data.",
+					errorDetails = ex.Message
+				}));
+			}
+		}
 	}
 }
