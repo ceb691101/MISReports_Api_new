@@ -45,12 +45,21 @@ namespace MISReports_Api.DAL.Dashboard
                         }
                     }
 
-                    result.BillCycle = (maxBillCycle - 2).ToString();
+                    result.BillCycle = (maxBillCycle - 1).ToString();
 
-                    string sql = @"select sum(c.cnt)
-                                from consmry c, areas a
-                                where c.area_code = a.area_code
-                                and c.bill_cycle = (select max(bill_cycle) from areas) - 2";
+                    string sql = @"select sum(
+     c.c00 + c.c01 + c.c02 + c.c03 + c.c04 + c.c05 + c.c06 + c.c07 + c.c08 + c.c09 +
+     c.c10 + c.c11 + c.c12 + c.c13 + c.c14 + c.c15 + c.c16 + c.c17 + c.c18 + c.c19 +
+     c.c20 + c.c21 + c.c22 + c.c23 + c.c24 + c.c25 + c.c26 + c.c27 + c.c28 + c.c29 +
+     c.c30 + c.c31 + c.c32 + c.c33 + c.c34 + c.c35 + c.c36 + c.c37 + c.c38 + c.c39 +
+     c.c40 + c.c41 + c.c42 + c.c43 + c.c44 + c.c45 + c.c46 + c.c47 + c.c48 + c.c49 +
+     c.c50 + c.c51 + c.c52 + c.c53 + c.c54 + c.c55 + c.c56 + c.c57 + c.c58 + c.c59 +
+     c.c60 + c.c61
+     )
+     from agesmry c, areas a
+     where c.area_code = a.area_code
+     and c.bill_cycle = (select max(bill_cycle) from areas) - 1
+     and c.cust_type in ('A','G')";
 
                     if (!string.IsNullOrWhiteSpace(region))
                     {
