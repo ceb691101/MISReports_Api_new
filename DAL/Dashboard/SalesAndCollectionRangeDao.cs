@@ -1,4 +1,4 @@
-using MISReports_Api.DBAccess;
+﻿using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
@@ -174,8 +174,8 @@ namespace MISReports_Api.DAL.Dashboard
 
                     rows.Add(new SalesAndCollectionModel
                     {
-                        // Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                        Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
+                        Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        // Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
                         Collection = amount,
                         ErrorMessage = string.Empty
                     });
