@@ -1,4 +1,4 @@
-using MISReports_Api.DBAccess;
+﻿using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
@@ -130,8 +130,8 @@ namespace MISReports_Api.DAL.Dashboard
 
             try
             {
-                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
-                //logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
+                // logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
+                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
 
                 using (var posConn = new OdbcConnection(_posPaymentConnectionString))
                 {
