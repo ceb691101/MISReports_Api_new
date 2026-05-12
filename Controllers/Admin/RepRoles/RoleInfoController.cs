@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DAL;
+using MISReports_Api.DAL;
 using MISReports_Api.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -368,6 +368,40 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
+        [Route("companies/{companyId}/departments")]
+        public IHttpActionResult GetDepartmentsByCompany(string companyId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(companyId))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Company is required."
+                    }));
+                }
+
+                var result = _repository.GetDepartmentsByCompany(companyId.Trim());
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get departments.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet]
         [Route("companies/{companyId}/costcentres")]
         public IHttpActionResult GetCostCentresByCompany(string companyId)
         {
@@ -383,6 +417,40 @@ namespace MISReports_Api.Controllers
                 }
 
                 var result = _repository.GetCostCentresByCompany(companyId.Trim());
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get cost centres.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet]
+        [Route("departments/{departmentId}/costcentres")]
+        public IHttpActionResult GetCostCentresByDepartment(string departmentId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(departmentId))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Department is required."
+                    }));
+                }
+
+                var result = _repository.GetCostCentresByDepartment(departmentId.Trim());
 
                 return Ok(JObject.FromObject(new
                 {

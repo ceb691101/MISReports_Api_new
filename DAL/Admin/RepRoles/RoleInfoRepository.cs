@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models;
+using MISReports_Api.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -687,32 +687,30 @@ namespace MISReports_Api.DAL
 
                     string sql = @"
                         SELECT 
-                            dept_id || ':' || dept_nm AS CostCentreDisplay,
+                            TRIM(dept_id) || ':' || TRIM(dept_nm) AS CostCentreDisplay,
                             TRIM(dept_id) AS CostCentreId,
                             TRIM(dept_nm) AS CostCentreName
                         FROM gldeptm
-                        WHERE dept_id IN (
-                            SELECT dept_id
-                            FROM gldeptm
+                        WHERE TRIM(comp_id) IN (
+                            SELECT TRIM(comp_id)
+                            FROM glcompm
                             WHERE status = 2
-                              AND comp_id IN (
-                                  SELECT comp_id
-                                  FROM glcompm
-                                  WHERE status = 2
-                                    AND (
-                                        comp_id   LIKE :comp_prefix
-                                     OR parent_id LIKE :comp_prefix
-                                     OR grp_comp  LIKE :comp_prefix
-                                    )
-                              )
+                              AND :comp_id IN (TRIM(parent_id), TRIM(grp_comp), TRIM(comp_id))
                         )
-                        ORDER BY dept_nm";
+                        UNION ALL
+                        SELECT 
+                            TRIM(comp_id) || ':' || TRIM(comp_nm) AS CostCentreDisplay,
+                            TRIM(comp_id) AS CostCentreId,
+                            TRIM(comp_nm) AS CostCentreName
+                        FROM glcompm
+                        WHERE status = 2
+                          AND :comp_id IN (TRIM(parent_id), TRIM(grp_comp), TRIM(comp_id))
+                        ORDER BY 2";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
                         cmd.BindByName = true;
-                        string compPrefix = (companyId?.Trim().ToUpper() ?? "") + "%";
-                        cmd.Parameters.Add("comp_prefix", OracleDbType.Varchar2).Value = compPrefix;
+                        cmd.Parameters.Add("comp_id", OracleDbType.Varchar2).Value = companyId?.Trim();
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -736,6 +734,50 @@ namespace MISReports_Api.DAL
             }
 
             return costCentres;
+        }
+
+        public List<DepartmentOptionModel> GetDepartmentsByCompany(string companyId)
+        {
+            var departments = new List<DepartmentOptionModel>();
+
+            try
+            {
+                using (var conn = new OracleConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string sql = @"
+                        SELECT DISTINCT TRIM(dept_id) AS DepartmentId, TRIM(dept_nm) AS DepartmentName
+                        FROM gldeptm
+                        WHERE status = 2 AND TRIM(comp_id) = :comp_id
+                        ORDER BY TRIM(dept_id)";
+
+                    using (var cmd = new OracleCommand(sql, conn))
+                    {
+                        cmd.BindByName = true;
+                        cmd.Parameters.Add("comp_id", OracleDbType.Varchar2).Value = companyId?.Trim();
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                departments.Add(new DepartmentOptionModel
+                                {
+                                    DepartmentId = reader["DepartmentId"]?.ToString(),
+                                    DepartmentName = reader["DepartmentName"]?.ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetDepartmentsByCompany: {ex.Message}");
+                throw;
+            }
+
+            return departments;
         }
 
         public List<UserGroupOptionModel> GetUserGroups()
@@ -776,6 +818,54 @@ namespace MISReports_Api.DAL
             }
 
             return groups;
+        }
+
+        public List<CostCentreOptionModel> GetCostCentresByDepartment(string departmentId)
+        {
+            var costCentres = new List<CostCentreOptionModel>();
+
+            try
+            {
+                using (var conn = new OracleConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string sql = @"
+                        SELECT 
+                            TRIM(dept_id) || ':' || TRIM(dept_nm) AS CostCentreDisplay,
+                            TRIM(dept_id) AS CostCentreId,
+                            TRIM(dept_nm) AS CostCentreName
+                        FROM gldeptm
+                        WHERE status = 2 AND TRIM(parent_dept_id) = :dept_id
+                        ORDER BY TRIM(dept_id)";
+
+                    using (var cmd = new OracleCommand(sql, conn))
+                    {
+                        cmd.BindByName = true;
+                        cmd.Parameters.Add("dept_id", OracleDbType.Varchar2).Value = departmentId?.Trim();
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                costCentres.Add(new CostCentreOptionModel
+                                {
+                                    CostCentreId = reader["CostCentreId"]?.ToString(),
+                                    CostCentreName = reader["CostCentreName"]?.ToString(),
+                                    CostCentreDisplay = reader["CostCentreDisplay"]?.ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetCostCentresByDepartment: {ex.Message}");
+                throw;
+            }
+
+            return costCentres;
         }
     }
 }
