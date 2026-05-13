@@ -691,11 +691,13 @@ namespace MISReports_Api.DAL
                             TRIM(dept_id) AS CostCentreId,
                             TRIM(dept_nm) AS CostCentreName
                         FROM gldeptm
-                        WHERE TRIM(comp_id) IN (
-                            SELECT TRIM(comp_id)
-                            FROM glcompm
-                            WHERE status = 2
-                              AND :comp_id IN (TRIM(parent_id), TRIM(grp_comp), TRIM(comp_id))
+                        WHERE status = 2 AND (
+                            :comp_id = 'ALL' OR TRIM(comp_id) IN (
+                                SELECT TRIM(comp_id)
+                                FROM glcompm
+                                WHERE status = 2
+                                  AND :comp_id IN (TRIM(parent_id), TRIM(grp_comp), TRIM(comp_id))
+                            )
                         )
                         UNION ALL
                         SELECT 
@@ -704,7 +706,7 @@ namespace MISReports_Api.DAL
                             TRIM(comp_nm) AS CostCentreName
                         FROM glcompm
                         WHERE status = 2
-                          AND :comp_id IN (TRIM(parent_id), TRIM(grp_comp), TRIM(comp_id))
+                          AND (:comp_id = 'ALL' OR :comp_id IN (TRIM(parent_id), TRIM(grp_comp), TRIM(comp_id)))
                         ORDER BY 2";
 
                     using (var cmd = new OracleCommand(sql, conn))
