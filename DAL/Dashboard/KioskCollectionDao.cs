@@ -66,19 +66,10 @@ namespace MISReports_Api.DAL.Dashboard
             {
                 var toDate = DateTime.Today.AddDays(-1);
                 var fromDate = toDate.AddDays(-6);
-
                 // logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
-                // logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
+                logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
 
-
-                // Convert dates to strings for SQL parameters
-                string toDateStr = toDate.ToString("dd-MM-yyyy");
-                string fromDateStr = fromDate.ToString("dd-MM-yyyy");
-
-                logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDateStr} to {toDateStr} ===");
-
-                // rows = QueryKioskCollection(userId: userId, region: region);
-                rows = QueryKioskCollection(userId: userId, region: region, fromDate: fromDateStr, toDate: toDateStr);
+                rows = QueryKioskCollection(userId: userId, region: region);
 
                 logger.Info($"=== END GetKioskCollection (Success) - {rows.Count} records ===");
                 return rows;
@@ -90,38 +81,34 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        // private List<KioskCollectionModel> QueryKioskCollection(string userId, string region)
-
-        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region, string fromDate, string toDate)
+        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region)
         {
             var rows = new List<KioskCollectionModel>();
 
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
             string sql = hasRegionFilter
-                    // ? @"
-                    ? $@"
-                        SELECT DATE(c.trans_date) AS trans_date,
-                        SUM(c.trans_amt) AS collection
-                        FROM   cus_tran c, areas a
-                        WHERE  c.userid = ?
-                        AND  c.trans_date >= '{fromDate}'
-                        AND  c.trans_date <  '{toDate}'
-                        AND  c.bill_type = 'O'
-                        AND  c.area_code = a.area_code
-                        AND  a.region = ?
-                        GROUP BY 1
-                        ORDER BY 1"
-                    // : @"
-                    : $@"
-                        SELECT DATE(trans_date) AS trans_date,
-                        SUM(trans_amt) AS collection
-                        FROM   cus_tran
-                        WHERE  userid = ?
-                        AND  trans_date >= '{fromDate}'
-                        AND  trans_date <  '{toDate}'
-                        AND  bill_type = 'O'
-                        GROUP BY 1
-                        ORDER BY 1";
+                    ? @"
+                                                                SELECT DATE(c.trans_date) AS trans_date,
+                                             SUM(c.trans_amt) AS collection
+                                FROM   cus_tran c, areas a
+                                                                WHERE  c.userid = ?
+                                                                        AND  c.trans_date >= TODAY - 7
+                                                                        AND  c.trans_date <  TODAY
+                                    AND  c.bill_type = 'O'
+                                    AND  c.area_code = a.area_code
+                                    AND  a.region = ?
+                                GROUP BY 1
+                                ORDER BY 1"
+                    : @"
+                                                                SELECT DATE(trans_date) AS trans_date,
+                                             SUM(trans_amt) AS collection
+                                FROM   cus_tran
+                                                                WHERE  userid = ?
+                                                                        AND  trans_date >= TODAY - 7
+                                                                        AND  trans_date <  TODAY
+                                    AND  bill_type = 'O'
+                                GROUP BY 1
+                                ORDER BY 1";
 
             using (var conn = new OdbcConnection(_connectionString))
             {

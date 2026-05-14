@@ -89,42 +89,40 @@ namespace MISReports_Api.DAL.Dashboard
 
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
             string normalizedRegion = hasRegionFilter ? region.Trim().ToUpperInvariant() : null;
-            string fromDateStr = fromDate.ToString("dd-MM-yyyy");
-            string toDateStr = toDate.ToString("dd-MM-yyyy");
 
-            string posCollectionSql = $@"
+            string posCollectionSql = @"
                 SELECT c.trans_date,
                        SUM(c.trans_amt) AS amount
                 FROM cus_tran c, areas a
                 WHERE c.area_code = a.area_code
                   AND c.bill_type = ?
                   AND c.trans_type = 0
-                                    AND c.trans_date >= '{fromDateStr}'
-                                                                        AND c.trans_date <= '{toDateStr}'
+                  AND c.trans_date >= ?
+                                    AND c.trans_date <= ?
                   " + (hasRegionFilter ? "AND a.region = ?\n" : string.Empty) + @"
                 GROUP BY 1
                 ORDER BY 1";
 
-            string bankCashSql = $@"
+            string bankCashSql = @"
                 SELECT b.cash_date,
                        SUM(b.paid_amount) AS amount
                 FROM bank_paymast b, bankname c, areas p
                 WHERE b.area_code = p.area_code
                   AND b.bank_code = c.bank_code
-                                    AND b.cash_date >= '{fromDateStr}'
-                                                                        AND b.cash_date <= '{toDateStr}'
+                  AND b.cash_date >= ?
+                                    AND b.cash_date <= ?
                   AND b.bill_type = ?
                   " + (hasRegionFilter ? "AND p.region = ?\n" : string.Empty) + @"
                 GROUP BY 1
                 ORDER BY 1";
 
-            string cardCashSql = $@"
+            string cardCashSql = @"
                 SELECT b.cash_date,
                        SUM(b.tot_amt) AS amount
                 FROM crdtauth b, areas p
                 WHERE b.area_code = p.area_code
-                                    AND b.cash_date >= '{fromDateStr}'
-                                                                        AND b.cash_date <= '{toDateStr}'
+                  AND b.cash_date >= ?
+                                    AND b.cash_date <= ?
                   AND b.bill_type = ?
                   " + (hasRegionFilter ? "AND p.region = ?\n" : string.Empty) + @"
                 GROUP BY 1
@@ -143,8 +141,8 @@ namespace MISReports_Api.DAL.Dashboard
                         sql: posCollectionSql,
                         destination: dailyCollection,
                         parameters: hasRegionFilter
-                            ? new object[] { billType, normalizedRegion }
-                            : new object[] { billType });
+                            ? new object[] { billType, fromDate.Date, toDate.Date, normalizedRegion }
+                            : new object[] { billType, fromDate.Date, toDate.Date });
                 }
 
                 using (var bankConn = new OdbcConnection(_bankPaymentConnectionString))
@@ -156,16 +154,16 @@ namespace MISReports_Api.DAL.Dashboard
                         sql: bankCashSql,
                         destination: dailyCollection,
                         parameters: hasRegionFilter
-                            ? new object[] { billType, normalizedRegion }
-                            : new object[] { billType });
+                            ? new object[] { fromDate.Date, toDate.Date, billType, normalizedRegion }
+                            : new object[] { fromDate.Date, toDate.Date, billType });
 
                     AddDateAmountRowsFromOdbc(
                         conn: bankConn,
                         sql: cardCashSql,
                         destination: dailyCollection,
                         parameters: hasRegionFilter
-                            ? new object[] { billType, normalizedRegion }
-                            : new object[] { billType });
+                            ? new object[] { fromDate.Date, toDate.Date, billType, normalizedRegion }
+                            : new object[] { fromDate.Date, toDate.Date, billType });
                 }
 
                 var rows = new List<SalesAndCollectionModel>();
