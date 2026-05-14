@@ -25,7 +25,7 @@ namespace MISReports_Api.DAL
                 using (var conn = new OracleConnection(connectionString))
                 {
                     conn.Open();
-                    using (var cmd = new OracleCommand("SELECT REP_REPORTS_SEQ.NEXTVAL FROM DUAL", conn))
+                    using (var cmd = new OracleCommand("SELECT NVL(MAX(REPID_NO), 0) + 1 FROM REP_REPORTS_NEW", conn))
                     {
                         return Convert.ToInt32(cmd.ExecuteScalar());
                     }
