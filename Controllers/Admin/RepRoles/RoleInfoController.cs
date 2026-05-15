@@ -93,6 +93,7 @@ namespace MISReports_Api.Controllers
 
                 request.RoleId = NormalizeUpper(request.RoleId);
                 request.UserType = NormalizeUpper(request.UserType);
+                request.OriginalUserType = NormalizeUpper(request.OriginalUserType);
 
                 var validationErrors = new List<string>();
 
@@ -157,8 +158,8 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpPut]
-        [Route("{epfNo}")]
-        public IHttpActionResult UpdateRole(string epfNo, [FromBody] CreateRoleRequest request)
+        [Route("{epfNo}/{userType}")]
+        public IHttpActionResult UpdateRole(string epfNo, string userType, [FromBody] CreateRoleRequest request)
         {
             try
             {
@@ -174,14 +175,21 @@ namespace MISReports_Api.Controllers
                 request.OriginalEpfNo = string.IsNullOrWhiteSpace(request.OriginalEpfNo)
                     ? epfNo
                     : request.OriginalEpfNo;
+                request.OriginalUserType = string.IsNullOrWhiteSpace(request.OriginalUserType)
+                    ? userType
+                    : request.OriginalUserType;
 
                 request.RoleId = NormalizeUpper(request.RoleId);
                 request.UserType = NormalizeUpper(request.UserType);
+                request.OriginalUserType = NormalizeUpper(request.OriginalUserType);
 
                 var validationErrors = new List<string>();
 
                 if (string.IsNullOrWhiteSpace(request.OriginalEpfNo))
                     validationErrors.Add("OriginalEpfNo is required.");
+
+                if (string.IsNullOrWhiteSpace(request.OriginalUserType))
+                    validationErrors.Add("OriginalUserType is required.");
 
                 if (string.IsNullOrWhiteSpace(request.EpfNo))
                     validationErrors.Add("EpfNo is required.");
@@ -244,8 +252,8 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpPost]
-        [Route("{epfNo}/costcentres")]
-        public IHttpActionResult AddCostCentresToRole(string epfNo, [FromBody] AddRoleCostCentresRequest request)
+        [Route("{epfNo}/{userType}/costcentres")]
+        public IHttpActionResult AddCostCentresToRole(string epfNo, string userType, [FromBody] AddRoleCostCentresRequest request)
         {
             try
             {
@@ -267,7 +275,7 @@ namespace MISReports_Api.Controllers
                     }));
                 }
 
-                var addedCount = _repository.AddCostCentresToRole(epfNo.Trim(), request.CostCentres);
+                var addedCount = _repository.AddCostCentresToRole(epfNo.Trim(), userType.Trim(), request.CostCentres);
 
                 if (addedCount < 0)
                 {
@@ -304,8 +312,8 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpDelete]
-        [Route("{epfNo}")]
-        public IHttpActionResult DeleteRole(string epfNo)
+        [Route("{epfNo}/{userType}")]
+        public IHttpActionResult DeleteRole(string epfNo, string userType)
         {
             try
             {
@@ -318,7 +326,16 @@ namespace MISReports_Api.Controllers
                     }));
                 }
 
-                var deleted = _repository.DeleteRole(epfNo.Trim());
+                if (string.IsNullOrWhiteSpace(userType))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "UserType is required."
+                    }));
+                }
+
+                var deleted = _repository.DeleteRole(epfNo.Trim(), userType.Trim());
 
                 return Ok(JObject.FromObject(new
                 {

@@ -115,6 +115,13 @@ namespace MISReports_Api.DAL
                 : roleId.Trim().ToUpperInvariant();
         }
 
+        private static string NormalizeRoleUserType(string userType)
+        {
+            return string.IsNullOrWhiteSpace(userType)
+                ? string.Empty
+                : userType.Trim().ToUpperInvariant();
+        }
+
         public List<RoleInfoModel> GetAdminRoles()
         {
             return GetRolesByUserType("ADMIN%");
@@ -231,6 +238,27 @@ namespace MISReports_Api.DAL
                 {
                     try
                     {
+                        const string checkRoleSql = @"
+                            SELECT COUNT(1)
+                            FROM REP_ROLE_NEW
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+
+                        using (var checkCmd = new OracleCommand(checkRoleSql, conn))
+                        {
+                            checkCmd.Transaction = transaction;
+                            checkCmd.BindByName = true;
+                            checkCmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
+                            checkCmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(request.UserType);
+
+                            var roleCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+                            if (roleCount > 0)
+                            {
+                                transaction.Rollback();
+                                return false;
+                            }
+                        }
+
                         const string insertRoleSql = @"
                             INSERT INTO REP_ROLE_NEW
                             (
@@ -320,6 +348,7 @@ namespace MISReports_Api.DAL
             var costCentres = NormalizeCostCentres(request);
             var normalizedRoleId = NormalizeRoleId(request?.RoleId);
             var normalizedUserType = NormalizeUserType(request?.UserType);
+            var originalUserType = NormalizeRoleUserType(request?.OriginalUserType);
 
             using (var conn = new OracleConnection(connectionString))
             {
@@ -332,16 +361,42 @@ namespace MISReports_Api.DAL
                         const string checkRoleSql = @"
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
-                            WHERE TRIM(EPF_NO) = :original_epf_no";
+                                                        WHERE TRIM(EPF_NO) = :original_epf_no
+                                                            AND UPPER(TRIM(USERTYPE)) = :original_user_type";
 
                         using (var checkCmd = new OracleCommand(checkRoleSql, conn))
                         {
                             checkCmd.Transaction = transaction;
                             checkCmd.BindByName = true;
                             checkCmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
+                            checkCmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
 
                             var roleCount = Convert.ToInt32(checkCmd.ExecuteScalar());
                             if (roleCount == 0)
+                            {
+                                transaction.Rollback();
+                                return false;
+                            }
+                        }
+
+                        const string targetRoleSql = @"
+                            SELECT COUNT(1)
+                            FROM REP_ROLE_NEW
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+
+                        using (var targetCmd = new OracleCommand(targetRoleSql, conn))
+                        {
+                            targetCmd.Transaction = transaction;
+                            targetCmd.BindByName = true;
+                            targetCmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
+                            targetCmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
+
+                            var targetCount = Convert.ToInt32(targetCmd.ExecuteScalar());
+                            var sameCompositeKey = string.Equals(request.OriginalEpfNo?.Trim(), request.EpfNo?.Trim(), StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(originalUserType, normalizedUserType, StringComparison.OrdinalIgnoreCase);
+
+                            if (targetCount > 0 && !sameCompositeKey)
                             {
                                 transaction.Rollback();
                                 return false;
@@ -372,6 +427,7 @@ namespace MISReports_Api.DAL
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
                             cmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
+                            cmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
 
                             cmd.ExecuteNonQuery();
                         }
@@ -382,6 +438,7 @@ namespace MISReports_Api.DAL
                                 SELECT TRIM(ROLEID)
                                 FROM REP_ROLE_NEW
                                 WHERE TRIM(EPF_NO) = :original_epf_no
+                                  AND UPPER(TRIM(USERTYPE)) = :original_user_type
                             )";
 
                         using (var deleteCmd = new OracleCommand(deleteRoleCctSql, conn))
@@ -389,6 +446,7 @@ namespace MISReports_Api.DAL
                             deleteCmd.Transaction = transaction;
                             deleteCmd.BindByName = true;
                             deleteCmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
+                            deleteCmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
                             deleteCmd.ExecuteNonQuery();
                         }
 
@@ -438,7 +496,7 @@ namespace MISReports_Api.DAL
             }
         }
 
-        public bool DeleteRole(string epfNo)
+        public bool DeleteRole(string epfNo, string userType)
         {
             using (var conn = new OracleConnection(connectionString))
             {
@@ -451,13 +509,15 @@ namespace MISReports_Api.DAL
                         const string checkRoleSql = @"
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
-                            WHERE TRIM(EPF_NO) = :epf_no";
+                                                        WHERE TRIM(EPF_NO) = :epf_no
+                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
 
                         using (var checkCmd = new OracleCommand(checkRoleSql, conn))
                         {
                             checkCmd.Transaction = transaction;
                             checkCmd.BindByName = true;
                             checkCmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
+                            checkCmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(userType);
 
                             var roleCount = Convert.ToInt32(checkCmd.ExecuteScalar());
                             if (roleCount == 0)
@@ -472,6 +532,7 @@ namespace MISReports_Api.DAL
                                 SELECT TRIM(ROLEID)
                                 FROM REP_ROLE_NEW
                                 WHERE TRIM(EPF_NO) = :epf_no
+                                  AND UPPER(TRIM(USERTYPE)) = :user_type
                             )";
 
                         using (var cmd = new OracleCommand(deleteRoleCctSql, conn))
@@ -479,18 +540,21 @@ namespace MISReports_Api.DAL
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
+                                                        cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(userType);
                             cmd.ExecuteNonQuery();
                         }
 
                         const string deleteRoleSql = @"
                             DELETE FROM REP_ROLE_NEW
-                            WHERE TRIM(EPF_NO) = :epf_no";
+                                                        WHERE TRIM(EPF_NO) = :epf_no
+                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
 
                         using (var cmd = new OracleCommand(deleteRoleSql, conn))
                         {
                             cmd.Transaction = transaction;
                             cmd.BindByName = true;
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
+                            cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(userType);
 
                             var affectedRows = cmd.ExecuteNonQuery();
                             if (affectedRows == 0)
@@ -513,7 +577,7 @@ namespace MISReports_Api.DAL
             }
         }
 
-        public int AddCostCentresToRole(string epfNo, List<string> requestedCostCentres)
+        public int AddCostCentresToRole(string epfNo, string userType, List<string> requestedCostCentres)
         {
             var normalizedCostCentres = NormalizeCostCentres(requestedCostCentres);
 
@@ -533,7 +597,8 @@ namespace MISReports_Api.DAL
                         const string roleIdSql = @"
                             SELECT TRIM(ROLEID)
                             FROM REP_ROLE_NEW
-                            WHERE TRIM(EPF_NO) = :epf_no";
+                                                        WHERE TRIM(EPF_NO) = :epf_no
+                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
 
                         string roleId = null;
 
@@ -542,6 +607,7 @@ namespace MISReports_Api.DAL
                             roleCmd.Transaction = transaction;
                             roleCmd.BindByName = true;
                             roleCmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
+                            roleCmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(userType);
 
                             roleId = roleCmd.ExecuteScalar()?.ToString()?.Trim();
                         }
