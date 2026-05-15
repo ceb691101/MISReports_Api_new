@@ -117,11 +117,14 @@ namespace MISReports_Api.DAL
                 conn.Open();
 
                 string sql = @"
-                    SELECT g.dept_id, g.dept_nm
-                  FROM rep_roles_cct cct, gldeptm g, rep_role_new r
-                  WHERE Trim(r.roleid)=Trim(cct.roleid) AND
+                  SELECT g.dept_id, g.dept_nm
+                  FROM rep_roles_cct_new cct , gldeptm g, rep_role_new r
+                  WHERE  Upper(Trim(r.roleid)) = Upper(Trim(cct.roleid))  AND
                  cct.lvl_no=0 and cct.costcentre =g.dept_id
-                  and r.epf_no=:epfno order by g.dept_id";
+                and trim(r.epf_no)= '033480' order by g.dept_id";
+
+
+
 
                 using (var cmd = new OracleCommand(sql, conn))
                 {
@@ -155,7 +158,7 @@ namespace MISReports_Api.DAL
 
                 string sql = @"
                       SELECT g.comp_id, g.comp_nm   FROM
-                   rep_roles_cct cct, glcompm g, rep_role_new r
+                   rep_roles_cct_new cct, glcompm g, rep_role_new r
                   WHERE g.status=2 and r.roleid=cct.roleid
                    and cct.costcentre =g.comp_id
                     and r.epf_no= :epfno
