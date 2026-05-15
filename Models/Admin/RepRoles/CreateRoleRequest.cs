@@ -6,6 +6,7 @@ namespace MISReports_Api.Models
     public class CreateRoleRequest
     {
         public string OriginalEpfNo { get; set; }
+        public string OriginalUserType { get; set; }
         public string EpfNo { get; set; }
         public string RoleId { get; set; }
         public string RoleName { get; set; }
