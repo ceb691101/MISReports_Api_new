@@ -1,4 +1,4 @@
-﻿namespace MISReports_Api.Models
+namespace MISReports_Api.Models
 {
     public class MotherCompanyOptionModel
     {
@@ -17,5 +17,11 @@
     {
         public string UserGroupId { get; set; }
         public string UserGroupName { get; set; }
+    }
+
+    public class DepartmentOptionModel
+    {
+        public string DepartmentId { get; set; }
+        public string DepartmentName { get; set; }
     }
 }
