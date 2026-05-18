@@ -427,6 +427,7 @@
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
+    <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -593,6 +594,7 @@
     <Compile Include="Models\JobSearch\JobSearchDtos.cs" />
     <Compile Include="Models\JobSearch\JobSearchMainTable.cs" />
     <Compile Include="Models\JobSearch\JobSearchModel.cs" />
+    <Compile Include="Models\Shared\CalcCycleModel.cs" />
     <Compile Include="Models\SolarJobs\CcApplicationModel.cs" />
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardModel.cs" />
@@ -759,11 +761,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Controllers\Admin\" />
-    <Folder Include="DAL\Admin\" />
-    <Folder Include="DAL\FinancialDashboard\" />
-    <Folder Include="Models\Admin\" />
-    <Folder Include="Models\FinancialDashboard\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
