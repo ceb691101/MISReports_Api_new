@@ -30,6 +30,7 @@ namespace MISReports_Api.Controllers
         private readonly ContractDemandBillCycleDao _contractDemandBillCycle = new ContractDemandBillCycleDao();
         private readonly ActiveCustSalesOrdBillCycleDao _activeCustSalesOrdBillCycle = new ActiveCustSalesOrdBillCycleDao();
         private readonly ActiveCustSalesBulkBillCycleDao _activeCustSalesBulkBillCycle = new ActiveCustSalesBulkBillCycleDao();
+        private readonly CalcCycleFromAreaDao _calcCycleFromAreaDao = new CalcCycleFromAreaDao();
 
         [HttpGet]
         [Route("ordinary/areas")]
@@ -462,6 +463,31 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get max bill cycle",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet]
+        [Route("ordinary/areas/calccycle/max")] 
+        public IHttpActionResult GetCalcCycleFromArea()
+        {
+            try
+            {
+                var result = _calcCycleFromAreaDao.GetMaxCalcCycle();//From areas table in InformixConnection database
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = result.ErrorMessage
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max calc cycle from areas",
                     errorDetails = ex.Message
                 }));
             }
