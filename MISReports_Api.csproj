@@ -290,6 +290,7 @@
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
@@ -398,6 +399,7 @@
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
     <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
+    <Compile Include="DAL\CustomerDetails\PaymentInquiryDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
@@ -559,6 +561,7 @@
     <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
     <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
+    <Compile Include="Models\CustomerDetails\PaymentInquiryModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
     <Compile Include="Models\Analysis\SolarAgeAnalysisModel.cs" />
