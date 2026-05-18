@@ -131,7 +131,7 @@ namespace MISReports_Api.DAL.Dashboard
             try
             {
                 // logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
-                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
+                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yy} to {toDate:dd-MM-yy} ===");
 
                 using (var posConn = new OdbcConnection(_posPaymentConnectionString))
                 {
@@ -175,7 +175,7 @@ namespace MISReports_Api.DAL.Dashboard
                     rows.Add(new SalesAndCollectionModel
                     {
                         // Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                        Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
+                        Date = day.ToString("dd-MM-yy", CultureInfo.InvariantCulture),
                         Collection = amount,
                         ErrorMessage = string.Empty
                     });
