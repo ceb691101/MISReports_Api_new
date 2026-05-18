@@ -3,18 +3,32 @@ using MISReports_Api.Models.CustomerDetails;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.OleDb;
 
 namespace MISReports_Api.DAL.CustomerDetails
 {
     public class PaymentInquiryDao
     {
-        private readonly DBConnection _dbConnection = new DBConnection();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public bool TestConnection(out string errorMessage)
         {
-            return _dbConnection.TestConnection(out errorMessage, true);
+            errorMessage = null;
+
+            try
+            {
+                using (var conn = GetConnection())
+                {
+                    conn.Open();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
         }
 
         public LatestUpdateTimeResponse GetLatestUpdateTimes()
@@ -27,7 +41,7 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             try
             {
-                using (var conn = _dbConnection.GetConnection(true))
+                using (var conn = GetConnection())
                 {
                     conn.Open();
                     response.Records = GetLatestUpdateTimes(conn);
@@ -75,6 +89,18 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
 
             return records;
+        }
+
+        private static OleDbConnection GetConnection()
+        {
+            var connectionStringSettings = ConfigurationManager.ConnectionStrings["InformixPmntConsld"];
+
+            if (connectionStringSettings == null || string.IsNullOrWhiteSpace(connectionStringSettings.ConnectionString))
+            {
+                throw new ConfigurationErrorsException("InformixPmntConsld connection string is missing from Web.config");
+            }
+
+            return new OleDbConnection(connectionStringSettings.ConnectionString);
         }
 
         private static string GetStringValue(OleDbDataReader reader, string columnName)
