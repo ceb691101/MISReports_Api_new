@@ -115,7 +115,7 @@ namespace MISReports_Api.DAL.Dashboard
                 GROUP BY 1
                 ORDER BY 1";
 
-                        string cardCashSql = @"
+            string cardCashSql = @"
                                 SELECT b.cash_date,
                                              SUM(b.tot_amt) AS amount
                                 FROM crdtauth b, areas p
