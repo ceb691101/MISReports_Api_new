@@ -97,15 +97,10 @@ namespace MISReports_Api.DAL.CustomerDetails
 
         public PaymentInquiryResponse GetFullReport(PaymentInquiryRequest request)
         {
-            return BuildPaymentInquiryResponse(request, true);
+            return BuildPaymentInquiryResponse(request);
         }
 
-        public PaymentInquiryResponse GetPaymentsOnly(PaymentInquiryRequest request)
-        {
-            return BuildPaymentInquiryResponse(request, false);
-        }
-
-        private PaymentInquiryResponse BuildPaymentInquiryResponse(PaymentInquiryRequest request, bool includeSummary)
+        private PaymentInquiryResponse BuildPaymentInquiryResponse(PaymentInquiryRequest request)
         {
             var response = new PaymentInquiryResponse
             {
@@ -140,10 +135,7 @@ namespace MISReports_Api.DAL.CustomerDetails
                 response.FromDate = fromDate;
                 response.ToDate = DateTime.Today.ToString("yyyy-MM-dd");
 
-                if (includeSummary)
-                {
-                    LoadSummaryFields(response, accountNumber);
-                }
+                LoadSummaryFields(response, accountNumber);
 
                 using (var conn = GetConnection(PmntConnectionName))
                 {
@@ -156,7 +148,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
             catch (Exception ex)
             {
-                logger.Error(ex, includeSummary ? "Error while fetching full payment inquiry report" : "Error while fetching payments only inquiry report");
+                logger.Error(ex, "Error while fetching full payment inquiry report");
                 response.ErrorMessage = ex.Message;
                 return response;
             }

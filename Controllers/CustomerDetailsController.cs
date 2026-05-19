@@ -67,30 +67,5 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        /// <summary>POST api/customerdetails/payment-payments-only</summary>
-        [HttpPost]
-        [Route("payment-payments-only")]
-        public IHttpActionResult GetPaymentPaymentsOnly([FromBody] PaymentInquiryRequest request)
-        {
-            try
-            {
-                if (!_paymentInquiryDao.TestConnection(out string connError))
-                {
-                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
-                }
-
-                var data = _paymentInquiryDao.GetPaymentsOnly(request);
-
-                return Ok(new
-                {
-                    data,
-                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
-                });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new { data = (object)null, errorMessage = "Cannot get payments only report.", errorDetails = ex.Message });
-            }
-        }
     }
 }
