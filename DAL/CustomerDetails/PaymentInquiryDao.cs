@@ -710,5 +710,367 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             return value.ToString().Trim();
         }
+
+        #region POS Counter Collection Breakup
+
+        public ProvinceListResponse GetProvinces()
+        {
+            var response = new ProvinceListResponse
+            {
+                Provinces = new List<ProvinceData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                using (var conn = GetConnection(BillsmryConnectionName))
+                {
+                    conn.Open();
+                    response.Provinces = GetProvincesList(conn);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching provinces");
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<ProvinceData> GetProvincesList(OleDbConnection conn)
+        {
+            var provinces = new List<ProvinceData>();
+
+            const string sql = @"
+                SELECT prov_name,
+                       TRIM(prov_code) AS prov_code,
+                       TRIM(prov_svr_name) AS prov_svr_name,
+                       TRIM(uname) AS uname,
+                       TRIM(upwd) AS upwd
+                FROM prov_servers
+                ORDER BY prov_name";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.CommandTimeout = 30;
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        provinces.Add(new ProvinceData
+                        {
+                            ProvName = GetStringValue(reader, "prov_name"),
+                            ProvCode = GetStringValue(reader, "prov_code"),
+                            ProvSvrName = GetStringValue(reader, "prov_svr_name"),
+                            Username = GetStringValue(reader, "uname"),
+                            Password = GetStringValue(reader, "upwd")
+                        });
+                    }
+                }
+            }
+
+            return provinces;
+        }
+
+        public AreaListResponse GetAreas(string provCode)
+        {
+            var response = new AreaListResponse
+            {
+                Areas = new List<AreaData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(provCode))
+                {
+                    response.ErrorMessage = "Province code is required.";
+                    return response;
+                }
+
+                using (var conn = GetConnection(BillsmryConnectionName))
+                {
+                    conn.Open();
+                    response.Areas = GetAreasList(conn, provCode);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching areas for province {0}", provCode);
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<AreaData> GetAreasList(OleDbConnection conn, string provCode)
+        {
+            var areas = new List<AreaData>();
+
+            const string sql = @"
+                SELECT area_code,
+                       area_name
+                FROM areas
+                WHERE prov_code = ?
+                ORDER BY area_name";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@provCode", provCode);
+                cmd.CommandTimeout = 30;
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        areas.Add(new AreaData
+                        {
+                            AreaCode = GetStringValue(reader, "area_code"),
+                            AreaName = GetStringValue(reader, "area_name")
+                        });
+                    }
+                }
+            }
+
+            return areas;
+        }
+
+        public CounterListResponse GetCounters(string provCode)
+        {
+            var response = new CounterListResponse
+            {
+                Counters = new List<CounterData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(provCode))
+                {
+                    response.ErrorMessage = "Province code is required.";
+                    return response;
+                }
+
+                using (var conn = GetConnection(BillsmryConnectionName))
+                {
+                    conn.Open();
+                    response.Counters = GetCountersList(conn, provCode);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching counters for province {0}", provCode);
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<CounterData> GetCountersList(OleDbConnection conn, string provCode)
+        {
+            var counters = new List<CounterData>();
+
+            try
+            {
+                // Special handling for specific provinces
+                if (provCode == "1" || provCode == "7" || provCode == "9" || provCode == "C")
+                {
+                    const string sqlSpecial = @"
+                        SELECT a.count_no
+                        FROM cus_counts a, agent_info b
+                        WHERE a.agent = b.agent_code
+                          AND b.prov_code = ?
+                        ORDER BY a.count_no";
+
+                    using (var cmd = new OleDbCommand(sqlSpecial, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@provCode", provCode);
+                        cmd.CommandTimeout = 30;
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var countNo = GetStringValue(reader, "count_no");
+                                counters.Add(new CounterData
+                                {
+                                    CounterNo = countNo,
+                                    CounterName = countNo
+                                });
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    const string sqlGeneral = @"
+                        SELECT count_no
+                        FROM cus_counts
+                        ORDER BY count_no";
+
+                    using (var cmd = new OleDbCommand(sqlGeneral, conn))
+                    {
+                        cmd.CommandTimeout = 30;
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var countNo = GetStringValue(reader, "count_no");
+                                counters.Add(new CounterData
+                                {
+                                    CounterNo = countNo,
+                                    CounterName = countNo
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, "Failed to load counters for province {0}", provCode);
+            }
+
+            return counters;
+        }
+
+        public POSCounterCollectionResponse GetPOSCounterCollectionBreakup(POSCounterCollectionRequest request)
+        {
+            var response = new POSCounterCollectionResponse
+            {
+                Records = new List<POSCounterCollectionRecord>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Request body is required.";
+                    return response;
+                }
+
+                var transDate = NormalizeDateString(request.TransDate);
+
+                if (string.IsNullOrWhiteSpace(transDate))
+                {
+                    response.ErrorMessage = "Transaction date is required.";
+                    return response;
+                }
+
+                response.TransDate = transDate;
+                response.Province = request.ProvCode ?? "*";
+                response.Area = request.AreaCode ?? "*";
+                response.Counter = request.CounterNo ?? "*";
+
+                using (var conn = GetConnection(PmntConnectionName))
+                {
+                    conn.Open();
+                    response.Records = GetCollectionBreakupRecords(conn, request, transDate);
+                }
+
+                response.RecordCount = response.Records.Count;
+                response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching POS counter collection breakup");
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<POSCounterCollectionRecord> GetCollectionBreakupRecords(OleDbConnection conn, POSCounterCollectionRequest request, string transDate)
+        {
+            var records = new List<POSCounterCollectionRecord>();
+
+            var sql = @"
+                SELECT acc_no,
+                       count_no,
+                       stub_no,
+                       trans_amt,
+                       pay_mode,
+                       trans_type,
+                       piv_no,
+                       area_code
+                FROM cus_tran
+                WHERE trans_date = ? AND trans_type = '0'";
+
+            var parameters = new List<OleDbParameter>
+            {
+                new OleDbParameter("@transDate", transDate)
+            };
+
+            // Build dynamic WHERE clause based on filters
+            if (!string.IsNullOrWhiteSpace(request.AreaCode) && request.AreaCode != "*")
+            {
+                sql += " AND area_code = ?";
+                parameters.Add(new OleDbParameter("@areaCode", request.AreaCode));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.CounterNo) && request.CounterNo != "*")
+            {
+                sql += " AND count_no = ?";
+                parameters.Add(new OleDbParameter("@countNo", request.CounterNo));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.PayMode) && request.PayMode != "*")
+            {
+                sql += " AND pay_mode = ?";
+                parameters.Add(new OleDbParameter("@payMode", request.PayMode));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.PayType) && request.PayType != "*")
+            {
+                sql += " AND pay_type = ?";
+                parameters.Add(new OleDbParameter("@payType", request.PayType));
+            }
+
+            sql += " ORDER BY count_no, stub_no";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.CommandTimeout = 30;
+                foreach (var param in parameters)
+                {
+                    cmd.Parameters.Add(param);
+                }
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var countNo = GetStringValue(reader, "count_no");
+                        var payMode = GetStringValue(reader, "pay_mode");
+                        var counterName = GetCounterDetails(countNo);
+                        var payModeDescription = GetCodeDescription(payMode);
+
+                        records.Add(new POSCounterCollectionRecord
+                        {
+                            AccountNo = GetStringValue(reader, "acc_no"),
+                            CounterNo = countNo,
+                            StubNo = GetStringValue(reader, "stub_no"),
+                            TransAmount = GetStringValue(reader, "trans_amt"),
+                            PayMode = payMode,
+                            TransType = GetStringValue(reader, "trans_type"),
+                            PIVNo = GetStringValue(reader, "piv_no"),
+                            AreaCode = GetStringValue(reader, "area_code"),
+                            CounterName = counterName,
+                            PayModeDescription = payModeDescription
+                        });
+                    }
+                }
+            }
+
+            return records;
+        }
+
+        #endregion
     }
 }
