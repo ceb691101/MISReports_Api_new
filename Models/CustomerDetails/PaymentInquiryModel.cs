@@ -98,6 +98,29 @@ namespace MISReports_Api.Models.CustomerDetails
         public string ErrorMessage { get; set; }
     }
 
+    public class PayModeData
+    {
+        public string PayMode { get; set; }
+        public string CodeDescription { get; set; }
+    }
+
+    public class PayModeListResponse
+    {
+        public List<PayModeData> PayModes { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class BillTypeData
+    {
+        public string BillType { get; set; }
+    }
+
+    public class BillTypeListResponse
+    {
+        public List<BillTypeData> BillTypes { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
     public class POSCounterCollectionRequest
     {
         public string TransDate { get; set; }

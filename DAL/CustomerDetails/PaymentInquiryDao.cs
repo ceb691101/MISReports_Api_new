@@ -1071,6 +1071,78 @@ namespace MISReports_Api.DAL.CustomerDetails
             return records;
         }
 
+        public PayModeListResponse GetPayModes()
+        {
+            var response = new PayModeListResponse
+            {
+                PayModes = new List<PayModeData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                using (var conn = GetConnection(PmntConnectionName))
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT DISTINCT pay_mode, code_discrp
+                        FROM code_paymode
+                        WHERE pay_mode IS NOT NULL
+                        ORDER BY code_discrp";
+
+                    using (var cmd = new OleDbCommand(sql, conn))
+                    {
+                        cmd.CommandTimeout = 30;
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                response.PayModes.Add(new PayModeData
+                                {
+                                    PayMode = GetStringValue(reader, "pay_mode"),
+                                    CodeDescription = GetStringValue(reader, "code_discrp")
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // If no records found, add fallback values
+                if (response.PayModes.Count == 0)
+                {
+                    response.PayModes.Add(new PayModeData { PayMode = "C", CodeDescription = "Cash" });
+                    response.PayModes.Add(new PayModeData { PayMode = "Q", CodeDescription = "Cheque" });
+                    response.PayModes.Add(new PayModeData { PayMode = "O", CodeDescription = "Online" });
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching pay modes");
+                response.ErrorMessage = ex.Message;
+                // Add fallback values in case of DB failure
+                response.PayModes.Add(new PayModeData { PayMode = "C", CodeDescription = "Cash" });
+                response.PayModes.Add(new PayModeData { PayMode = "Q", CodeDescription = "Cheque" });
+                response.PayModes.Add(new PayModeData { PayMode = "O", CodeDescription = "Online" });
+                return response;
+            }
+        }
+
+        public BillTypeListResponse GetBillTypes()
+        {
+            var response = new BillTypeListResponse
+            {
+                BillTypes = new List<BillTypeData>
+                {
+                    new BillTypeData { BillType = "Bill" },
+                    new BillTypeData { BillType = "PIV" }
+                },
+                ErrorMessage = string.Empty
+            };
+            return response;
+        }
+
         #endregion
     }
 }

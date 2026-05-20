@@ -173,6 +173,58 @@ namespace MISReports_Api.Controllers
             }
         }
 
+        /// <summary>GET api/customerdetails/pos-pay-modes</summary>
+        [HttpGet]
+        [Route("pos-pay-modes")]
+        public IHttpActionResult GetPayModes()
+        {
+            try
+            {
+                if (!_paymentInquiryDao.TestConnection(out string connError))
+                {
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+                }
+
+                var data = _paymentInquiryDao.GetPayModes();
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Cannot get pay modes.", errorDetails = ex.Message });
+            }
+        }
+
+        /// <summary>GET api/customerdetails/pos-bill-types</summary>
+        [HttpGet]
+        [Route("pos-bill-types")]
+        public IHttpActionResult GetBillTypes()
+        {
+            try
+            {
+                if (!_paymentInquiryDao.TestConnection(out string connError))
+                {
+                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
+                }
+
+                var data = _paymentInquiryDao.GetBillTypes();
+
+                return Ok(new
+                {
+                    data,
+                    errorMessage = string.IsNullOrWhiteSpace(data.ErrorMessage) ? (string)null : data.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Cannot get bill types.", errorDetails = ex.Message });
+            }
+        }
+
         #endregion
     }
 }
