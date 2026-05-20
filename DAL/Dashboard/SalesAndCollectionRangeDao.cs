@@ -5,7 +5,6 @@ using System;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Data.OleDb;
-using System.Data.Odbc;
 using System.Globalization;
 using System.Linq;
 
@@ -116,54 +115,57 @@ namespace MISReports_Api.DAL.Dashboard
                 GROUP BY 1
                 ORDER BY 1";
 
-            string cardCashSql = @"
-                SELECT b.cash_date,
-                       SUM(b.tot_amt) AS amount
-                FROM crdtauth b, areas p
-                WHERE b.area_code = p.area_code
-                  AND b.cash_date >= ?
-                                    AND b.cash_date <= ?
-                  AND b.bill_type = ?
-                  " + (hasRegionFilter ? "AND p.region = ?\n" : string.Empty) + @"
-                GROUP BY 1
-                ORDER BY 1";
+                        string cardCashSql = @"
+                                SELECT b.cash_date,
+                                             SUM(b.tot_amt) AS amount
+                                FROM crdtauth b, areas p
+                                WHERE b.area_code = p.area_code
+                                    AND b.cash_date >= ?
+                                                                        AND b.cash_date <= ?
+                                    AND b.bill_type = ?
+                                    " + (hasRegionFilter ? "AND p.region = ?\n" : string.Empty) + @"
+                                GROUP BY 1
+                                ORDER BY 1";
 
             try
             {
                 // logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
-                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
+                logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yy} to {toDate:dd-MM-yy} ===");
 
-                using (var posConn = new OdbcConnection(_posPaymentConnectionString))
+                using (var posConn = new OleDbConnection(_posPaymentConnectionString))
                 {
                     posConn.Open();
-                    AddDateAmountRowsFromOdbc(
+                    AddDateAmountRowsFromOleDb(
                         conn: posConn,
                         sql: posCollectionSql,
                         destination: dailyCollection,
-                        parameters: hasRegionFilter
-                            ? new object[] { billType, fromDate.Date, toDate.Date, normalizedRegion }
-                            : new object[] { billType, fromDate.Date, toDate.Date });
+                        billType: billType,
+                        fromDate: fromDate.Date,
+                        toDate: toDate.Date,
+                        region: normalizedRegion);
                 }
 
-                using (var bankConn = new OdbcConnection(_bankPaymentConnectionString))
+                using (var bankConn = new OleDbConnection(_bankPaymentConnectionString))
                 {
                     bankConn.Open();
 
-                    AddDateAmountRowsFromOdbc(
+                    AddDateAmountRowsFromOleDb(
                         conn: bankConn,
                         sql: bankCashSql,
                         destination: dailyCollection,
-                        parameters: hasRegionFilter
-                            ? new object[] { fromDate.Date, toDate.Date, billType, normalizedRegion }
-                            : new object[] { fromDate.Date, toDate.Date, billType });
+                        billType: billType,
+                        fromDate: fromDate.Date,
+                        toDate: toDate.Date,
+                        region: normalizedRegion);
 
-                    AddDateAmountRowsFromOdbc(
+                    AddDateAmountRowsFromOleDb(
                         conn: bankConn,
                         sql: cardCashSql,
                         destination: dailyCollection,
-                        parameters: hasRegionFilter
-                            ? new object[] { fromDate.Date, toDate.Date, billType, normalizedRegion }
-                            : new object[] { fromDate.Date, toDate.Date, billType });
+                        billType: billType,
+                        fromDate: fromDate.Date,
+                        toDate: toDate.Date,
+                        region: normalizedRegion);
                 }
 
                 var rows = new List<SalesAndCollectionModel>();
@@ -175,7 +177,7 @@ namespace MISReports_Api.DAL.Dashboard
                     rows.Add(new SalesAndCollectionModel
                     {
                         // Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                        Date = day.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
+                        Date = day.ToString("dd-MM-yy", CultureInfo.InvariantCulture),
                         Collection = amount,
                         ErrorMessage = string.Empty
                     });
@@ -190,18 +192,40 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private void AddDateAmountRowsFromOdbc(
-            OdbcConnection conn,
+        private void AddDateAmountRowsFromOleDb(
+            OleDbConnection conn,
             string sql,
             Dictionary<DateTime, decimal> destination,
-            object[] parameters)
+            string billType,
+            DateTime fromDate,
+            DateTime toDate,
+            string region)
         {
             try
             {
-                using (var cmd = new OdbcCommand(sql, conn))
+                using (var cmd = new OleDbCommand(sql, conn))
                 {
-                    foreach (var parameter in parameters)
-                        cmd.Parameters.AddWithValue("?", parameter);
+                    // Determine parameter order based on SQL query type
+                    // posCollectionSql: bill_type, trans_date >=, trans_date <=, [region]
+                    // bankCashSql/cardCashSql: cash_date >=, cash_date <=, bill_type, [region]
+                    if (sql.Contains("trans_type"))
+                    {
+                        // This is posCollectionSql: billType first, then dates
+                        cmd.Parameters.AddWithValue("?", billType);
+                        cmd.Parameters.AddWithValue("?", fromDate);
+                        cmd.Parameters.AddWithValue("?", toDate);
+                        if (!string.IsNullOrWhiteSpace(region))
+                            cmd.Parameters.AddWithValue("?", region);
+                    }
+                    else
+                    {
+                        // This is bankCashSql or cardCashSql: dates first, then billType
+                        cmd.Parameters.AddWithValue("?", fromDate);
+                        cmd.Parameters.AddWithValue("?", toDate);
+                        cmd.Parameters.AddWithValue("?", billType);
+                        if (!string.IsNullOrWhiteSpace(region))
+                            cmd.Parameters.AddWithValue("?", region);
+                    }
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -218,7 +242,7 @@ namespace MISReports_Api.DAL.Dashboard
                     }
                 }
             }
-            catch (OdbcException ex) when (IsNoRecordFound(ex.Message))
+            catch (OleDbException ex) when (IsNoRecordFound(ex.Message))
             {
                 logger.Warn($"No records found for query/date range. Source skipped. Details: {ex.Message}");
             }
