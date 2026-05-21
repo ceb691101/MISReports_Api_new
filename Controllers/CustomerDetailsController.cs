@@ -206,11 +206,6 @@ namespace MISReports_Api.Controllers
         {
             try
             {
-                if (!_paymentInquiryDao.TestConnection(out string connError))
-                {
-                    return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
-                }
-
                 var data = _paymentInquiryDao.GetBillTypes();
 
                 return Ok(new

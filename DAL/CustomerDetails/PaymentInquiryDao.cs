@@ -1159,8 +1159,18 @@ namespace MISReports_Api.DAL.CustomerDetails
 
                     if (!string.IsNullOrWhiteSpace(request.PayType) && request.PayType != "*")
                     {
+                        string dbPayType = request.PayType;
+                        if (dbPayType.Equals("Bill", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbPayType = "B";
+                        }
+                        else if (dbPayType.Equals("PIV", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbPayType = "P";
+                        }
+
                         sql += " AND pay_type = ?";
-                        parameters.Add(new OleDbParameter("@payType", request.PayType));
+                        parameters.Add(new OleDbParameter("@payType", dbPayType));
                     }
 
                     sql += " ORDER BY count_no, stub_no";
@@ -1281,44 +1291,13 @@ namespace MISReports_Api.DAL.CustomerDetails
         {
             var response = new BillTypeListResponse
             {
-                BillTypes = new List<BillTypeData>(),
+                BillTypes = new List<BillTypeData>
+                {
+                    new BillTypeData { BillType = "Bill" },
+                    new BillTypeData { BillType = "PIV" }
+                },
                 ErrorMessage = string.Empty
             };
-
-            try
-            {
-                var connectionSetting = ConfigurationManager.ConnectionStrings["InformixPosPayment"];
-                if (connectionSetting != null && !string.IsNullOrWhiteSpace(connectionSetting.ConnectionString))
-                {
-                    using (var conn = new OleDbConnection(connectionSetting.ConnectionString))
-                    {
-                        conn.Open();
-                        const string sql = "SELECT DISTINCT pay_type FROM cus_tran WHERE pay_type IS NOT NULL";
-                        using (var cmd = new OleDbCommand(sql, conn))
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                var val = GetStringValue(reader, "pay_type");
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    response.BillTypes.Add(new BillTypeData { BillType = val });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Warn(ex, "Failed to load dynamic bill types from POS database.");
-            }
-
-            if (response.BillTypes.Count == 0)
-            {
-                response.BillTypes.Add(new BillTypeData { BillType = "Bill" });
-                response.BillTypes.Add(new BillTypeData { BillType = "PIV" });
-            }
 
             return response;
         }
