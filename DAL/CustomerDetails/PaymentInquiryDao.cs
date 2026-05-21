@@ -854,11 +854,41 @@ namespace MISReports_Api.DAL.CustomerDetails
                     return response;
                 }
 
-                using (var conn = GetConnection(BillsmryConnectionName))
+                var diagnosticLogs = new List<string>();
+
+                // 1. Try InformixConnection (BillsmryConnectionName)
+                string log1;
+                var list1 = GetCountersFromConnection(BillsmryConnectionName, provCode, out log1);
+                diagnosticLogs.Add(log1);
+                if (list1 != null && list1.Count > 0)
                 {
-                    conn.Open();
-                    response.Counters = GetCountersList(conn, provCode);
+                    response.Counters = list1;
+                    return response;
                 }
+
+                // 2. Try InformixPmntConsld (PmntConnectionName)
+                string log2;
+                var list2 = GetCountersFromConnection(PmntConnectionName, provCode, out log2);
+                diagnosticLogs.Add(log2);
+                if (list2 != null && list2.Count > 0)
+                {
+                    response.Counters = list2;
+                    return response;
+                }
+
+                // 3. Try InformixPosPayment
+                string log3;
+                var list3 = GetCountersFromConnection("InformixPosPayment", provCode, out log3);
+                diagnosticLogs.Add(log3);
+                if (list3 != null && list3.Count > 0)
+                {
+                    response.Counters = list3;
+                    return response;
+                }
+
+                // If all returned 0, return the consolidated error log in response.ErrorMessage
+                response.ErrorMessage = string.Join(" | ", diagnosticLogs);
+                logger.Warn("Failed to retrieve counters for province {0}. Diagnostics: {1}", provCode, response.ErrorMessage);
 
                 return response;
             }
@@ -870,70 +900,83 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
         }
 
-        private List<CounterData> GetCountersList(OleDbConnection conn, string provCode)
+        private List<CounterData> GetCountersFromConnection(string connectionName, string provCode, out string logMessage)
         {
             var counters = new List<CounterData>();
+            logMessage = "";
 
             try
             {
-                // Special handling for specific provinces
-                if (provCode == "1" || provCode == "7" || provCode == "9" || provCode == "C")
+                var connectionSetting = ConfigurationManager.ConnectionStrings[connectionName];
+                if (connectionSetting == null || string.IsNullOrWhiteSpace(connectionSetting.ConnectionString))
                 {
-                    const string sqlSpecial = @"
-                        SELECT a.count_no
-                        FROM cus_counts a, agent_info b
-                        WHERE a.agent = b.agent_code
-                          AND b.prov_code = ?
-                        ORDER BY a.count_no";
-
-                    using (var cmd = new OleDbCommand(sqlSpecial, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@provCode", provCode);
-                        cmd.CommandTimeout = 30;
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                var countNo = GetStringValue(reader, "count_no");
-                                counters.Add(new CounterData
-                                {
-                                    CounterNo = countNo,
-                                    CounterName = countNo
-                                });
-                            }
-                        }
-                    }
+                    logMessage = $"{connectionName} connection string is missing or empty in configuration.";
+                    return counters;
                 }
-                else
+
+                using (var conn = new OleDbConnection(connectionSetting.ConnectionString))
                 {
-                    const string sqlGeneral = @"
-                        SELECT count_no
-                        FROM cus_counts
-                        ORDER BY count_no";
+                    conn.Open();
 
-                    using (var cmd = new OleDbCommand(sqlGeneral, conn))
+                    if (provCode == "1" || provCode == "7" || provCode == "9" || provCode == "C")
                     {
-                        cmd.CommandTimeout = 30;
+                        const string sqlSpecial = @"
+                            SELECT a.count_no
+                            FROM cus_counts a, agent_info b
+                            WHERE a.agent = b.agent_code
+                              AND b.prov_code = ?
+                            ORDER BY a.count_no";
 
-                        using (var reader = cmd.ExecuteReader())
+                        using (var cmd = new OleDbCommand(sqlSpecial, conn))
                         {
-                            while (reader.Read())
+                            cmd.Parameters.AddWithValue("@provCode", provCode);
+                            cmd.CommandTimeout = 15;
+
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                var countNo = GetStringValue(reader, "count_no");
-                                counters.Add(new CounterData
+                                while (reader.Read())
                                 {
-                                    CounterNo = countNo,
-                                    CounterName = countNo
-                                });
+                                    var countNo = GetStringValue(reader, "count_no");
+                                    counters.Add(new CounterData
+                                    {
+                                        CounterNo = countNo,
+                                        CounterName = countNo
+                                    });
+                                }
                             }
                         }
                     }
+                    else
+                    {
+                        const string sqlGeneral = @"
+                            SELECT count_no
+                            FROM cus_counts
+                            ORDER BY count_no";
+
+                        using (var cmd = new OleDbCommand(sqlGeneral, conn))
+                        {
+                            cmd.CommandTimeout = 15;
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var countNo = GetStringValue(reader, "count_no");
+                                    counters.Add(new CounterData
+                                    {
+                                        CounterNo = countNo,
+                                        CounterName = countNo
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    logMessage = $"Success on {connectionName}: {counters.Count} counters found.";
                 }
             }
             catch (Exception ex)
             {
-                logger.Warn(ex, "Failed to load counters for province {0}", provCode);
+                logMessage = $"Error on {connectionName}: {ex.Message}";
             }
 
             return counters;
