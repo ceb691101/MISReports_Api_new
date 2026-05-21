@@ -855,11 +855,13 @@ namespace MISReports_Api.DAL.CustomerDetails
                 }
 
                 var diagnosticLogs = new List<string>();
+                bool anySuccess = false;
 
                 // 1. Try InformixConnection (BillsmryConnectionName)
                 string log1;
-                var list1 = GetCountersFromConnection(BillsmryConnectionName, provCode, out log1);
+                var list1 = GetCountersFromConnection(BillsmryConnectionName, provCode, out log1, out bool success1);
                 diagnosticLogs.Add(log1);
+                if (success1) anySuccess = true;
                 if (list1 != null && list1.Count > 0)
                 {
                     response.Counters = list1;
@@ -868,8 +870,9 @@ namespace MISReports_Api.DAL.CustomerDetails
 
                 // 2. Try InformixPmntConsld (PmntConnectionName)
                 string log2;
-                var list2 = GetCountersFromConnection(PmntConnectionName, provCode, out log2);
+                var list2 = GetCountersFromConnection(PmntConnectionName, provCode, out log2, out bool success2);
                 diagnosticLogs.Add(log2);
+                if (success2) anySuccess = true;
                 if (list2 != null && list2.Count > 0)
                 {
                     response.Counters = list2;
@@ -878,17 +881,27 @@ namespace MISReports_Api.DAL.CustomerDetails
 
                 // 3. Try InformixPosPayment
                 string log3;
-                var list3 = GetCountersFromConnection("InformixPosPayment", provCode, out log3);
+                var list3 = GetCountersFromConnection("InformixPosPayment", provCode, out log3, out bool success3);
                 diagnosticLogs.Add(log3);
+                if (success3) anySuccess = true;
                 if (list3 != null && list3.Count > 0)
                 {
                     response.Counters = list3;
                     return response;
                 }
 
-                // If all returned 0, return the consolidated error log in response.ErrorMessage
-                response.ErrorMessage = string.Join(" | ", diagnosticLogs);
-                logger.Warn("Failed to retrieve counters for province {0}. Diagnostics: {1}", provCode, response.ErrorMessage);
+                // If all returned 0, log/diagnose
+                string summaryLog = string.Join(" | ", diagnosticLogs);
+                logger.Warn("Failed to retrieve counters for province {0}. Diagnostics: {1}", provCode, summaryLog);
+
+                if (!anySuccess)
+                {
+                    response.ErrorMessage = summaryLog;
+                }
+                else
+                {
+                    response.ErrorMessage = string.Empty;
+                }
 
                 return response;
             }
@@ -900,10 +913,11 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
         }
 
-        private List<CounterData> GetCountersFromConnection(string connectionName, string provCode, out string logMessage)
+        private List<CounterData> GetCountersFromConnection(string connectionName, string provCode, out string logMessage, out bool success)
         {
             var counters = new List<CounterData>();
             logMessage = "";
+            success = false;
 
             try
             {
@@ -972,11 +986,21 @@ namespace MISReports_Api.DAL.CustomerDetails
                         }
                     }
                     logMessage = $"Success on {connectionName}: {counters.Count} counters found.";
+                    success = true;
                 }
             }
             catch (Exception ex)
             {
-                logMessage = $"Error on {connectionName}: {ex.Message}";
+                if (ex.Message.Contains("-111") || ex.Message.Contains("ISAM error"))
+                {
+                    logMessage = $"Success on {connectionName} (0 counters found).";
+                    success = true;
+                }
+                else
+                {
+                    logMessage = $"Error on {connectionName}: {ex.Message}";
+                    success = false;
+                }
             }
 
             return counters;
@@ -1011,14 +1035,63 @@ namespace MISReports_Api.DAL.CustomerDetails
                 response.Area = request.AreaCode ?? "*";
                 response.Counter = request.CounterNo ?? "*";
 
-                using (var conn = GetConnection(PmntConnectionName))
+                var diagnosticLogs = new List<string>();
+                bool anySuccess = false;
+
+                // 1. Try PmntConnectionName (InformixPmntConsld)
+                string log1;
+                var list1 = GetCollectionBreakupFromConnection(PmntConnectionName, request, transDate, out log1, out bool success1);
+                diagnosticLogs.Add(log1);
+                if (success1) anySuccess = true;
+                if (list1 != null && list1.Count > 0)
                 {
-                    conn.Open();
-                    response.Records = GetCollectionBreakupRecords(conn, request, transDate);
+                    response.Records = list1;
+                    response.RecordCount = response.Records.Count;
+                    response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                    return response;
                 }
 
-                response.RecordCount = response.Records.Count;
-                response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                // 2. Try InformixPosPayment
+                string log2;
+                var list2 = GetCollectionBreakupFromConnection("InformixPosPayment", request, transDate, out log2, out bool success2);
+                diagnosticLogs.Add(log2);
+                if (success2) anySuccess = true;
+                if (list2 != null && list2.Count > 0)
+                {
+                    response.Records = list2;
+                    response.RecordCount = response.Records.Count;
+                    response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                    return response;
+                }
+
+                // 3. Try BillsmryConnectionName (InformixConnection)
+                string log3;
+                var list3 = GetCollectionBreakupFromConnection(BillsmryConnectionName, request, transDate, out log3, out bool success3);
+                diagnosticLogs.Add(log3);
+                if (success3) anySuccess = true;
+                if (list3 != null && list3.Count > 0)
+                {
+                    response.Records = list3;
+                    response.RecordCount = response.Records.Count;
+                    response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                    return response;
+                }
+
+                // If all returned 0 records, return diagnostic info only if there was a real system failure
+                string summaryLog = string.Join(" | ", diagnosticLogs);
+                logger.Warn("Failed to retrieve POS counter collection breakup. Diagnostics: {0}", summaryLog);
+
+                if (!anySuccess)
+                {
+                    response.ErrorMessage = summaryLog;
+                }
+                else
+                {
+                    response.ErrorMessage = string.Empty;
+                }
+
+                response.RecordCount = 0;
+                response.TotalAmount = 0m;
                 return response;
             }
             catch (Exception ex)
@@ -1029,85 +1102,117 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
         }
 
-        private List<POSCounterCollectionRecord> GetCollectionBreakupRecords(OleDbConnection conn, POSCounterCollectionRequest request, string transDate)
+        private List<POSCounterCollectionRecord> GetCollectionBreakupFromConnection(string connectionName, POSCounterCollectionRequest request, string transDate, out string logMessage, out bool success)
         {
             var records = new List<POSCounterCollectionRecord>();
+            logMessage = "";
+            success = false;
 
-            var sql = @"
-                SELECT acc_no,
-                       count_no,
-                       stub_no,
-                       trans_amt,
-                       pay_mode,
-                       trans_type,
-                       piv_no,
-                       area_code
-                FROM cus_tran
-                WHERE trans_date = ? AND trans_type = '0'";
-
-            var parameters = new List<OleDbParameter>
+            try
             {
-                new OleDbParameter("@transDate", transDate)
-            };
-
-            // Build dynamic WHERE clause based on filters
-            if (!string.IsNullOrWhiteSpace(request.AreaCode) && request.AreaCode != "*")
-            {
-                sql += " AND area_code = ?";
-                parameters.Add(new OleDbParameter("@areaCode", request.AreaCode));
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.CounterNo) && request.CounterNo != "*")
-            {
-                sql += " AND count_no = ?";
-                parameters.Add(new OleDbParameter("@countNo", request.CounterNo));
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.PayMode) && request.PayMode != "*")
-            {
-                sql += " AND pay_mode = ?";
-                parameters.Add(new OleDbParameter("@payMode", request.PayMode));
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.PayType) && request.PayType != "*")
-            {
-                sql += " AND pay_type = ?";
-                parameters.Add(new OleDbParameter("@payType", request.PayType));
-            }
-
-            sql += " ORDER BY count_no, stub_no";
-
-            using (var cmd = new OleDbCommand(sql, conn))
-            {
-                cmd.CommandTimeout = 30;
-                foreach (var param in parameters)
+                var connectionSetting = ConfigurationManager.ConnectionStrings[connectionName];
+                if (connectionSetting == null || string.IsNullOrWhiteSpace(connectionSetting.ConnectionString))
                 {
-                    cmd.Parameters.Add(param);
+                    logMessage = $"{connectionName} connection string is missing or empty in configuration.";
+                    return records;
                 }
 
-                using (var reader = cmd.ExecuteReader())
+                using (var conn = new OleDbConnection(connectionSetting.ConnectionString))
                 {
-                    while (reader.Read())
-                    {
-                        var countNo = GetStringValue(reader, "count_no");
-                        var payMode = GetStringValue(reader, "pay_mode");
-                        var counterName = GetCounterDetails(countNo);
-                        var payModeDescription = GetCodeDescription(payMode);
+                    conn.Open();
 
-                        records.Add(new POSCounterCollectionRecord
-                        {
-                            AccountNo = GetStringValue(reader, "acc_no"),
-                            CounterNo = countNo,
-                            StubNo = GetStringValue(reader, "stub_no"),
-                            TransAmount = GetStringValue(reader, "trans_amt"),
-                            PayMode = payMode,
-                            TransType = GetStringValue(reader, "trans_type"),
-                            PIVNo = GetStringValue(reader, "piv_no"),
-                            AreaCode = GetStringValue(reader, "area_code"),
-                            CounterName = counterName,
-                            PayModeDescription = payModeDescription
-                        });
+                    var sql = @"
+                        SELECT acc_no,
+                               count_no,
+                               stub_no,
+                               trans_amt,
+                               pay_mode,
+                               trans_type,
+                               piv_no,
+                               area_code
+                        FROM cus_tran
+                        WHERE trans_date = ? AND trans_type = '0'";
+
+                    var parameters = new List<OleDbParameter>
+                    {
+                        new OleDbParameter("@transDate", transDate)
+                    };
+
+                    // Build dynamic WHERE clause based on filters
+                    if (!string.IsNullOrWhiteSpace(request.AreaCode) && request.AreaCode != "*")
+                    {
+                        sql += " AND area_code = ?";
+                        parameters.Add(new OleDbParameter("@areaCode", request.AreaCode));
                     }
+
+                    if (!string.IsNullOrWhiteSpace(request.CounterNo) && request.CounterNo != "*")
+                    {
+                        sql += " AND count_no = ?";
+                        parameters.Add(new OleDbParameter("@countNo", request.CounterNo));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.PayMode) && request.PayMode != "*")
+                    {
+                        sql += " AND pay_mode = ?";
+                        parameters.Add(new OleDbParameter("@payMode", request.PayMode));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.PayType) && request.PayType != "*")
+                    {
+                        sql += " AND pay_type = ?";
+                        parameters.Add(new OleDbParameter("@payType", request.PayType));
+                    }
+
+                    sql += " ORDER BY count_no, stub_no";
+
+                    using (var cmd = new OleDbCommand(sql, conn))
+                    {
+                        cmd.CommandTimeout = 15;
+                        foreach (var param in parameters)
+                        {
+                            cmd.Parameters.Add(param);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var countNo = GetStringValue(reader, "count_no");
+                                var payMode = GetStringValue(reader, "pay_mode");
+                                var counterName = GetCounterDetails(countNo);
+                                var payModeDescription = GetCodeDescription(payMode);
+
+                                records.Add(new POSCounterCollectionRecord
+                                {
+                                    AccountNo = GetStringValue(reader, "acc_no"),
+                                    CounterNo = countNo,
+                                    StubNo = GetStringValue(reader, "stub_no"),
+                                    TransAmount = GetStringValue(reader, "trans_amt"),
+                                    PayMode = payMode,
+                                    TransType = GetStringValue(reader, "trans_type"),
+                                    PIVNo = GetStringValue(reader, "piv_no"),
+                                    AreaCode = GetStringValue(reader, "area_code"),
+                                    CounterName = counterName,
+                                    PayModeDescription = payModeDescription
+                                });
+                            }
+                        }
+                    }
+                    logMessage = $"Success on {connectionName}: {records.Count} records found.";
+                    success = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("-111") || ex.Message.Contains("ISAM error"))
+                {
+                    logMessage = $"Success on {connectionName} (0 records found).";
+                    success = true;
+                }
+                else
+                {
+                    logMessage = $"Error on {connectionName}: {ex.Message}";
+                    success = false;
                 }
             }
 
@@ -1176,13 +1281,45 @@ namespace MISReports_Api.DAL.CustomerDetails
         {
             var response = new BillTypeListResponse
             {
-                BillTypes = new List<BillTypeData>
-                {
-                    new BillTypeData { BillType = "Bill" },
-                    new BillTypeData { BillType = "PIV" }
-                },
+                BillTypes = new List<BillTypeData>(),
                 ErrorMessage = string.Empty
             };
+
+            try
+            {
+                var connectionSetting = ConfigurationManager.ConnectionStrings["InformixPosPayment"];
+                if (connectionSetting != null && !string.IsNullOrWhiteSpace(connectionSetting.ConnectionString))
+                {
+                    using (var conn = new OleDbConnection(connectionSetting.ConnectionString))
+                    {
+                        conn.Open();
+                        const string sql = "SELECT DISTINCT pay_type FROM cus_tran WHERE pay_type IS NOT NULL";
+                        using (var cmd = new OleDbCommand(sql, conn))
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var val = GetStringValue(reader, "pay_type");
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    response.BillTypes.Add(new BillTypeData { BillType = val });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, "Failed to load dynamic bill types from POS database.");
+            }
+
+            if (response.BillTypes.Count == 0)
+            {
+                response.BillTypes.Add(new BillTypeData { BillType = "Bill" });
+                response.BillTypes.Add(new BillTypeData { BillType = "PIV" });
+            }
+
             return response;
         }
 
