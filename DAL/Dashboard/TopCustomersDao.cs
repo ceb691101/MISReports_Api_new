@@ -35,7 +35,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public TopCustomersResponse GetTopCustomers(string billCycle = null, int take = 0)
+        public TopCustomersResponse GetTopCustomers(string billCycle = null, string region = null, int take = 0)
         {
             var response = new TopCustomersResponse
             {
@@ -60,7 +60,7 @@ namespace MISReports_Api.DAL.Dashboard
                         return response;
                     }
 
-                    var records = GetTopCustomersFromMonTot(conn, targetBillCycle);
+                    var records = GetTopCustomersFromMonTot(conn, targetBillCycle, region);
                     records = records.Take(safeTake).ToList();
 
                     response.Records = records;
@@ -97,27 +97,54 @@ namespace MISReports_Api.DAL.Dashboard
             return GetMaxBillCycle(conn);
         }
 
-        private List<TopCustomerRecord> GetTopCustomersFromMonTot(OleDbConnection conn, string billCycle)
+        private List<TopCustomerRecord> GetTopCustomersFromMonTot(OleDbConnection conn, string billCycle, string region)
         {
             var records = new List<TopCustomerRecord>();
+            bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
 
-            const string sql = @"
-                SELECT m.acc_nbr,
-                       c.name,
-                       c.address_l1,
-                       c.address_l2,
-                       c.city,
-                       SUM(COALESCE(m.tot_untskwo, 0) + COALESCE(m.tot_untskwp, 0) + COALESCE(m.tot_untskwd, 0)) AS kwh,
-                       m.tot_amt
-                FROM mon_tot m, customer c
-                WHERE m.acc_nbr = c.acc_nbr
-                AND m.bill_cycle = ?
-                GROUP BY m.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, m.tot_amt
-                ORDER BY kwh DESC, m.acc_nbr";
+            string sql;
+            if (hasRegionFilter)
+            {
+                sql = @"
+                    SELECT m.acc_nbr,
+                           c.name,
+                           c.address_l1,
+                           c.address_l2,
+                           c.city,
+                           SUM(COALESCE(m.tot_untskwo, 0) + COALESCE(m.tot_untskwp, 0) + COALESCE(m.tot_untskwd, 0)) AS kwh,
+                           m.tot_amt
+                    FROM mon_tot m, customer c, areas a
+                    WHERE m.acc_nbr = c.acc_nbr
+                    AND c.area_cd = a.area_code
+                    AND m.bill_cycle = ?
+                    AND a.region = ?
+                    GROUP BY m.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, m.tot_amt
+                    ORDER BY kwh DESC, m.acc_nbr";
+            }
+            else
+            {
+                sql = @"
+                    SELECT m.acc_nbr,
+                           c.name,
+                           c.address_l1,
+                           c.address_l2,
+                           c.city,
+                           SUM(COALESCE(m.tot_untskwo, 0) + COALESCE(m.tot_untskwp, 0) + COALESCE(m.tot_untskwd, 0)) AS kwh,
+                           m.tot_amt
+                    FROM mon_tot m, customer c
+                    WHERE m.acc_nbr = c.acc_nbr
+                    AND m.bill_cycle = ?
+                    GROUP BY m.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, m.tot_amt
+                    ORDER BY kwh DESC, m.acc_nbr";
+            }
 
             using (var cmd = new OleDbCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("?", billCycle);
+                if (hasRegionFilter)
+                {
+                    cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                }
 
                 using (var reader = cmd.ExecuteReader())
                 {

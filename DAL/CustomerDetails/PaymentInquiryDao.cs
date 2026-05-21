@@ -97,15 +97,10 @@ namespace MISReports_Api.DAL.CustomerDetails
 
         public PaymentInquiryResponse GetFullReport(PaymentInquiryRequest request)
         {
-            return BuildPaymentInquiryResponse(request, true);
+            return BuildPaymentInquiryResponse(request);
         }
 
-        public PaymentInquiryResponse GetPaymentsOnly(PaymentInquiryRequest request)
-        {
-            return BuildPaymentInquiryResponse(request, false);
-        }
-
-        private PaymentInquiryResponse BuildPaymentInquiryResponse(PaymentInquiryRequest request, bool includeSummary)
+        private PaymentInquiryResponse BuildPaymentInquiryResponse(PaymentInquiryRequest request)
         {
             var response = new PaymentInquiryResponse
             {
@@ -140,10 +135,7 @@ namespace MISReports_Api.DAL.CustomerDetails
                 response.FromDate = fromDate;
                 response.ToDate = DateTime.Today.ToString("yyyy-MM-dd");
 
-                if (includeSummary)
-                {
-                    LoadSummaryFields(response, accountNumber);
-                }
+                LoadSummaryFields(response, accountNumber);
 
                 using (var conn = GetConnection(PmntConnectionName))
                 {
@@ -156,7 +148,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
             catch (Exception ex)
             {
-                logger.Error(ex, includeSummary ? "Error while fetching full payment inquiry report" : "Error while fetching payments only inquiry report");
+                logger.Error(ex, "Error while fetching full payment inquiry report");
                 response.ErrorMessage = ex.Message;
                 return response;
             }
@@ -718,5 +710,598 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             return value.ToString().Trim();
         }
+
+        #region POS Counter Collection Breakup
+
+        public ProvinceListResponse GetProvinces()
+        {
+            var response = new ProvinceListResponse
+            {
+                Provinces = new List<ProvinceData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                using (var conn = GetConnection(BillsmryConnectionName))
+                {
+                    conn.Open();
+                    response.Provinces = GetProvincesList(conn);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching provinces");
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<ProvinceData> GetProvincesList(OleDbConnection conn)
+        {
+            var provinces = new List<ProvinceData>();
+
+            const string sql = @"
+                SELECT prov_name,
+                       TRIM(prov_code) AS prov_code,
+                       TRIM(prov_svr_name) AS prov_svr_name,
+                       TRIM(uname) AS uname,
+                       TRIM(upwd) AS upwd
+                FROM prov_servers
+                ORDER BY prov_name";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.CommandTimeout = 30;
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        provinces.Add(new ProvinceData
+                        {
+                            ProvName = GetStringValue(reader, "prov_name"),
+                            ProvCode = GetStringValue(reader, "prov_code"),
+                            ProvSvrName = GetStringValue(reader, "prov_svr_name"),
+                            Username = GetStringValue(reader, "uname"),
+                            Password = GetStringValue(reader, "upwd")
+                        });
+                    }
+                }
+            }
+
+            return provinces;
+        }
+
+        public AreaListResponse GetAreas(string provCode)
+        {
+            var response = new AreaListResponse
+            {
+                Areas = new List<AreaData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(provCode))
+                {
+                    response.ErrorMessage = "Province code is required.";
+                    return response;
+                }
+
+                using (var conn = GetConnection(BillsmryConnectionName))
+                {
+                    conn.Open();
+                    response.Areas = GetAreasList(conn, provCode);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching areas for province {0}", provCode);
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<AreaData> GetAreasList(OleDbConnection conn, string provCode)
+        {
+            var areas = new List<AreaData>();
+
+            const string sql = @"
+                SELECT area_code,
+                       area_name
+                FROM areas
+                WHERE prov_code = ?
+                ORDER BY area_name";
+
+            using (var cmd = new OleDbCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@provCode", provCode);
+                cmd.CommandTimeout = 30;
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        areas.Add(new AreaData
+                        {
+                            AreaCode = GetStringValue(reader, "area_code"),
+                            AreaName = GetStringValue(reader, "area_name")
+                        });
+                    }
+                }
+            }
+
+            return areas;
+        }
+
+        public CounterListResponse GetCounters(string provCode)
+        {
+            var response = new CounterListResponse
+            {
+                Counters = new List<CounterData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(provCode))
+                {
+                    response.ErrorMessage = "Province code is required.";
+                    return response;
+                }
+
+                var diagnosticLogs = new List<string>();
+                bool anySuccess = false;
+
+                // 1. Try InformixConnection (BillsmryConnectionName)
+                string log1;
+                var list1 = GetCountersFromConnection(BillsmryConnectionName, provCode, out log1, out bool success1);
+                diagnosticLogs.Add(log1);
+                if (success1) anySuccess = true;
+                if (list1 != null && list1.Count > 0)
+                {
+                    response.Counters = list1;
+                    return response;
+                }
+
+                // 2. Try InformixPmntConsld (PmntConnectionName)
+                string log2;
+                var list2 = GetCountersFromConnection(PmntConnectionName, provCode, out log2, out bool success2);
+                diagnosticLogs.Add(log2);
+                if (success2) anySuccess = true;
+                if (list2 != null && list2.Count > 0)
+                {
+                    response.Counters = list2;
+                    return response;
+                }
+
+                // 3. Try InformixPosPayment
+                string log3;
+                var list3 = GetCountersFromConnection("InformixPosPayment", provCode, out log3, out bool success3);
+                diagnosticLogs.Add(log3);
+                if (success3) anySuccess = true;
+                if (list3 != null && list3.Count > 0)
+                {
+                    response.Counters = list3;
+                    return response;
+                }
+
+                // If all returned 0, log/diagnose
+                string summaryLog = string.Join(" | ", diagnosticLogs);
+                logger.Warn("Failed to retrieve counters for province {0}. Diagnostics: {1}", provCode, summaryLog);
+
+                if (!anySuccess)
+                {
+                    response.ErrorMessage = summaryLog;
+                }
+                else
+                {
+                    response.ErrorMessage = string.Empty;
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching counters for province {0}", provCode);
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<CounterData> GetCountersFromConnection(string connectionName, string provCode, out string logMessage, out bool success)
+        {
+            var counters = new List<CounterData>();
+            logMessage = "";
+            success = false;
+
+            try
+            {
+                var connectionSetting = ConfigurationManager.ConnectionStrings[connectionName];
+                if (connectionSetting == null || string.IsNullOrWhiteSpace(connectionSetting.ConnectionString))
+                {
+                    logMessage = $"{connectionName} connection string is missing or empty in configuration.";
+                    return counters;
+                }
+
+                using (var conn = new OleDbConnection(connectionSetting.ConnectionString))
+                {
+                    conn.Open();
+
+                    if (provCode == "1" || provCode == "7" || provCode == "9" || provCode == "C")
+                    {
+                        const string sqlSpecial = @"
+                            SELECT a.count_no
+                            FROM cus_counts a, agent_info b
+                            WHERE a.agent = b.agent_code
+                              AND b.prov_code = ?
+                            ORDER BY a.count_no";
+
+                        using (var cmd = new OleDbCommand(sqlSpecial, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@provCode", provCode);
+                            cmd.CommandTimeout = 15;
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var countNo = GetStringValue(reader, "count_no");
+                                    counters.Add(new CounterData
+                                    {
+                                        CounterNo = countNo,
+                                        CounterName = countNo
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        const string sqlGeneral = @"
+                            SELECT count_no
+                            FROM cus_counts
+                            ORDER BY count_no";
+
+                        using (var cmd = new OleDbCommand(sqlGeneral, conn))
+                        {
+                            cmd.CommandTimeout = 15;
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var countNo = GetStringValue(reader, "count_no");
+                                    counters.Add(new CounterData
+                                    {
+                                        CounterNo = countNo,
+                                        CounterName = countNo
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    logMessage = $"Success on {connectionName}: {counters.Count} counters found.";
+                    success = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("-111") || ex.Message.Contains("ISAM error"))
+                {
+                    logMessage = $"Success on {connectionName} (0 counters found).";
+                    success = true;
+                }
+                else
+                {
+                    logMessage = $"Error on {connectionName}: {ex.Message}";
+                    success = false;
+                }
+            }
+
+            return counters;
+        }
+
+        public POSCounterCollectionResponse GetPOSCounterCollectionBreakup(POSCounterCollectionRequest request)
+        {
+            var response = new POSCounterCollectionResponse
+            {
+                Records = new List<POSCounterCollectionRecord>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Request body is required.";
+                    return response;
+                }
+
+                var transDate = NormalizeDateString(request.TransDate);
+
+                if (string.IsNullOrWhiteSpace(transDate))
+                {
+                    response.ErrorMessage = "Transaction date is required.";
+                    return response;
+                }
+
+                response.TransDate = transDate;
+                response.Province = request.ProvCode ?? "*";
+                response.Area = request.AreaCode ?? "*";
+                response.Counter = request.CounterNo ?? "*";
+
+                var diagnosticLogs = new List<string>();
+                bool anySuccess = false;
+
+                // 1. Try PmntConnectionName (InformixPmntConsld)
+                string log1;
+                var list1 = GetCollectionBreakupFromConnection(PmntConnectionName, request, transDate, out log1, out bool success1);
+                diagnosticLogs.Add(log1);
+                if (success1) anySuccess = true;
+                if (list1 != null && list1.Count > 0)
+                {
+                    response.Records = list1;
+                    response.RecordCount = response.Records.Count;
+                    response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                    return response;
+                }
+
+                // 2. Try InformixPosPayment
+                string log2;
+                var list2 = GetCollectionBreakupFromConnection("InformixPosPayment", request, transDate, out log2, out bool success2);
+                diagnosticLogs.Add(log2);
+                if (success2) anySuccess = true;
+                if (list2 != null && list2.Count > 0)
+                {
+                    response.Records = list2;
+                    response.RecordCount = response.Records.Count;
+                    response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                    return response;
+                }
+
+                // 3. Try BillsmryConnectionName (InformixConnection)
+                string log3;
+                var list3 = GetCollectionBreakupFromConnection(BillsmryConnectionName, request, transDate, out log3, out bool success3);
+                diagnosticLogs.Add(log3);
+                if (success3) anySuccess = true;
+                if (list3 != null && list3.Count > 0)
+                {
+                    response.Records = list3;
+                    response.RecordCount = response.Records.Count;
+                    response.TotalAmount = response.Records.Sum(record => GetDecimalValue(record.TransAmount));
+                    return response;
+                }
+
+                // If all returned 0 records, return diagnostic info only if there was a real system failure
+                string summaryLog = string.Join(" | ", diagnosticLogs);
+                logger.Warn("Failed to retrieve POS counter collection breakup. Diagnostics: {0}", summaryLog);
+
+                if (!anySuccess)
+                {
+                    response.ErrorMessage = summaryLog;
+                }
+                else
+                {
+                    response.ErrorMessage = string.Empty;
+                }
+
+                response.RecordCount = 0;
+                response.TotalAmount = 0m;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching POS counter collection breakup");
+                response.ErrorMessage = ex.Message;
+                return response;
+            }
+        }
+
+        private List<POSCounterCollectionRecord> GetCollectionBreakupFromConnection(string connectionName, POSCounterCollectionRequest request, string transDate, out string logMessage, out bool success)
+        {
+            var records = new List<POSCounterCollectionRecord>();
+            logMessage = "";
+            success = false;
+
+            try
+            {
+                var connectionSetting = ConfigurationManager.ConnectionStrings[connectionName];
+                if (connectionSetting == null || string.IsNullOrWhiteSpace(connectionSetting.ConnectionString))
+                {
+                    logMessage = $"{connectionName} connection string is missing or empty in configuration.";
+                    return records;
+                }
+
+                using (var conn = new OleDbConnection(connectionSetting.ConnectionString))
+                {
+                    conn.Open();
+
+                    var sql = @"
+                        SELECT acc_no,
+                               count_no,
+                               stub_no,
+                               trans_amt,
+                               pay_mode,
+                               trans_type,
+                               piv_no,
+                               area_code
+                        FROM cus_tran
+                        WHERE trans_date = ? AND trans_type = '0'";
+
+                    var parameters = new List<OleDbParameter>
+                    {
+                        new OleDbParameter("@transDate", transDate)
+                    };
+
+                    // Build dynamic WHERE clause based on filters
+                    if (!string.IsNullOrWhiteSpace(request.AreaCode) && request.AreaCode != "*")
+                    {
+                        sql += " AND area_code = ?";
+                        parameters.Add(new OleDbParameter("@areaCode", request.AreaCode));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.CounterNo) && request.CounterNo != "*")
+                    {
+                        sql += " AND count_no = ?";
+                        parameters.Add(new OleDbParameter("@countNo", request.CounterNo));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.PayMode) && request.PayMode != "*")
+                    {
+                        sql += " AND pay_mode = ?";
+                        parameters.Add(new OleDbParameter("@payMode", request.PayMode));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.PayType) && request.PayType != "*")
+                    {
+                        string dbPayType = request.PayType;
+                        if (dbPayType.Equals("Bill", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbPayType = "B";
+                        }
+                        else if (dbPayType.Equals("PIV", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbPayType = "P";
+                        }
+
+                        sql += " AND pay_type = ?";
+                        parameters.Add(new OleDbParameter("@payType", dbPayType));
+                    }
+
+                    sql += " ORDER BY count_no, stub_no";
+
+                    using (var cmd = new OleDbCommand(sql, conn))
+                    {
+                        cmd.CommandTimeout = 15;
+                        foreach (var param in parameters)
+                        {
+                            cmd.Parameters.Add(param);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var countNo = GetStringValue(reader, "count_no");
+                                var payMode = GetStringValue(reader, "pay_mode");
+                                var counterName = GetCounterDetails(countNo);
+                                var payModeDescription = GetCodeDescription(payMode);
+
+                                records.Add(new POSCounterCollectionRecord
+                                {
+                                    AccountNo = GetStringValue(reader, "acc_no"),
+                                    CounterNo = countNo,
+                                    StubNo = GetStringValue(reader, "stub_no"),
+                                    TransAmount = GetStringValue(reader, "trans_amt"),
+                                    PayMode = payMode,
+                                    TransType = GetStringValue(reader, "trans_type"),
+                                    PIVNo = GetStringValue(reader, "piv_no"),
+                                    AreaCode = GetStringValue(reader, "area_code"),
+                                    CounterName = counterName,
+                                    PayModeDescription = payModeDescription
+                                });
+                            }
+                        }
+                    }
+                    logMessage = $"Success on {connectionName}: {records.Count} records found.";
+                    success = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("-111") || ex.Message.Contains("ISAM error"))
+                {
+                    logMessage = $"Success on {connectionName} (0 records found).";
+                    success = true;
+                }
+                else
+                {
+                    logMessage = $"Error on {connectionName}: {ex.Message}";
+                    success = false;
+                }
+            }
+
+            return records;
+        }
+
+        public PayModeListResponse GetPayModes()
+        {
+            var response = new PayModeListResponse
+            {
+                PayModes = new List<PayModeData>(),
+                ErrorMessage = string.Empty
+            };
+
+            try
+            {
+                using (var conn = GetConnection(PmntConnectionName))
+                {
+                    conn.Open();
+                    const string sql = @"
+                        SELECT DISTINCT pay_mode, code_discrp
+                        FROM code_paymode
+                        WHERE pay_mode IS NOT NULL
+                        ORDER BY code_discrp";
+
+                    using (var cmd = new OleDbCommand(sql, conn))
+                    {
+                        cmd.CommandTimeout = 30;
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                response.PayModes.Add(new PayModeData
+                                {
+                                    PayMode = GetStringValue(reader, "pay_mode"),
+                                    CodeDescription = GetStringValue(reader, "code_discrp")
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // If no records found, add fallback values
+                if (response.PayModes.Count == 0)
+                {
+                    response.PayModes.Add(new PayModeData { PayMode = "C", CodeDescription = "Cash" });
+                    response.PayModes.Add(new PayModeData { PayMode = "Q", CodeDescription = "Cheque" });
+                    response.PayModes.Add(new PayModeData { PayMode = "O", CodeDescription = "Online" });
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error while fetching pay modes");
+                response.ErrorMessage = ex.Message;
+                // Add fallback values in case of DB failure
+                response.PayModes.Add(new PayModeData { PayMode = "C", CodeDescription = "Cash" });
+                response.PayModes.Add(new PayModeData { PayMode = "Q", CodeDescription = "Cheque" });
+                response.PayModes.Add(new PayModeData { PayMode = "O", CodeDescription = "Online" });
+                return response;
+            }
+        }
+
+        public BillTypeListResponse GetBillTypes()
+        {
+            var response = new BillTypeListResponse
+            {
+                BillTypes = new List<BillTypeData>
+                {
+                    new BillTypeData { BillType = "Bill" },
+                    new BillTypeData { BillType = "PIV" }
+                },
+                ErrorMessage = string.Empty
+            };
+
+            return response;
+        }
+
+        #endregion
     }
 }

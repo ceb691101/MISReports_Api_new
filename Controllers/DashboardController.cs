@@ -198,18 +198,18 @@ namespace MISReports_Api.Controllers.Dashboard
             }
         }
 
-        /// <summary>GET api/dashboard/top-customers/list (fetches latest bill cycle and top 100 customers)</summary>
+        /// <summary>GET api/dashboard/top-customers/list (fetches latest bill cycle and top customers with optional region filter)</summary>
         [HttpGet]
         [Route("top-customers/list")]
-        public IHttpActionResult GetTopCustomers()
+        public IHttpActionResult GetTopCustomers([FromUri] string region = null, [FromUri] int take = 10)
         {
             try
             {
                 if (!_topCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                // Always fetch the max bill cycle and return top 100 customers
-                var data = _topCustomersDao.GetTopCustomers(null, 100);
+                // Fetch the max bill cycle and return top customers with region filter
+                var data = _topCustomersDao.GetTopCustomers(null, NormalizeRegion(region), take);
 
                 return Ok(new
                 {
