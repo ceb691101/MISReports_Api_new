@@ -289,6 +289,7 @@
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
+    <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
@@ -393,6 +394,7 @@
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
+    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -554,6 +556,7 @@
     <Compile Include="Models\Cash Book\CashBookCCReportModel.cs" />
     <Compile Include="Models\Cash Book\CashBookReportModel.cs" />
     <Compile Include="Models\Cash Book\DocumentInquiryModel.cs" />
+    <Compile Include="Models\Collection\ReceivePositionModel.cs" />
     <Compile Include="Models\Dashboard\BulkCustomerModels.cs" />
     <Compile Include="Models\Dashboard\KioskCollectionModel.cs" />
     <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
@@ -756,11 +759,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Controllers\Admin\" />
-    <Folder Include="DAL\Admin\" />
-    <Folder Include="DAL\FinancialDashboard\" />
-    <Folder Include="Models\Admin\" />
-    <Folder Include="Models\FinancialDashboard\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
