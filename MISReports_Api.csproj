@@ -303,6 +303,7 @@
     <Compile Include="Controllers\JobCard\JobCardMaterialsController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
+    <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\LedgerCard\DivisionalLedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardController.cs" />
@@ -427,6 +428,7 @@
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
+    <Compile Include="DAL\ReportParamFlagsRepository.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
@@ -594,6 +596,7 @@
     <Compile Include="Models\JobSearch\JobSearchDtos.cs" />
     <Compile Include="Models\JobSearch\JobSearchMainTable.cs" />
     <Compile Include="Models\JobSearch\JobSearchModel.cs" />
+    <Compile Include="Models\ReportParamFlagsModel.cs" />
     <Compile Include="Models\Shared\CalcCycleModel.cs" />
     <Compile Include="Models\SolarJobs\CcApplicationModel.cs" />
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />
