@@ -79,10 +79,17 @@ namespace MISReports_Api.Controllers
 		}
 
 		// Age Analysis of Solar Power Consumers
+		/*
 		[HttpGet]
 		[Route("bill-cycles")]
 		public IHttpActionResult GetBillCycles([FromUri] string areaCode, [FromUri] int take = 20)
 		{
+			// This endpoint was originally implemented here to return bill cycles
+			// for the solar-age analysis. The project now exposes a shared
+			// bill cycle endpoint at `api/billcycle/max` (see
+			// Controllers/Debtors/BillCycleController.cs). To avoid duplicate
+			// implementations we are commenting out this action. The original
+			// implementation is preserved below for reference.
 			if (string.IsNullOrWhiteSpace(areaCode))
 			{
 				return Ok(JObject.FromObject(new
@@ -112,6 +119,7 @@ namespace MISReports_Api.Controllers
 				}));
 			}
 		}
+		*/
 		// view details - Age Analysis of Solar Power Consumers
 		[HttpGet]
 		[Route("view")]
