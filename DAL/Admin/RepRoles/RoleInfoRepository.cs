@@ -288,7 +288,7 @@ namespace MISReports_Api.DAL
 
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
                             cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
-                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = request.RoleName?.Trim();
+                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = (object)request.RoleName?.Trim() ?? DBNull.Value;
                             cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
@@ -421,7 +421,7 @@ namespace MISReports_Api.DAL
 
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
                             cmd.Parameters.Add("new_role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
-                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = request.RoleName?.Trim();
+                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = (object)request.RoleName?.Trim() ?? DBNull.Value;
                             cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();

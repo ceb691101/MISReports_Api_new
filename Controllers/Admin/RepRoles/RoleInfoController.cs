@@ -103,9 +103,6 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(request.RoleId))
                     validationErrors.Add("RoleId is required.");
 
-                if (string.IsNullOrWhiteSpace(request.RoleName))
-                    validationErrors.Add("RoleName is required.");
-
                 if (string.IsNullOrWhiteSpace(request.UserType))
                     validationErrors.Add("UserType is required.");
 
@@ -196,9 +193,6 @@ namespace MISReports_Api.Controllers
 
                 if (string.IsNullOrWhiteSpace(request.RoleId))
                     validationErrors.Add("RoleId is required.");
-
-                if (string.IsNullOrWhiteSpace(request.RoleName))
-                    validationErrors.Add("RoleName is required.");
 
                 if (string.IsNullOrWhiteSpace(request.UserType))
                     validationErrors.Add("UserType is required.");
