@@ -78,6 +78,7 @@ namespace MISReports_Api.Controllers
 			}
 		}
 
+		// Age Analysis of Solar Power Consumers
 		[HttpGet]
 		[Route("bill-cycles")]
 		public IHttpActionResult GetBillCycles([FromUri] string areaCode, [FromUri] int take = 20)
@@ -111,7 +112,7 @@ namespace MISReports_Api.Controllers
 				}));
 			}
 		}
-
+		// view details - Age Analysis of Solar Power Consumers
 		[HttpGet]
 		[Route("view")]
 		public IHttpActionResult GetAgeAnalysis(
@@ -173,6 +174,7 @@ namespace MISReports_Api.Controllers
 			}
 		}
 
+		//full report - Age Analysis of Solar Power Consumers
 		[HttpGet]
 		[Route("full-report")]
 		public IHttpActionResult GetFullReport(
