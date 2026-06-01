@@ -417,7 +417,6 @@
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\SalesByTariffDao.cs" />
     <Compile Include="DAL\General\BillCalculation\BillCalculationDao.cs" />
     <Compile Include="DAL\General\ListingofCustomer\ListingofCustomerDao.cs" />
-    <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
@@ -430,6 +429,7 @@
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
+    <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
