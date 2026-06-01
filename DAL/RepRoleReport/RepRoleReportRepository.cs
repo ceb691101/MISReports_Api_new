@@ -10,7 +10,7 @@ namespace MISReports_Api.DAL
     public class RepRoleReportRepository
     {
         private readonly string _connectionString =
-            ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
+            ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
         public async Task<List<RepRoleReportModel>> GetReportsByRole(string roleId)
         {

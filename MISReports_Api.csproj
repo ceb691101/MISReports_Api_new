@@ -315,6 +315,7 @@
     <Compile Include="Controllers\PhysicalVerification\PHVNonMovingWHwiseBOSController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleBOSController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleController.cs" />
+    <Compile Include="Controllers\FIFO\PHVObsoleteIdleFIFOController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVShoratgeSurplusWHwiseController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVSlowNonMovingWHwiseController.cs" />
     <Compile Include="Controllers\PIV\AccCodeWisePivNotAfmhqController.cs" />
@@ -439,6 +440,7 @@
     <Compile Include="DAL\PhysicalVerification\PHVNonMovingWHwiseBOSRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleBOSRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleRepository.cs" />
+    <Compile Include="DAL\FIFO\PHVObsoleteIdleFIFORepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVShoratgeSurplusWHwiseRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVSlowNonMovingWHwiseRepository.cs" />
     <Compile Include="DAL\PIV\AccCodeWisePivNotAfmhqRepository.cs" />
@@ -450,6 +452,8 @@
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
+    <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
+    <Compile Include="Services\Reporting\PHVObsoleteIdleJasperReportService.cs" />
     <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
     <Compile Include="DAL\PIV\OtherCCtoProvinceRepository.cs" />
     <Compile Include="DAL\PIV\PIVbyBanksRepository.cs" />
@@ -608,6 +612,7 @@
     <Compile Include="Models\PhysicalVerification\PHVNonMovingWHwiseBOSModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVObsoleteIdleBOSModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVObsoleteIdleModel.cs" />
+    <Compile Include="Models\FIFO\PHVObsoleteIdleFIFOModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVShoratgeSurplusWHwiseModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVSlowNonMovingWHwiseModel.cs" />
     <Compile Include="Models\PIV\AccCodeWisePivNotAfmhqModel.cs" />
