@@ -63,29 +63,7 @@ namespace MISReports_Api.Controllers
         //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
-        [HttpGet]
-        [Route("contract-demand/bill-cycles")]
-        public IHttpActionResult GetBillCycles()
-        {
-            try
-            {
-                var model = _billCycleDao.GetLast24BillCycles();
 
-                if (!string.IsNullOrEmpty(model.ErrorMessage))
-                    return Ok(new { data = (object)null, errorMessage = model.ErrorMessage });
-
-                return Ok(new { data = model, errorMessage = (string)null });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve bill cycles.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
 
 
         // ================================================================== //
