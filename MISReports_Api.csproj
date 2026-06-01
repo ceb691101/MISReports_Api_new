@@ -289,6 +289,7 @@
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
+    <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
@@ -303,6 +304,7 @@
     <Compile Include="Controllers\JobCard\JobCardMaterialsController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
+    <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\LedgerCard\DivisionalLedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardController.cs" />
@@ -395,6 +397,7 @@
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
+    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -416,7 +419,6 @@
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\SalesByTariffDao.cs" />
     <Compile Include="DAL\General\BillCalculation\BillCalculationDao.cs" />
     <Compile Include="DAL\General\ListingofCustomer\ListingofCustomerDao.cs" />
-    <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
@@ -428,7 +430,9 @@
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
+    <Compile Include="DAL\ReportParamFlagsRepository.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
+    <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -561,6 +565,7 @@
     <Compile Include="Models\Cash Book\CashBookCCReportModel.cs" />
     <Compile Include="Models\Cash Book\CashBookReportModel.cs" />
     <Compile Include="Models\Cash Book\DocumentInquiryModel.cs" />
+    <Compile Include="Models\Collection\ReceivePositionModel.cs" />
     <Compile Include="Models\Dashboard\BulkCustomerModels.cs" />
     <Compile Include="Models\Dashboard\KioskCollectionModel.cs" />
     <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
@@ -598,6 +603,7 @@
     <Compile Include="Models\JobSearch\JobSearchDtos.cs" />
     <Compile Include="Models\JobSearch\JobSearchMainTable.cs" />
     <Compile Include="Models\JobSearch\JobSearchModel.cs" />
+    <Compile Include="Models\ReportParamFlagsModel.cs" />
     <Compile Include="Models\Shared\CalcCycleModel.cs" />
     <Compile Include="Models\SolarJobs\CcApplicationModel.cs" />
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />

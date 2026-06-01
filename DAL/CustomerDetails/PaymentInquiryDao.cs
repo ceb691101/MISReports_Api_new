@@ -133,10 +133,12 @@ namespace MISReports_Api.DAL.CustomerDetails
 
                 response.AccountNumber = accountNumber;
                 response.FromDate = fromDate;
-                response.ToDate = DateTime.Today.ToString("yyyy-MM-dd");
+                response.ToDate = DateTime.Today.ToString("dd-MM-yyyy");
+                //response.ToDate = DateTime.Today.ToString("yyyy-MM-dd");
 
                 LoadSummaryFields(response, accountNumber);
 
+                //database connection
                 using (var conn = GetConnection(PmntConnectionName))
                 {
                     conn.Open();
@@ -252,6 +254,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
         }
 
+
         private string GetAreaName(string accountNumber)
         {
             var areaName = GetAreaNameFromBillsmry(accountNumber);
@@ -347,6 +350,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             return string.Empty;
         }
 
+       //payment inquiry 
         private List<PaymentInquiryPaymentRecord> GetPaymentRecords(OleDbConnection conn, string accountNumber, string fromDate)
         {
             var records = new List<PaymentInquiryPaymentRecord>();
@@ -398,10 +402,13 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             using (var cmd = new OleDbCommand(sql, conn))
             {
+                //online payments
                 cmd.Parameters.AddWithValue("@acctNo1", accountNumber);
                 cmd.Parameters.AddWithValue("@fromDate1", fromDate);
+                //offline payments
                 cmd.Parameters.AddWithValue("@acctNo2", accountNumber);
                 cmd.Parameters.AddWithValue("@fromDate2", fromDate);
+                //online bank
                 cmd.Parameters.AddWithValue("@acctNo3", accountNumber);
                 cmd.Parameters.AddWithValue("@fromDate3", fromDate);
 
@@ -452,6 +459,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             return records;
         }
 
+        //latest update times of servers - agent details
         private (string AgentName, string CenterName) GetAgentDetails(string agent, string center)
         {
             if (string.IsNullOrWhiteSpace(agent) || string.IsNullOrWhiteSpace(center))
@@ -495,6 +503,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             return (string.Empty, string.Empty);
         }
 
+        //POS Counter Collection Breakup - counter
         private string GetCounterDetails(string countNo)
         {
             if (string.IsNullOrWhiteSpace(countNo))
@@ -624,6 +633,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             return string.Empty;
         }
 
+        //if 3rd no. of acc no. is 7, it is bulk
         private static bool IsBulkAccount(string accountNumber)
         {
             return !string.IsNullOrWhiteSpace(accountNumber) && accountNumber.Length >= 3 && accountNumber[2] == '7';
@@ -638,7 +648,8 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             if (DateTime.TryParse(value, out DateTime parsedDate))
             {
-                return parsedDate.ToString("yyyy-MM-dd");
+                //return parsedDate.ToString("yyyy-MM-dd");
+                return parsedDate.ToString("dd-MM-yyyy");
             }
 
             return value.Trim();
@@ -655,12 +666,14 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             if (value is DateTime dateTime)
             {
-                return dateTime.ToString("yyyy-MM-dd");
+                //return dateTime.ToString("yyyy-MM-dd");
+                return dateTime.ToString("dd-MM-yyyy");
             }
 
             if (DateTime.TryParse(value.ToString(), out DateTime parsedDateTime))
             {
-                return parsedDateTime.ToString("yyyy-MM-dd");
+                //return parsedDateTime.ToString("yyyy-MM-dd");
+                return parsedDateTime.ToString("dd-MM-yyyy");
             }
 
             return value.ToString().Trim();
@@ -700,12 +713,14 @@ namespace MISReports_Api.DAL.CustomerDetails
 
             if (value is DateTime dateTime)
             {
-                return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+                return dateTime.ToString("dd-MM-yyyy HH:mm:ss");
+                //return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
             }
 
             if (DateTime.TryParse(value.ToString(), out DateTime parsedDateTime))
             {
-                return parsedDateTime.ToString("yyyy-MM-dd HH:mm:ss");
+                return parsedDateTime.ToString("dd-MM-yyyy HH:mm:ss");
+                //return parsedDateTime.ToString("yyyy-MM-dd HH:mm:ss");
             }
 
             return value.ToString().Trim();

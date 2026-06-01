@@ -5,6 +5,7 @@ using MISReports_Api.Models.CustomerDetails;
 
 namespace MISReports_Api.Controllers
 {
+    //Request Entry
     [RoutePrefix("api/customerdetails")]
     public class CustomerDetailsController : ApiController
     {
@@ -15,7 +16,8 @@ namespace MISReports_Api.Controllers
             _paymentInquiryDao = new PaymentInquiryDao();
         }
 
-        /// <summary>GET api/customerdetails/latest-update-times</summary>
+        /// <summary>GET api/customerdetails/latest-update-times</summary> 
+        /// Latest Update Times of Servers
         [HttpGet]
         [Route("latest-update-times")]
         public IHttpActionResult GetLatestUpdateTimes()
@@ -41,7 +43,8 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        /// <summary>POST api/customerdetails/payment-full-report</summary>
+        /// <summary>POST api/customerdetails/payment-full-report</summary> 
+        /// Individual Payments
         [HttpPost]
         [Route("payment-full-report")]
         public IHttpActionResult GetPaymentFullReport([FromBody] PaymentInquiryRequest request)
