@@ -28,31 +28,53 @@ namespace MISReports_Api.Services.Reporting
                 "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_obsolete_idle.jrxml");
         }
 
-        public async Task<byte[]> GeneratePhvObsoleteIdlePdfAsync(
+        public Task<byte[]> GeneratePhvObsoleteIdlePdfAsync(
             IEnumerable<object> rows,
             string costCenterLabel,
             string warehouseCode,
             int repYear,
             int repMonth)
         {
+            return GeneratePhvObsoleteIdleReportAsync(
+                rows,
+                costCenterLabel,
+                warehouseCode,
+                repYear,
+                repMonth,
+                "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_obsolete_idle.jrxml",
+                "pdf");
+        }
+
+        public async Task<byte[]> GeneratePhvObsoleteIdleReportAsync(
+            IEnumerable<object> rows,
+            string costCenterLabel,
+            string warehouseCode,
+            int repYear,
+            int repMonth,
+            string templateRelativePath,
+            string format = "pdf")
+        {
             if (rows == null)
                 throw new ArgumentNullException(nameof(rows));
 
             var rowList = rows.ToList();
             if (rowList.Count == 0)
-                throw new JasperReportExecutionException("No data was supplied to the obsolete/idle report renderer.");
+                throw new JasperReportExecutionException("No data was supplied to the report renderer.");
 
             if (!File.Exists(_jarPath))
                 throw new JasperReportExecutionException($"Jasper report JAR was not found at '{_jarPath}'. Build and deploy the standalone Java tool first.");
 
-            if (!File.Exists(_templatePath))
-                throw new JasperReportExecutionException($"Jasper template was not found at '{_templatePath}'.");
+            var templateFullPath = ResolveAppRelativePath("PHV_OBSOLETE_IDLE_JRXML_TEMPLATE", templateRelativePath);
+            if (!File.Exists(templateFullPath))
+                throw new JasperReportExecutionException($"Jasper template was not found at '{templateFullPath}'.");
 
             var workingDirectory = Path.Combine(Path.GetTempPath(), "ceb-reporting", "phv-obsolete-idle", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(workingDirectory);
 
             var inputJsonPath = Path.Combine(workingDirectory, "input.json");
-            var outputPdfPath = Path.Combine(workingDirectory, "output.pdf");
+            var isCsv = format.ToLower() == "csv";
+            var outputFileName = isCsv ? "output.csv" : "output.pdf";
+            var outputReportPath = Path.Combine(workingDirectory, outputFileName);
 
             try
             {
@@ -75,8 +97,8 @@ namespace MISReports_Api.Services.Reporting
                 var arguments = new StringBuilder()
                     .Append("-jar ").Append(QuoteArgument(_jarPath))
                     .Append(" --input ").Append(QuoteArgument(inputJsonPath))
-                    .Append(" --output ").Append(QuoteArgument(outputPdfPath))
-                    .Append(" --template ").Append(QuoteArgument(_templatePath))
+                    .Append(" --output ").Append(QuoteArgument(outputReportPath))
+                    .Append(" --template ").Append(QuoteArgument(templateFullPath))
                     .Append(" --costctr ").Append(QuoteArgument(costCenterLabel ?? string.Empty))
                     .Append(" --whcode ").Append(QuoteArgument(warehouseCode ?? string.Empty))
                     .Append(" --repyear ").Append(repYear.ToString())
@@ -138,20 +160,20 @@ namespace MISReports_Api.Services.Reporting
                     }
                 }
 
-                if (!File.Exists(outputPdfPath))
+                if (!File.Exists(outputReportPath))
                 {
                     throw new JasperReportExecutionException(
-                        $"The Jasper report process completed, but no PDF was created at '{outputPdfPath}'.\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}");
+                        $"The Jasper report process completed, but no report was created at '{outputReportPath}'.\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}");
                 }
 
-                var pdfBytes = File.ReadAllBytes(outputPdfPath);
-                if (!LooksLikePdf(pdfBytes))
+                var reportBytes = File.ReadAllBytes(outputReportPath);
+                if (!isCsv && !LooksLikePdf(reportBytes))
                 {
                     throw new JasperReportExecutionException(
                         $"The generated file is not a valid PDF.\nSTDOUT:\n{stdout}\nSTDERR:\n{stderr}");
                 }
 
-                return pdfBytes;
+                return reportBytes;
             }
             catch (JasperReportExecutionException)
             {
@@ -159,7 +181,7 @@ namespace MISReports_Api.Services.Reporting
             }
             catch (Exception ex)
             {
-                throw new JasperReportExecutionException("Unexpected error while generating the obsolete/idle PDF.", ex);
+                throw new JasperReportExecutionException("Unexpected error while generating the report.", ex);
             }
             finally
             {

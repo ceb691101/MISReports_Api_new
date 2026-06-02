@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -318,6 +318,7 @@
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleBOSController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleController.cs" />
     <Compile Include="Controllers\FIFO\PHVObsoleteIdleFIFOController.cs" />
+    <Compile Include="Controllers\FIFO\PHVDamageFIFOController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVShoratgeSurplusWHwiseController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVSlowNonMovingWHwiseController.cs" />
     <Compile Include="Controllers\PIV\AccCodeWisePivNotAfmhqController.cs" />
@@ -445,6 +446,7 @@
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleBOSRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleRepository.cs" />
     <Compile Include="DAL\FIFO\PHVObsoleteIdleFIFORepository.cs" />
+    <Compile Include="DAL\FIFO\PHVDamageFIFORepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVShoratgeSurplusWHwiseRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVSlowNonMovingWHwiseRepository.cs" />
     <Compile Include="DAL\PIV\AccCodeWisePivNotAfmhqRepository.cs" />

@@ -53,10 +53,17 @@ public class PhvObsoleteIdleReportService {
                 new JRBeanCollectionDataSource(rows, false));
 
         Files.createDirectories(outputPath.getParent());
-        JasperExportManager.exportReportToPdfFile(jasperPrint, outputPath.toString());
-
-        if (!looksLikePdf(outputPath)) {
-            throw new IllegalStateException("Generated file does not appear to be a valid PDF: " + outputPath);
+        String outStr = outputPath.toString().toLowerCase();
+        if (outStr.endsWith(".csv")) {
+            net.sf.jasperreports.engine.export.JRCsvExporter exporter = new net.sf.jasperreports.engine.export.JRCsvExporter();
+            exporter.setExporterInput(new net.sf.jasperreports.export.SimpleExporterInput(jasperPrint));
+            exporter.setExporterOutput(new net.sf.jasperreports.export.SimpleWriterExporterOutput(outputPath.toFile()));
+            exporter.exportReport();
+        } else {
+            JasperExportManager.exportReportToPdfFile(jasperPrint, outputPath.toString());
+            if (!looksLikePdf(outputPath)) {
+                throw new IllegalStateException("Generated file does not appear to be a valid PDF: " + outputPath);
+            }
         }
     }
 
@@ -96,7 +103,12 @@ public class PhvObsoleteIdleReportService {
     }
 
     private Path resolveTemplatePath(String fallbackTemplatePath) throws IOException {
-        String configuredPath = new ReadPath().getPath();
+        String reportType = "obsolete";
+        if (fallbackTemplatePath != null && fallbackTemplatePath.toLowerCase().contains("damage")) {
+            reportType = "damage";
+        }
+
+        String configuredPath = new ReadPath().getPath(reportType);
         if (configuredPath != null && !configuredPath.isBlank()) {
             return Path.of(configuredPath);
         }

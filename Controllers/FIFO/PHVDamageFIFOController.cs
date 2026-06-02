@@ -10,32 +10,34 @@ using System.Web.Http;
 
 namespace MISReports_Api.Controllers.FIFO
 {
-    [RoutePrefix("api/phv-obsolete-idle-fifo")]
-    public class PHVObsoleteIdleFIFOController : ApiController
+    [RoutePrefix("api/phv-damage-fifo")]
+    public class PHVDamageFIFOController : ApiController
     {
-        private readonly PHVObsoleteIdleFIFORepository _repository;
+        private readonly PHVDamageFIFORepository _repository;
         private readonly PHVObsoleteIdleJasperReportService _jasperReportService;
 
-        public PHVObsoleteIdleFIFOController()
+        public PHVDamageFIFOController()
         {
-            _repository = new PHVObsoleteIdleFIFORepository();
+            _repository = new PHVDamageFIFORepository();
             _jasperReportService = new PHVObsoleteIdleJasperReportService();
         }
 
         [HttpGet]
         [Route("list")]
-        public async Task<IHttpActionResult> GetPHVObsoleteIdleFIFO(
+        public async Task<IHttpActionResult> GetPHVDamageFIFO(
             string deptId,
-            string warehouseCode)
+            string warehouseCode,
+            int repYear)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(deptId) || string.IsNullOrWhiteSpace(warehouseCode))
                     return BadRequest("deptId and warehouseCode are required.");
 
-                var data = await _repository.GetPHVObsoleteIdleFIFOAsync(
+                var data = await _repository.GetPHVDamageFIFOAsync(
                     deptId.Trim(),
-                    warehouseCode.Trim());
+                    warehouseCode.Trim(),
+                    repYear);
 
                 return Json(data);
             }
@@ -47,7 +49,7 @@ namespace MISReports_Api.Controllers.FIFO
 
         [HttpGet]
         [Route("pdf")]
-        public async Task<HttpResponseMessage> GetPHVObsoleteIdleFIFOPdf(
+        public async Task<HttpResponseMessage> GetPHVDamageFIFOPdf(
             string deptId,
             string deptName,
             string warehouseCode,
@@ -72,9 +74,10 @@ namespace MISReports_Api.Controllers.FIFO
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "repMonth is required.");
                 }
 
-                var data = await _repository.GetPHVObsoleteIdleFIFOAsync(
+                var data = await _repository.GetPHVDamageFIFOAsync(
                     deptId.Trim(),
-                    warehouseCode.Trim());
+                    warehouseCode.Trim(),
+                    repYear);
 
                 if (data == null || !data.Any())
                 {
@@ -95,7 +98,7 @@ namespace MISReports_Api.Controllers.FIFO
                     warehouseCode.Trim(),
                     repYear,
                     repMonth,
-                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_obsolete_idle.jrxml",
+                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_damage_fifo.jrxml",
                     "pdf");
 
                 var response = Request.CreateResponse(HttpStatusCode.OK);
@@ -104,7 +107,7 @@ namespace MISReports_Api.Controllers.FIFO
                 response.Content.Headers.ContentLength = pdfBytes.Length;
                 response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue(download ? "attachment" : "inline")
                 {
-                    FileName = $"PHV_Obsolete_Idle_FIFO_{deptId.Trim()}_{warehouseCode.Trim()}_{repYear}_{repMonth:00}.pdf"
+                    FileName = $"PHV_Damage_FIFO_{deptId.Trim()}_{warehouseCode.Trim()}_{repYear}_{repMonth:00}.pdf"
                 };
 
                 return response;
@@ -121,7 +124,7 @@ namespace MISReports_Api.Controllers.FIFO
 
         [HttpGet]
         [Route("csv")]
-        public async Task<HttpResponseMessage> GetPHVObsoleteIdleFIFOCsv(
+        public async Task<HttpResponseMessage> GetPHVDamageFIFOCsv(
             string deptId,
             string deptName,
             string warehouseCode,
@@ -145,9 +148,10 @@ namespace MISReports_Api.Controllers.FIFO
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "repMonth is required.");
                 }
 
-                var data = await _repository.GetPHVObsoleteIdleFIFOAsync(
+                var data = await _repository.GetPHVDamageFIFOAsync(
                     deptId.Trim(),
-                    warehouseCode.Trim());
+                    warehouseCode.Trim(),
+                    repYear);
 
                 if (data == null || !data.Any())
                 {
@@ -168,7 +172,7 @@ namespace MISReports_Api.Controllers.FIFO
                     warehouseCode.Trim(),
                     repYear,
                     repMonth,
-                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_obsolete_idle.jrxml",
+                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_damage_fifo.jrxml",
                     "csv");
 
                 var response = Request.CreateResponse(HttpStatusCode.OK);
@@ -177,7 +181,7 @@ namespace MISReports_Api.Controllers.FIFO
                 response.Content.Headers.ContentLength = csvBytes.Length;
                 response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
                 {
-                    FileName = $"PHV_Obsolete_Idle_FIFO_{deptId.Trim()}_{warehouseCode.Trim()}_{repYear}_{repMonth:00}.csv"
+                    FileName = $"PHV_Damage_FIFO_{deptId.Trim()}_{warehouseCode.Trim()}_{repYear}_{repMonth:00}.csv"
                 };
 
                 return response;

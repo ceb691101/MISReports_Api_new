@@ -10,6 +10,10 @@ public class ReadPath {
     private static final String PROP_FILE = "pathConfig.properties";
 
     public String getPath() throws IOException {
+        return getPath("obsolete");
+    }
+
+    public String getPath(String reportType) throws IOException {
         Properties properties = new Properties();
 
         Path externalPath = Path.of(System.getProperty("user.home"), "Downloads", PROP_FILE);
@@ -27,11 +31,16 @@ public class ReadPath {
             }
         }
 
-        String operatingSystem = System.getProperty("os.name", "").toLowerCase();
-        if (operatingSystem.contains("win")) {
-            return properties.getProperty("Path");
+        String key = "Path";
+        if ("damage".equalsIgnoreCase(reportType)) {
+            key = "Path_Damage";
         }
 
-        return properties.getProperty("Path_LINUX");
+        String operatingSystem = System.getProperty("os.name", "").toLowerCase();
+        if (operatingSystem.contains("win")) {
+            return properties.getProperty(key);
+        }
+
+        return properties.getProperty(key + "_LINUX");
     }
 }
