@@ -9,7 +9,7 @@ namespace MISReports_Api.DAL
 {
     public class RoleInfoRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         private List<string> NormalizeCostCentres(CreateRoleRequest request)
         {
@@ -412,7 +412,8 @@ namespace MISReports_Api.DAL
                                 COMPANY = :company,
                                 MCOMPANY = :mcompany,
                                 USER_GROUP = :user_group
-                            WHERE TRIM(EPF_NO) = :original_epf_no";
+                            WHERE TRIM(EPF_NO) = :original_epf_no
+                              AND UPPER(TRIM(USERTYPE)) = :original_user_type";
 
                         using (var cmd = new OracleCommand(updateRoleSql, conn))
                         {
