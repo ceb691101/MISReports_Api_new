@@ -37,10 +37,41 @@ public class ReadPath {
         }
 
         String operatingSystem = System.getProperty("os.name", "").toLowerCase();
+        String rawPath;
         if (operatingSystem.contains("win")) {
-            return properties.getProperty(key);
+            rawPath = properties.getProperty(key);
+        } else {
+            rawPath = properties.getProperty(key + "_LINUX");
         }
 
-        return properties.getProperty(key + "_LINUX");
+        return resolveDynamicPath(rawPath);
+    }
+
+    private String resolveDynamicPath(String path) {
+        if (path == null) {
+            return null;
+        }
+
+        String userHome = System.getProperty("user.home");
+        userHome = userHome.replace("\\", "/");
+
+        // Resolve ${user.home} placeholder if present
+        if (path.contains("${user.home}")) {
+            path = path.replace("${user.home}", userHome);
+        }
+
+        // Fallback: If path has a hardcoded C:/Users/Thamodi Walpola or C:/Users/<username>
+        // and that path doesn't exist, dynamically replace C:/Users/<username> with the current userHome
+        if (path.startsWith("C:/Users/") || path.startsWith("c:/Users/")) {
+            Path p = Path.of(path);
+            if (!Files.exists(p)) {
+                int desktopIdx = path.indexOf("/Desktop/");
+                if (desktopIdx != -1) {
+                    path = userHome + path.substring(desktopIdx);
+                }
+            }
+        }
+
+        return path;
     }
 }
