@@ -1,0 +1,16 @@
+[
+  {
+    "ApplicationId": "APP001",
+    "ApplicationNo": "12345",
+    "SubmitDate": "2026-05-15",
+    "ApprovedDate": "2026-05-16",
+    "ProjectNo": "PRJ001",
+    "PivDate": "2026-05-17",
+    "ApplicationSubType": "Type A",
+    "PaidDate": "2026-05-18",
+    "Piv2PaidDate": "2026-05-19",
+    "EnergizedDate": "2026-05-20",
+    "ExistingAccNo": "ACC123",
+    "CctName": "Test Center"
+  }
+]
