@@ -98,7 +98,7 @@ namespace MISReports_Api.Controllers.FIFO
                     warehouseCode.Trim(),
                     repYear,
                     repMonth,
-                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_damage_fifo.jrxml",
+                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/PhysicalVerification_Damage_FIFO_new.jrxml",
                     "pdf");
 
                 var response = Request.CreateResponse(HttpStatusCode.OK);
@@ -172,7 +172,7 @@ namespace MISReports_Api.Controllers.FIFO
                     warehouseCode.Trim(),
                     repYear,
                     repMonth,
-                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/phv_damage_fifo.jrxml",
+                    "~/JasperTools/PHVObsoleteIdleReportTool/src/main/resources/reports/PhysicalVerification_Damage_FIFO_new.jrxml",
                     "csv");
 
                 var response = Request.CreateResponse(HttpStatusCode.OK);

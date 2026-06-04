@@ -111,4 +111,58 @@ public class PhvObsoleteIdleRow {
     public void setCostCentreName(String costCentreName) {
         this.costCentreName = costCentreName;
     }
+
+    // Uppercase getters for PhysicalVerification_Damage_FIFO_new.jrxml field names
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getDOC_NO() {
+        return documentNo;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getMAT_CD() {
+        return materialCode;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getMAT_NM() {
+        return materialName;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getGRADE_CD() {
+        return gradeCode;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.sql.Timestamp getPHV_DT() {
+        if (phvDate == null || phvDate.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            java.util.Date parsed = new java.text.SimpleDateFormat("dd/MM/yyyy").parse(phvDate);
+            return new java.sql.Timestamp(parsed.getTime());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal getQTY_ON_HAND() {
+        return qtyOnHand != null ? java.math.BigDecimal.valueOf(qtyOnHand) : null;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public java.math.BigDecimal getSTOCKBOOK() {
+        return stockBook != null ? java.math.BigDecimal.valueOf(stockBook) : null;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getREASON() {
+        return reason;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getCCT_NAME() {
+        return costCentreName;
+    }
 }

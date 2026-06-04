@@ -13,6 +13,7 @@
               topMargin="20"
               bottomMargin="20">
     <property name="ireport.encoding" value="UTF-8"/>
+    <property name="net.sf.jasperreports.export.csv.exclude.origin.band.1" value="pageFooter"/>
     <import value="java.util.*"/>
 
     <parameter name="costctr" class="java.lang.String"/>
