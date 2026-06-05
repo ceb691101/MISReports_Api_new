@@ -2,7 +2,6 @@
 using MISReports_Api.DAL.SolarInformation.SolarPVConnections;
 using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
-using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.General.ArrearsPosition;

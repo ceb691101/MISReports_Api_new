@@ -14,5 +14,6 @@ namespace MISReports_Api.Models.PhysicalVerification
         public string DocumentNo { get; set; }
         public decimal StockBook { get; set; }
         public string Reason { get; set; }
+        public string CostCentreName { get; set; }
     }
 }
