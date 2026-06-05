@@ -37,17 +37,14 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
                     if (request.ReportType == SolarReportType.Area)
                     {
-                        // Process Area report
                         results = GetAreaReportData(conn, request);
                     }
                     else if (request.ReportType == SolarReportType.Province)
                     {
-                        // Process Province report
                         results = GetProvinceReportData(conn, request);
                     }
                     else
                     {
-                        // Handle other report types if needed
                         logger.Warn($"Unsupported report type for this DAO: {request.ReportType}");
                     }
 
@@ -71,7 +68,6 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
             try
             {
-                // Changed: Use proper INNER JOIN syntax instead of comma joins
                 string sql = @"SELECT c.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, c.tariff, 
                                       c.cntr_dmnd, c.tot_sec_dep, m.tot_untskwo, m.tot_untskwd, 
                                       m.tot_untskwp, m.tot_kva, m.tot_amt 
@@ -114,7 +110,6 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
         /// <summary>
         /// Gets data for Province report type with area and province information
-        /// Changed: Simplified to single query with all data
         /// </summary>
         private List<SecDepositConDemandBulkModel> GetProvinceReportData(OleDbConnection conn, SecDepositConDemandRequest request)
         {
@@ -122,7 +117,6 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
             try
             {
-                // Changed: Use proper INNER JOIN syntax and include area_name and prov_name directly
                 string sql = @"SELECT c.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, c.tariff, 
                                       c.cntr_dmnd, c.tot_sec_dep, m.tot_untskwo, m.tot_untskwd, 
                                       m.tot_untskwp, m.tot_kva, m.tot_amt, 
@@ -150,7 +144,6 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
                         {
                             var model = MapReaderToModel(reader);
 
-                            // Changed: Get area and province data directly from the query
                             model.AreaCode = GetColumnValue(reader, "area_code") ?? "";
                             model.Area = GetColumnValue(reader, "area_name") ?? "";
                             model.ProvinceCode = GetColumnValue(reader, "prov_code") ?? "";
@@ -174,8 +167,8 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
         }
 
         /// <summary>
-        /// Maps database reader to model
-        /// Changed: Improved data reading with ordinal positions and IsDBNull checks
+        /// Maps database reader to model using ordinal positions.
+        /// Columns 0-5: string fields. Columns 6-12: numeric fields.
         /// </summary>
         private SecDepositConDemandBulkModel MapReaderToModel(OleDbDataReader reader)
         {
@@ -183,11 +176,9 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
 
             try
             {
-                // Get raw values using ordinal positions for better performance
                 model.AccountNumber = reader.IsDBNull(0) ? "" : reader.GetString(0).Trim();
                 model.Name = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim();
 
-                // Combine address lines
                 string addr1 = reader.IsDBNull(2) ? "" : reader.GetString(2).Trim();
                 string addr2 = reader.IsDBNull(3) ? "" : reader.GetString(3).Trim();
                 model.Address = string.IsNullOrEmpty(addr2) ? addr1 : $"{addr1} {addr2}";
@@ -195,7 +186,7 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
                 model.City = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
                 model.Tariff = reader.IsDBNull(5) ? "" : reader.GetString(5).Trim();
 
-                // Get raw numeric values
+                // Raw numeric values
                 model.RawContractDemand = reader.IsDBNull(6) ? 0 : Convert.ToDecimal(reader.GetValue(6));
                 model.RawSecurityDeposit = reader.IsDBNull(7) ? 0 : Convert.ToDecimal(reader.GetValue(7));
                 model.RawTotalKWOUnits = reader.IsDBNull(8) ? 0 : Convert.ToDecimal(reader.GetValue(8));
@@ -204,7 +195,7 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
                 model.RawKVA = reader.IsDBNull(11) ? 0 : Convert.ToDecimal(reader.GetValue(11));
                 model.RawMonthlyCharge = reader.IsDBNull(12) ? 0 : Convert.ToDecimal(reader.GetValue(12));
 
-                // Format for display (as per VB6 code)
+                // Formatted display values
                 model.ContractDemand = FormatInteger(model.RawContractDemand);
                 model.SecurityDeposit = FormatDecimal(model.RawSecurityDeposit);
                 model.TotalKWOUnits = FormatInteger(model.RawTotalKWOUnits);
@@ -224,7 +215,6 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
             return model;
         }
 
-        // Changed: Improved helper methods with ordinal position support
         private string GetColumnValue(OleDbDataReader reader, string columnName)
         {
             try
@@ -266,8 +256,7 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
         {
             try
             {
-                int intValue = (int)value;
-                return intValue.ToString("###,###");
+                return ((int)value).ToString("###,###");
             }
             catch
             {
@@ -279,7 +268,6 @@ namespace MISReports_Api.DAL.General.SecurityDepositContractDemandBulk
         {
             try
             {
-                // Format with commas and 2 decimal places as per VB6 code: "###,###.#0"
                 return value.ToString("###,###.##");
             }
             catch

@@ -2,8 +2,9 @@
 using MISReports_Api.DAL.SolarInformation.SolarPVConnections;
 using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
-using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
+using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
+using MISReports_Api.DAL.General.ArrearsPosition;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
 using Newtonsoft.Json.Linq;
@@ -31,6 +32,8 @@ namespace MISReports_Api.Controllers
         private readonly ActiveCustSalesOrdBillCycleDao _activeCustSalesOrdBillCycle = new ActiveCustSalesOrdBillCycleDao();
         private readonly ActiveCustSalesBulkBillCycleDao _activeCustSalesBulkBillCycle = new ActiveCustSalesBulkBillCycleDao();
         private readonly CalcCycleFromAreaDao _calcCycleFromAreaDao = new CalcCycleFromAreaDao();
+        private readonly GovernmentAccountsBillCycleDao _govAccountsBillCycleDao = new GovernmentAccountsBillCycleDao();
+        private readonly ArrearsPositionBillCycleDao _arrearsPositionBillCycleDao = new ArrearsPositionBillCycleDao();
 
         [HttpGet]
         [Route("ordinary/areas")]
@@ -66,7 +69,6 @@ namespace MISReports_Api.Controllers
                 }));
             }
         }
-
 
         [HttpGet]
         [Route("bulk/areas")]
@@ -244,12 +246,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("bulk/netmtchg/billcycle/max")]  //billcycle/max
+        [Route("bulk/netmtchg/billcycle/max")]
         public IHttpActionResult GetMaxBillCycle()
         {
             try
             {
-                var result = _billCycleDao.GetLast24BillCycles();//From netmtchg table in InformixBulkConnection database
+                var result = _billCycleDao.GetLast24BillCycles(); // From netmtchg table in InformixBulkConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -269,12 +271,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("bulk/netmtcons/billcycle/max")] //bill-cycle
+        [Route("bulk/netmtcons/billcycle/max")]
         public IHttpActionResult GetPVBillCycle()
         {
             try
             {
-                var result = _pvBillCycleDao.GetLast24BillCycles();//From netmtcons table in InformixBulkConnection database
+                var result = _pvBillCycleDao.GetLast24BillCycles(); // From netmtcons table in InformixBulkConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -294,12 +296,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("ordinary/netmtchg/billcycle/max")] //ordinary/bill-cycle
+        [Route("ordinary/netmtchg/billcycle/max")]
         public IHttpActionResult GetOrdinaryBillCycle()
         {
             try
             {
-                var result = _billCycleOrdinaryDao.GetLast24BillCycles();//From netmtchg table in InformixConnection database
+                var result = _billCycleOrdinaryDao.GetLast24BillCycles(); // From netmtchg table in InformixConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -319,12 +321,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("ordinary/netmtcons/billcycle/max")] // retail/billcycle
+        [Route("ordinary/netmtcons/billcycle/max")]
         public IHttpActionResult GetRetailBillCycle()
         {
             try
             {
-                var result = _billCycleRetailDao.GetLast24BillCycles();//From netmtcons table in InformixConnection database
+                var result = _billCycleRetailDao.GetLast24BillCycles(); // From netmtcons table in InformixConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -344,12 +346,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("ordinary/netprogrs/billcycle/max")] //solarPVCapacity/billcycle/max
+        [Route("ordinary/netprogrs/billcycle/max")]
         public IHttpActionResult GetPVCapacityMaxBillCycle()
         {
             try
             {
-                var result = _pVCapacityBillCycleDao.GetLast24BillCycles();//From netprogrs table in InformixConnection database
+                var result = _pVCapacityBillCycleDao.GetLast24BillCycles(); // From netprogrs table in InformixConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -369,12 +371,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("ordinary/areas/billcycle/min")] // ordinary/areas/billcycle/max  changed to min bill cycle
+        [Route("ordinary/areas/billcycle/min")]
         public IHttpActionResult GetBillCycleFromArea()
         {
             try
             {
-                var result = _billCycleFromAreaDao.GetLast24BillCycles();//From areas table in InformixConnection database
+                var result = _billCycleFromAreaDao.GetLast24BillCycles(); // From areas table in InformixConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -394,12 +396,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("bulk/mon_tot/billcycle/max")] //ContractDemandBulk
+        [Route("bulk/mon_tot/billcycle/max")]
         public IHttpActionResult GetContractDemandBillCycle()
         {
             try
             {
-                var result = _contractDemandBillCycle.GetLast24BillCycles();//From mon_tot table in InformixBulkConnection database
+                var result = _contractDemandBillCycle.GetLast24BillCycles(); // From mon_tot table in InformixBulkConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -419,12 +421,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("ordinary/consmry/billcycle/max")] //Active Customers and Sales by Tariff
+        [Route("ordinary/consmry/billcycle/max")]
         public IHttpActionResult GetActiveCustomersSalesOrdBillCycle()
         {
             try
             {
-                var result = _activeCustSalesOrdBillCycle.GetLast36BillCycles();//From consmry table in InformixConnection database
+                var result = _activeCustSalesOrdBillCycle.GetLast36BillCycles(); // From consmry table in InformixConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -444,12 +446,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("bulk/account_info/billcycle/max")] //Active Customers and Sales by Tariff
+        [Route("bulk/account_info/billcycle/max")]
         public IHttpActionResult GetActiveCustomersSalesBulkBillCycle()
         {
             try
             {
-                var result = _activeCustSalesBulkBillCycle.GetLast36BillCycles();//From account_info table in InformixBulkConnection database
+                var result = _activeCustSalesBulkBillCycle.GetLast36BillCycles(); // From account_info table in InformixBulkConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -469,12 +471,12 @@ namespace MISReports_Api.Controllers
         }
 
         [HttpGet]
-        [Route("ordinary/areas/calccycle/max")] 
+        [Route("ordinary/areas/calccycle/max")]
         public IHttpActionResult GetCalcCycleFromArea()
         {
             try
             {
-                var result = _calcCycleFromAreaDao.GetMaxCalcCycle();//From areas table in InformixConnection database
+                var result = _calcCycleFromAreaDao.GetMaxCalcCycle(); // From areas table in InformixConnection database
 
                 return Ok(JObject.FromObject(new
                 {
@@ -488,6 +490,97 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get max calc cycle from areas",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Returns the maximum bill cycle from the <c>areas</c> table (billsmry bulk DB)
+        /// for the specified area, plus the preceding 24 month/year label strings.
+        /// </summary>
+        // GET api/billsmry/areas/billcycle/max?areaCode=43
+        // Response: { data: { maxBillCycle: "438", billCycles: [...] }, errorMessage: null }
+        [HttpGet]
+        [Route("billsmry/areas/billcycle/max")]
+        public IHttpActionResult GetArrearsPositionBillCycle([FromUri] string areaCode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Area code is required."
+                    }));
+
+                var result = _arrearsPositionBillCycleDao.GetMaxBillCycle(areaCode);
+
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = result.ErrorMessage
+                    }));
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle for Arrears Position.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Returns the maximum bill cycle from prn_dat_1 for a given area.
+        /// Used by the Government Accounts report to seed the bill-cycle dropdown.
+        /// DB: billsmry (bulk connection).
+        /// </summary>
+        // GET api/billsmry/prn_dat_1/billcycle/max?areaCode=43
+        // Response: { data: { maxBillCycle: "438" }, errorMessage: null }
+        [HttpGet]
+        [Route("billsmry/prn_dat_1/billcycle/max")]
+        public IHttpActionResult GetGovernmentAccountsBillCycle([FromUri] string areaCode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Area code is required."
+                    }));
+
+                var result = _govAccountsBillCycleDao.GetMaxBillCycle(areaCode);
+
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = result.ErrorMessage
+                    }));
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle for Government Accounts.",
                     errorDetails = ex.Message
                 }));
             }

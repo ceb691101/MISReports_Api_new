@@ -41,9 +41,7 @@ namespace MISReports_Api.DAL.PhysicalVerification
                     AND T1.MAT_CD   = T4.MAT_CD
                     AND T1.GRADE_CD = T4.GRADE_CD
 
-                    AND T3.STATUS IN (1, 2)
-                    AND T4.STATUS IN (7)
-
+                   
                     AND TRIM(T3.DEPT_ID) = :dept_id
                     AND TRIM(T4.DEPT_ID) = :dept_id
                     AND TRIM(T1.DEPT_ID) = :dept_id
