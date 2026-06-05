@@ -268,7 +268,9 @@ namespace MISReports_Api.DAL
                                 USERTYPE,
                                 COMPANY,
                                 MCOMPANY,
-                                USER_GROUP
+                                USER_GROUP,
+                                ADD_USER,
+                                ADD_DATE
                             )
                             VALUES
                             (
@@ -278,7 +280,9 @@ namespace MISReports_Api.DAL
                                 :user_type,
                                 :company,
                                 :mcompany,
-                                :user_group
+                                :user_group,
+                                :add_user,
+                                SYSDATE
                             )";
 
                         using (var cmd = new OracleCommand(insertRoleSql, conn))
@@ -293,6 +297,7 @@ namespace MISReports_Api.DAL
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
+                            cmd.Parameters.Add("add_user", OracleDbType.Varchar2).Value = (object)request.AddUser?.Trim() ?? DBNull.Value;
 
                             cmd.ExecuteNonQuery();
                         }
@@ -414,7 +419,9 @@ namespace MISReports_Api.DAL
                                 USERTYPE = :user_type,
                                 COMPANY = :company,
                                 MCOMPANY = :mcompany,
-                                USER_GROUP = :user_group
+                                USER_GROUP = :user_group,
+                                UPDATE_USER = :update_user,
+                                UPDATE_DATE = SYSDATE
                             WHERE TRIM(EPF_NO) = :original_epf_no
                               AND UPPER(TRIM(USERTYPE)) = :original_user_type";
 
@@ -430,6 +437,7 @@ namespace MISReports_Api.DAL
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
+                            cmd.Parameters.Add("update_user", OracleDbType.Varchar2).Value = (object)request.UpdateUser?.Trim() ?? DBNull.Value;
                             cmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
                             cmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
 
