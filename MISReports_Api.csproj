@@ -409,7 +409,7 @@
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
-    <Compile Include="DAL\General\AreasPosition\AreasPositionDao.cs" />
+    <Compile Include="DAL\General\AreasPosition\ArreasPositionDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
@@ -428,8 +428,10 @@
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
+    <Compile Include="DAL\Shared\ArrearsPositionbillcycleDao.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
+    <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -578,7 +580,7 @@
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
-    <Compile Include="Models\General\AreasPositionModel.cs" />
+    <Compile Include="Models\General\ArreasPositionModel.cs" />
     <Compile Include="Models\General\ListingofcustomerModel .cs" />
     <Compile Include="Models\General\ListOfGovernmentAccountsModel.cs" />
     <Compile Include="Models\General\ActiveCustomersModel.cs" />
