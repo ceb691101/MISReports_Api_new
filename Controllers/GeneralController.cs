@@ -26,7 +26,7 @@ namespace MISReports_Api.Controllers
     ///   - Sales by Tariff Ordinary and Bulk (area / province / region / entireceb)
     ///   - Sales and Collection Range
     ///   - SMS Registered Range
-    ///   - Government Accounts (area / department)
+    ///   - Government Accounts (areas / departments / area / department)
     ///   - Areas Position
     ///   - Listing of Customers (area, with optional filters)
     ///
@@ -47,45 +47,9 @@ namespace MISReports_Api.Controllers
         private readonly SalesByTariffOrdinaryDao _salesByTariffOrdinaryDao = new SalesByTariffOrdinaryDao();
         private readonly SalesByTariffBulkDao _salesByTariffBulkDao = new SalesByTariffBulkDao();
 
-        private readonly ListOfGovernmentAccountsDao _govAccountsDao = new ListOfGovernmentAccountsDao();
+        private readonly GovernmentAccountsDao _govAccountsDao = new GovernmentAccountsDao();
         private readonly AreasPositionDao _areasPositionDao = new AreasPositionDao();
         private readonly ListingOfCustomerDao _listingOfCustomerDao = new ListingOfCustomerDao();
-
-
-        // ================================================================== //
-        //  BILL CYCLES                                                         //
-        // ================================================================== //
-
-        // ------------------------------------------------------------------ //
-        // GET api/contract-demand/bill-cycles                                 //
-        // Response: { data: { MaxBillCycle: "438",                           //
-        //                     BillCycles: ["Jan 2026", ...] },               //
-        //             errorMessage: null }                                    //
-        // ------------------------------------------------------------------ //
-
-        [HttpGet]
-        [Route("contract-demand/bill-cycles")]
-        public IHttpActionResult GetBillCycles()
-        {
-            try
-            {
-                var model = _billCycleDao.GetLast24BillCycles();
-
-                if (!string.IsNullOrEmpty(model.ErrorMessage))
-                    return Ok(new { data = (object)null, errorMessage = model.ErrorMessage });
-
-                return Ok(new { data = model, errorMessage = (string)null });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve bill cycles.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
 
 
         // ================================================================== //
@@ -559,59 +523,23 @@ namespace MISReports_Api.Controllers
 
         // ------------------------------------------------------------------ //
         // GET api/government-accounts/max-bill-cycle?areaCode=43             //
-        // Response: { data: { maxBillCycle: "438" }, errorMessage: null }    //
+        // Response: { data: { MaxBillCycle: "438" }, errorMessage: null }    //
         // ------------------------------------------------------------------ //
 
-        [HttpGet]
-        [Route("government-accounts/max-bill-cycle")]
-        public IHttpActionResult GetMaxBillCycle([FromUri] string areaCode = null)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(areaCode))
-                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
-
-                if (!_govAccountsDao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-
-                var result = _govAccountsDao.GetMaxBillCycle(areaCode);
-
-                if (!string.IsNullOrEmpty(result.ErrorMessage))
-                    return Ok(new { data = (object)null, errorMessage = result.ErrorMessage });
-
-                if (string.IsNullOrEmpty(result.MaxBillCycle))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "No bill cycles found for the selected area.",
-                        errorDetails = "The area may have no billing data."
-                    });
-
-                return Ok(new { data = result, errorMessage = (string)null });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve max bill cycle.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
+        
 
         // ------------------------------------------------------------------ //
-        // GET api/government-accounts/departments                            //
-        // Response: { data: [ { departmentCode, departmentName }, ... ],    //
-        //             errorMessage: null }                                   //
+        // GET api/government-accounts/areas                                   //
+        // Response: { data: [ { areaCode, areaName }, ... ],                 //
+        //             errorMessage: null }                                    //
+        // ------------------------------------------------------------------ //
+
+        
+
+        // ------------------------------------------------------------------ //
+        // GET api/government-accounts/departments                             //
+        // Response: { data: [ { departmentCode, departmentName }, ... ],     //
+        //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -628,7 +556,7 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     });
 
-                var data = _govAccountsDao.GetDepartments();
+                var data = _govAccountsDao.GetDepartments(); // returns List<DepartmentModel>
 
                 if (data == null || data.Count == 0)
                     return Ok(new
@@ -655,9 +583,10 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // GET api/government-accounts/area?billCycle=438&areaCode=43        //
-        // Response: { data: [ ...GovernmentAccountRecords... ],             //
-        //             errorMessage: null }                                   //
+        // GET api/government-accounts/area                                    //
+        //     ?billCycle=438&areaCode=43                                      //
+        // Response: { data: [ ...GovernmentAccountsModel... ],               //
+        //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -673,19 +602,19 @@ namespace MISReports_Api.Controllers
             if (errors.Count > 0)
                 return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
 
-            return ProcessGovernmentAccountsRequest(new GovernmentAccountRequest
+            return ProcessGovernmentAccountsRequest(new GovernmentAccountsRequest
             {
-                BillCycle = billCycle,
+                BillCycle = billCycle.Trim(),
                 ReportType = "area",
-                AreaCode = areaCode
+                AreaCode = areaCode.Trim()
             });
         }
 
         // ------------------------------------------------------------------ //
         // GET api/government-accounts/department                             //
         //     ?billCycle=438&areaCode=43&departmentCode=ABC                  //
-        // Response: { data: [ ...GovernmentAccountRecords... ],             //
-        //             errorMessage: null }                                   //
+        // Response: { data: [ ...GovernmentAccountsModel... ],               //
+        //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -703,16 +632,20 @@ namespace MISReports_Api.Controllers
             if (errors.Count > 0)
                 return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
 
-            return ProcessGovernmentAccountsRequest(new GovernmentAccountRequest
+            return ProcessGovernmentAccountsRequest(new GovernmentAccountsRequest
             {
-                BillCycle = billCycle,
+                BillCycle = billCycle.Trim(),
                 ReportType = "department",
-                AreaCode = areaCode,
-                DepartmentCode = departmentCode
+                AreaCode = areaCode.Trim(),
+                DepartmentCode = departmentCode.Trim()
             });
         }
 
-        private IHttpActionResult ProcessGovernmentAccountsRequest(GovernmentAccountRequest request)
+        /// <summary>
+        /// Shared processor — keeps action methods thin.
+        /// Accepts GovernmentAccountsRequest to match GovernmentAccountsDao.GetGovernmentAccountsReport().
+        /// </summary>
+        private IHttpActionResult ProcessGovernmentAccountsRequest(GovernmentAccountsRequest request)
         {
             try
             {
@@ -881,12 +814,12 @@ namespace MISReports_Api.Controllers
             }
         }
 
+
         // ================================================================== //
         //  LISTING OF CUSTOMERS                                                //
         // ================================================================== //
 
         // ------------------------------------------------------------------ //
-        // Max Bill Cycle                                                       //
         // GET api/listing-of-customers/max-bill-cycle?areaCode=43            //
         // Response: { data: { billCycle: "438" }, errorMessage: null }       //
         // ------------------------------------------------------------------ //
@@ -939,7 +872,6 @@ namespace MISReports_Api.Controllers
         }
 
         // ------------------------------------------------------------------ //
-        // Filter Dropdowns                                                     //
         // GET api/listing-of-customers/filters?areaCode=43&billCycle=438     //
         // Response: {                                                          //
         //   data: {                                                            //
@@ -1009,8 +941,8 @@ namespace MISReports_Api.Controllers
         //                                                                      //
         // Request body (Content-Type: application/json):                       //
         // {                                                                     //
-        //   "areaCode":            "43",       ← required                     //
-        //   "billCycle":           "438",      ← required                     //
+        //   "areaCode":            "43",       <- required                    //
+        //   "billCycle":           "438",      <- required                    //
         //   "useTariff":           true,                                        //
         //   "tariff":              "R1",                                        //
         //   "useTransformer":      false,                                       //
