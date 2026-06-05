@@ -4,7 +4,7 @@ using NLog;
 using System;
 using System.Data.OleDb;
 
-namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
+namespace MISReports_Api.DAL.Shared
 {
     /// <summary>
     /// Retrieves the maximum bill cycle from prn_dat_1 for a specific area.
