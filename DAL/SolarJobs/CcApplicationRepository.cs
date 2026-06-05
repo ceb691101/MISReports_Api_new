@@ -16,61 +16,38 @@ namespace MISReports_Api.DAL.SolarJobs
             var results = new List<CcApplicationModel>();
 
             const string sql = @"
-SELECT DISTINCT
-       a.application_id,
-       a.application_no,
-       a.submit_date,
-       c1.approved_date,
-       e.projectno,
-       c.piv_date,
-       CASE
-           WHEN a.application_sub_type = 'NA' THEN 'Net Accounting'
-           WHEN a.application_sub_type = 'NM' THEN 'Net Metering'
-           WHEN a.application_sub_type = 'NP' THEN 'Net Plus'
-           WHEN a.application_sub_type = 'BA' THEN 'Bulk Net Accounting'
-           WHEN a.application_sub_type = 'BM' THEN 'Bulk Net Metering'
-           WHEN a.application_sub_type = 'BP' THEN 'Bulk Net Plus'
-           WHEN a.application_sub_type = 'AC' THEN 'Net Accounting Conversion'
-           WHEN a.application_sub_type = 'PC' THEN 'Net Plus Conversion'
-           WHEN a.application_sub_type = 'NT' THEN 'Net Metering TOU'
-           WHEN a.application_sub_type = 'AT' THEN 'Net Accounting TOU'
-           WHEN a.application_sub_type = 'PP' THEN 'Net Plus Plus (With Acoount No.)'
-           WHEN a.application_sub_type = 'PB' THEN 'Bulk Net Plus Plus'
-           WHEN a.application_sub_type = 'PN' THEN 'Net Plus Plus (Without Acoount No.)'
-           WHEN a.application_sub_type = 'RS' THEN 'Solar Religious Purpose'
-           ELSE NULL
-       END AS application_sub_type,
-       c.paid_date,
-       (SELECT MAX(c2.paid_date)
-          FROM piv_detail c2
-         WHERE c2.reference_type = 'EST'
-           AND TRIM(c2.reference_no) = TRIM(a.application_no)
-           AND c2.status IN ('C', 'P', 'T', 'M', 'Y')) AS piv2_paid_date,
-       (SELECT MAX(sd.connected_date)
-          FROM spodrcrd sd
-         WHERE TRIM(sd.project_no) = TRIM(e.projectno)) AS energized_date,
-       (SELECT MAX(wld.existing_acc_no)
-          FROM WIRING_LAND_DETAIL wld
-         WHERE wld.application_id = a.application_id) AS existing_acc_no,
-       (SELECT dept_nm
-          FROM gldeptm
-         WHERE dept_id = :costctr) AS cct_name
-    FROM applications a
-    JOIN piv_detail c
-        ON TRIM(a.application_no) = TRIM(c.reference_no)
-     AND c.reference_type = 'APP'
-    LEFT JOIN approval c1
-        ON c1.reference_no = a.application_no
-    JOIN application_reference e
-    ON a.application_id = e.application_id
-   AND a.dept_id = e.dept_id
- WHERE a.application_type IN ('CR')
-   AND a.application_sub_type IN ('NM', 'NP', 'NA', 'BM', 'BP', 'BA', 'NT', 'AC', 'PC', 'PP', 'PN', 'PB', 'RS')
-   AND c.status IN ('C', 'P', 'T', 'M', 'Y')
-   AND a.dept_id = :costctr
-   AND a.submit_date >= :fromDate
-   AND a.submit_date < :toDateExclusive
- ORDER BY e.projectno, a.application_no";
+select  a.application_id, a.application_no,c.piv_receipt_no,c.PIV_NO,c.Piv_amount , (b.first_name||'  '||b.last_name ) as name ,
+( case when a.application_sub_type in ('NA' ) then 'Net Accounting'  when a.application_sub_type in ('NM' ) then 'Net Metering' when a.application_sub_type in ('NP' ) then 'Net Plus'
+else null end) as application_sub_type,
+(select c1.paid_date from piv_detail c1 where trim(a.application_no)=trim(c1.reference_no)
+and c1.Id_no= a.Id_no
+and a.dept_id=c1.dept_id and trim(c1.reference_type)='APP' and ROWNUM = 1) as PIV1_date,
+(select c1.PIV_NO from piv_detail c1 where trim(a.application_no)=trim(c1.reference_no)
+and c1.Id_no= a.Id_no
+and a.dept_id=c1.dept_id and trim(c1.reference_type)='APP' and ROWNUM = 1) as PIV1_No,
+(select c1.piv_receipt_no from piv_detail c1 where trim(a.application_no)=trim(c1.reference_no)
+and c1.Id_no= a.Id_no
+and a.dept_id=c1.dept_id and trim(c1.reference_type)='APP' and ROWNUM = 1) as piv1_receipt_no,
+ b.street_address, b.suburb, b.city , c.paid_date , d.tariff_cat_code, d.phase,d.Connection_type,e.projectno,
+(select T4.existing_acc_no from WIRING_LAND_DETAIL T4 where Trim(T4.application_id)=trim(a.application_id) ) as acc_no,
+(select dept_nm from gldeptm where dept_id =  :costctr) AS CCT_NAME 
+from applications a, applicant b ,  piv_detail c ,  wiring_land_detail d ,  (application_reference e
+	LEFT OUTER JOIN spestcnd L ON  trim(e.projectno)= trim(L.project_no) )
+where b.Id_no= a.Id_no
+and trim(a.application_no)=trim(c.reference_no)
+and c.Id_no= a.Id_no
+and a.dept_id=c.dept_id
+and trim(a.application_id)=trim(d.application_id)
+and a.dept_id=d.dept_id
+and a.application_id = e.application_id
+and a.dept_id=e.dept_id
+and c.reference_type='EST'
+and c.status in ('C', 'P')
+and a.dept_id=  :costctr
+and c.confirmed_date >=  :fromDate
+and c.confirmed_date <=  :toDate
+and a.application_sub_type in ('NA', 'NM','NP')
+order by a.application_id";
 
             using (var conn = new OracleConnection(connectionString))
             {
@@ -81,7 +58,7 @@ SELECT DISTINCT
                     cmd.BindByName = true;
                     cmd.Parameters.Add("costctr", OracleDbType.Varchar2).Value = costctr.Trim();
                     cmd.Parameters.Add("fromDate", OracleDbType.Date).Value = fromDate.Date;
-                    cmd.Parameters.Add("toDateExclusive", OracleDbType.Date).Value = toDate.Date.AddDays(1);
+                    cmd.Parameters.Add("toDate", OracleDbType.Date).Value = toDate.Date;
 
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
@@ -91,16 +68,24 @@ SELECT DISTINCT
                             {
                                 ApplicationId = GetString(reader, "application_id"),
                                 ApplicationNo = GetString(reader, "application_no"),
-                                SubmitDate = GetDateTime(reader, "submit_date"),
-                                ApprovedDate = GetDateTime(reader, "approved_date"),
-                                ProjectNo = GetString(reader, "projectno"),
-                                PivDate = GetDateTime(reader, "piv_date"),
+                                PivReceiptNo = GetString(reader, "piv_receipt_no"),
+                                PivNo = GetString(reader, "PIV_NO"),
+                                PivAmount = GetDecimal(reader, "Piv_amount"),
+                                Name = GetString(reader, "name"),
                                 ApplicationSubType = GetString(reader, "application_sub_type"),
+                                Piv1Date = GetDateTime(reader, "PIV1_date"),
+                                Piv1No = GetString(reader, "PIV1_No"),
+                                Piv1ReceiptNo = GetString(reader, "piv1_receipt_no"),
+                                StreetAddress = GetString(reader, "street_address"),
+                                Suburb = GetString(reader, "suburb"),
+                                City = GetString(reader, "city"),
                                 PaidDate = GetDateTime(reader, "paid_date"),
-                                Piv2PaidDate = GetDateTime(reader, "piv2_paid_date"),
-                                EnergizedDate = GetDateTime(reader, "energized_date"),
-                                ExistingAccNo = GetString(reader, "existing_acc_no"),
-                                CctName = GetString(reader, "cct_name")
+                                TariffCatCode = GetString(reader, "tariff_cat_code"),
+                                Phase = GetString(reader, "phase"),
+                                ConnectionType = GetString(reader, "Connection_type"),
+                                ProjectNo = GetString(reader, "projectno"),
+                                AccNo = GetString(reader, "acc_no"),
+                                CctName = GetString(reader, "CCT_NAME")
                             });
                         }
                     }
@@ -120,6 +105,12 @@ SELECT DISTINCT
         {
             var value = reader[columnName];
             return value == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(value);
+        }
+
+        private static decimal? GetDecimal(OracleDataReader reader, string columnName)
+        {
+            var value = reader[columnName];
+            return value == DBNull.Value ? (decimal?)null : Convert.ToDecimal(value);
         }
     }
 }
