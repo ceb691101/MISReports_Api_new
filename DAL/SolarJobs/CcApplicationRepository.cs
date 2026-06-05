@@ -19,15 +19,15 @@ namespace MISReports_Api.DAL.SolarJobs
 select  a.application_id, a.application_no,c.piv_receipt_no,c.PIV_NO,c.Piv_amount , (b.first_name||'  '||b.last_name ) as name ,
 ( case when a.application_sub_type in ('NA' ) then 'Net Accounting'  when a.application_sub_type in ('NM' ) then 'Net Metering' when a.application_sub_type in ('NP' ) then 'Net Plus'
 else null end) as application_sub_type,
-(select c1.paid_date from piv_detail c1 where   trim(a.application_id)=trim(c1.reference_no)
+(select c1.paid_date from piv_detail c1 where trim(a.application_no)=trim(c1.reference_no)
 and c1.Id_no= a.Id_no
-and a.dept_id=c1.dept_id and  trim(c1.reference_type)='APP') as PIV1_date,
-(select c1.PIV_NO from piv_detail c1 where   trim(a.application_no)=trim(c1.reference_no)
+and a.dept_id=c1.dept_id and trim(c1.reference_type)='APP' and ROWNUM = 1) as PIV1_date,
+(select c1.PIV_NO from piv_detail c1 where trim(a.application_no)=trim(c1.reference_no)
 and c1.Id_no= a.Id_no
-and a.dept_id=c1.dept_id and  trim(c1.reference_type) ='APP') as PIV1_No,
-(select c1.piv_receipt_no from piv_detail c1 where   trim(a.application_id)=trim(c1.reference_no)
+and a.dept_id=c1.dept_id and trim(c1.reference_type)='APP' and ROWNUM = 1) as PIV1_No,
+(select c1.piv_receipt_no from piv_detail c1 where trim(a.application_no)=trim(c1.reference_no)
 and c1.Id_no= a.Id_no
-and a.dept_id=c1.dept_id and  trim(c1.reference_type) ='APP') as piv1_receipt_no,
+and a.dept_id=c1.dept_id and trim(c1.reference_type)='APP' and ROWNUM = 1) as piv1_receipt_no,
  b.street_address, b.suburb, b.city , c.paid_date , d.tariff_cat_code, d.phase,d.Connection_type,e.projectno,
 (select T4.existing_acc_no from WIRING_LAND_DETAIL T4 where Trim(T4.application_id)=trim(a.application_id) ) as acc_no,
 (select dept_nm from gldeptm where dept_id =  :costctr) AS CCT_NAME 

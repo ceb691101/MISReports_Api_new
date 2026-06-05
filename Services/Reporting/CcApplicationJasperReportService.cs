@@ -23,7 +23,7 @@ namespace MISReports_Api.Services.Reporting
             _javaExecutable = ResolveJavaExecutable();
             _jarPath = ResolveAppRelativePath(
                 "CC_APP_JASPER_JAR",
-                "~/JasperTools/CcApplicationReportTool/target/cc-application-report-1.0-SNAPSHOT-jar-with-dependencies.jar");
+                "~/JasperTools/CcApplicationReportTool/target/cc-application-report.jar");
             _templatePath = ResolveAppRelativePath(
                 "CC_APP_JRXML_TEMPLATE",
                 "~/JasperTools/CcApplicationReportTool/src/main/resources/reports/cc_application_progress.jrxml");

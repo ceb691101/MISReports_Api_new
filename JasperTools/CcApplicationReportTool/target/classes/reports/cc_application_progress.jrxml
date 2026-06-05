@@ -10,41 +10,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="@toDate" class="java.lang.String"/>
-	<queryString>
-			<![CDATA[select  a.application_id, a.application_no,c.piv_receipt_no,c.PIV_NO,c.Piv_amount , (b.first_name||'  '||b.last_name ) as name ,
-	( case when a.application_sub_type in ('NA' ) then 'Net Accounting'  when a.application_sub_type in ('NM' ) then 'Net Metering' when a.application_sub_type in ('NP' ) then 'Net Plus'
-	else null end) as application_sub_type,
-	(select c1.paid_date from piv_detail c1 where   trim(a.application_id)=trim(c1.reference_no)
-	and c1.Id_no= a.Id_no
-	and a.dept_id=c1.dept_id and  trim(c1.reference_type)='APP') as PIV1_date,
-	(select c1.PIV_NO from piv_detail c1 where   trim(a.application_no)=trim(c1.reference_no)
-	and c1.Id_no= a.Id_no
-	and a.dept_id=c1.dept_id and  trim(c1.reference_type) ='APP') as PIV1_No,
-	(select c1.piv_receipt_no from piv_detail c1 where   trim(a.application_id)=trim(c1.reference_no)
-	and c1.Id_no= a.Id_no
-	and a.dept_id=c1.dept_id and  trim(c1.reference_type) ='APP') as piv1_receipt_no,
-	b.street_address, b.suburb, b.city , c.paid_date , d.tariff_cat_code, d.phase,d.Connection_type,e.projectno,
-	(select T4.existing_acc_no from WIRING_LAND_DETAIL T4 where Trim(T4.application_id)=trim(a.application_id) ) as acc_no,
 
-	(select dept_nm from gldeptm where dept_id =  $P!{@costctr}) AS CCT_NAME from
-	applications a, applicant b ,  piv_detail c ,  wiring_land_detail d ,  (application_reference e
-		LEFT OUTER JOIN spestcnd L ON  trim(e.projectno)= trim(L.project_no) )
-	where b.Id_no= a.Id_no
-	and trim(a.application_no)=trim(c.reference_no)
-	and c.Id_no= a.Id_no
-	and a.dept_id=c.dept_id
-	and trim(a.application_id)=trim(d.application_id)
-	and a.dept_id=d.dept_id
-	and a.application_id = e.application_id
-	and a.dept_id=e.dept_id
-	and c.reference_type='EST'
-	and c.status in ('C', 'P')
-	and a.dept_id=  $P!{@costctr}
-	and c.confirmed_date >=  TO_DATE($P!{@fromDate},'yyyy/mm/dd')
-	and c.confirmed_date <=   TO_DATE($P!{@toDate},'yyyy/mm/dd')
-	and a.application_sub_type in ('NA', 'NM','NP')
-	order by a.application_id]]>
-	</queryString>
 	<field name="APPLICATION_ID" class="java.lang.String"/>
 	<field name="APPLICATION_NO" class="java.lang.String"/>
 	<field name="PIV_RECEIPT_NO" class="java.lang.String"/>
@@ -90,7 +56,7 @@
 		<variableExpression><![CDATA[]]></variableExpression>
 	</variable>
 	<variable name="DateDifference" class="java.lang.Number">
-		<variableExpression><![CDATA[$F{PAID_DATE} -$F{PIV1_DATE}]]></variableExpression>
+		<variableExpression><![CDATA[$F{PAID_DATE} != null && $F{PIV1_DATE} != null ? (int)(($F{PAID_DATE}.getTime() - $F{PIV1_DATE}.getTime()) / (1000 * 60 * 60 * 24)) : null]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
