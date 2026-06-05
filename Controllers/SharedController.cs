@@ -3,8 +3,6 @@ using MISReports_Api.DAL.SolarInformation.SolarPVConnections;
 using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
-using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
-using MISReports_Api.DAL.General.ArrearsPosition;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
 using Newtonsoft.Json.Linq;
@@ -33,7 +31,6 @@ namespace MISReports_Api.Controllers
         private readonly ActiveCustSalesBulkBillCycleDao _activeCustSalesBulkBillCycle = new ActiveCustSalesBulkBillCycleDao();
         private readonly CalcCycleFromAreaDao _calcCycleFromAreaDao = new CalcCycleFromAreaDao();
         private readonly GovernmentAccountsBillCycleDao _govAccountsBillCycleDao = new GovernmentAccountsBillCycleDao();
-        private readonly ArrearsPositionBillCycleDao _arrearsPositionBillCycleDao = new ArrearsPositionBillCycleDao();
 
         [HttpGet]
         [Route("ordinary/areas")]
@@ -490,51 +487,6 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get max calc cycle from areas",
-                    errorDetails = ex.Message
-                }));
-            }
-        }
-
-        /// <summary>
-        /// Returns the maximum bill cycle from the <c>areas</c> table (billsmry bulk DB)
-        /// for the specified area, plus the preceding 24 month/year label strings.
-        /// </summary>
-        // GET api/billsmry/areas/billcycle/max?areaCode=43
-        // Response: { data: { maxBillCycle: "438", billCycles: [...] }, errorMessage: null }
-        [HttpGet]
-        [Route("billsmry/areas/billcycle/max")]
-        public IHttpActionResult GetArrearsPositionBillCycle([FromUri] string areaCode = null)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(areaCode))
-                    return Ok(JObject.FromObject(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Area code is required."
-                    }));
-
-                var result = _arrearsPositionBillCycleDao.GetMaxBillCycle(areaCode);
-
-                if (!string.IsNullOrEmpty(result.ErrorMessage))
-                    return Ok(JObject.FromObject(new
-                    {
-                        data = (object)null,
-                        errorMessage = result.ErrorMessage
-                    }));
-
-                return Ok(JObject.FromObject(new
-                {
-                    data = result,
-                    errorMessage = (string)null
-                }));
-            }
-            catch (Exception ex)
-            {
-                return Ok(JObject.FromObject(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot get max bill cycle for Arrears Position.",
                     errorDetails = ex.Message
                 }));
             }
