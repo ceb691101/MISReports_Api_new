@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models;
+using MISReports_Api.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -20,22 +20,9 @@ namespace MISReports_Api.DAL
 
         private static string NormalizeCategoryName(string catName)
         {
-            if (string.IsNullOrWhiteSpace(catName))
-            {
-                return null;
-            }
-
-            var words = catName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            for (var i = 0; i < words.Length; i++)
-            {
-                var word = words[i];
-                words[i] = word.Length == 1
-                    ? word.ToUpperInvariant()
-                    : char.ToUpperInvariant(word[0]) + word.Substring(1).ToLowerInvariant();
-            }
-
-            return string.Join(" ", words);
+            return string.IsNullOrWhiteSpace(catName)
+                ? null
+                : catName.Trim();
         }
 
         /// <summary>
