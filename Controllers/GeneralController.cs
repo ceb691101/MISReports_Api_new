@@ -2,7 +2,6 @@ using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.General.ListingOfCustomer;
-using MISReports_Api.DAL.General.AreasPosition;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
@@ -48,7 +47,6 @@ namespace MISReports_Api.Controllers
         private readonly SalesByTariffBulkDao _salesByTariffBulkDao = new SalesByTariffBulkDao();
 
         private readonly GovernmentAccountsDao _govAccountsDao = new GovernmentAccountsDao();
-        private readonly AreasPositionDao _areasPositionDao = new AreasPositionDao();
         private readonly ListingOfCustomerDao _listingOfCustomerDao = new ListingOfCustomerDao();
 
 
@@ -697,122 +695,7 @@ namespace MISReports_Api.Controllers
         // Response: { data: { billCycle: "438" }, errorMessage: null }       //
         // ------------------------------------------------------------------ //
 
-        [HttpGet]
-        [Route("areas-position/max-bill-cycle")]
-        public IHttpActionResult GetAreasPositionMaxBillCycle([FromUri] string areaCode = null)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(areaCode))
-                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
-
-                if (!_areasPositionDao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-
-                var billCycle = _areasPositionDao.GetMaxBillCycle(areaCode);
-
-                if (string.IsNullOrEmpty(billCycle))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "No bill cycle found for the selected area.",
-                        errorDetails = "The area may have no billing data."
-                    });
-
-                return Ok(new
-                {
-                    data = new { billCycle },
-                    errorMessage = (string)null
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetAreasPositionMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve max bill cycle.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
-
-        // ------------------------------------------------------------------ //
-        // GET api/areas-position/report?areaCode=43[&billCycle=438]          //
-        // Omit billCycle to auto-resolve max cycle.                           //
-        // Response: {                                                          //
-        //   data: {                                                            //
-        //     billCycle: "438",                                                //
-        //     rows: [ { readerCode, monthlyBill, totalBalance,                //
-        //               noOfMonthsInArrears, noOfAccounts }, ... ]            //
-        //   },                                                                 //
-        //   errorMessage: null                                                 //
-        // }                                                                    //
-        // ------------------------------------------------------------------ //
-
-        [HttpGet]
-        [Route("areas-position/report")]
-        public IHttpActionResult GetAreasPositionReport(
-            [FromUri] string areaCode = null,
-            [FromUri] string billCycle = null)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(areaCode))
-                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
-
-                if (!_areasPositionDao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-
-                var result = _areasPositionDao.GetAreasPositionReport(new AreasPositionRequest
-                {
-                    AreaCode = areaCode,
-                    BillCycle = billCycle   // null/empty → DAO resolves max automatically
-                });
-
-                if (result == null || result.Rows == null || result.Rows.Count == 0)
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "No data found for the selected area.",
-                        errorDetails = "Please check the area code or billing data availability."
-                    });
-
-                return Ok(new
-                {
-                    data = new
-                    {
-                        billCycle = result.BillCycle,
-                        rows = result.Rows
-                    },
-                    errorMessage = (string)null
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetAreasPositionReport: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve areas position report.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
+        
 
 
         // ================================================================== //
@@ -824,52 +707,7 @@ namespace MISReports_Api.Controllers
         // Response: { data: { billCycle: "438" }, errorMessage: null }       //
         // ------------------------------------------------------------------ //
 
-        [HttpGet]
-        [Route("listing-of-customers/max-bill-cycle")]
-        public IHttpActionResult GetListingOfCustomersMaxBillCycle([FromUri] string areaCode = null)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(areaCode))
-                    return Ok(new { data = (object)null, errorMessage = "Area code is required." });
-
-                if (!_listingOfCustomerDao.TestConnection(out string connError))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-
-                var billCycle = _listingOfCustomerDao.GetMaxBillCycle(areaCode);
-
-                if (string.IsNullOrEmpty(billCycle))
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "No bill cycle found for the selected area.",
-                        errorDetails = "The area may have no billing data."
-                    });
-
-                return Ok(new
-                {
-                    data = new { billCycle },
-                    errorMessage = (string)null
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetListingOfCustomersMaxBillCycle: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot retrieve max bill cycle.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
+        
 
         // ------------------------------------------------------------------ //
         // GET api/listing-of-customers/filters?areaCode=43&billCycle=438     //
