@@ -40,10 +40,10 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@category", category);
-                        cmd.Parameters.AddWithValue("@toDate", toDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("yyyy-MM-dd"));
-                        //cmd.Parameters.AddWithValue("@toDate", toDate.ToString("dd-MM-yyyy"));
-                        //cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("dd-MM-yyyy"));
+                        //cmd.Parameters.AddWithValue("@toDate", toDate.ToString("yyyy-MM-dd"));
+                        //cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@toDate", toDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@fromDate", fromDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -91,10 +91,10 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@category", category);
-                        cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("yyyy-MM-dd"));
-                        //cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("dd-MM-yyyy"));
-                        //cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("dd-MM-yyyy"));
+                        //cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("yyyy-MM-dd"));
+                        //cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@effectiveFrom", effectiveDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@effectiveTo", effectiveDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -219,8 +219,8 @@ namespace MISReports_Api.DAL.General.BillCalculation
                     {
                         // Safety check: if no balance days remain, assign all remaining units
                         unitsInPeriod = balanceUnits;
-                        System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:yyyy-MM-dd} to {periodEnd:yyyy-MM-dd}");
-                        //System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:dd-MM-yyyy} to {periodEnd:dd-MM-yyyy}");
+                        //System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:yyyy-MM-dd} to {periodEnd:yyyy-MM-dd}");
+                        System.Diagnostics.Trace.WriteLine($"Warning: balanceDays is {balanceDays} for category {request.Category}, assigning remaining {balanceUnits} units to period {periodStart:dd-MM-yyyy} to {periodEnd:dd-MM-yyyy}");
                     }
                     else
                     {
@@ -302,11 +302,35 @@ namespace MISReports_Api.DAL.General.BillCalculation
                         decimal unitsInBlock = 0;
                         decimal effectiveRate = tariff.Rate;
 
-                        // Apply special rate logic based on period date and consumption
-                        // Only apply to first two blocks (1-30 and 31-60) when consumption exceeds prorated second block
-                        if (request.Category == 11 && applySpecialRate && tariff.ToUnits <= 60 && tariff.ToUnits > 0)
+                        // From 2026-05-11: new boundary condition for category 11 and 51
+                        // If units exceed prorated 180 kWh threshold:
+                        //   - All blocks within 1-180 kWh -> hardcoded rate (32.50 for cat 11, 11.80 for cat 51)
+                        //   - Blocks above 180 kWh -> DB rate
+                        //   - Special rates do NOT apply
+                        // If units are within 1-180 kWh -> DB rate as-is, no special rate, no hardcoded rate
+                        DateTime cat11And51HardcodedRateStartDate = new DateTime(2026, 5, 11);
+                        int proratedLimit180 = (int)Math.Ceiling((180 * daysInPeriod / 30.0));
+                        bool applyHardcodedRate = (request.Category == 11 || request.Category == 51)
+                            && periodStart >= cat11And51HardcodedRateStartDate
+                            && periodCalc.NumberOfUnits > proratedLimit180;
+
+                        if (applyHardcodedRate)
                         {
-                            effectiveRate = specialRateForPeriod;
+                            // Hardcoded rate for 1-180 blocks; DB rate for above-180 blocks
+                            if (tariff.FromUnits <= 180 && (tariff.ToUnits == 0 || tariff.ToUnits <= 180))
+                            {
+                                effectiveRate = request.Category == 11 ? 32.50m : 11.80m;
+                            }
+                            // else: tariff.FromUnits > 180 -> effectiveRate stays as tariff.Rate (DB rate)
+                        }
+                        else
+                        {
+                            // Apply special rate logic based on period date and consumption
+                            // Only apply to first two blocks (1-30 and 31-60) when consumption exceeds prorated second block
+                            if (request.Category == 11 && applySpecialRate && tariff.ToUnits <= 60 && tariff.ToUnits > 0)
+                            {
+                                effectiveRate = specialRateForPeriod;
+                            }
                         }
 
                         // Category 21 - Always flat rate (no blocks)

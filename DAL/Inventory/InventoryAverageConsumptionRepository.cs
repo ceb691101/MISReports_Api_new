@@ -132,17 +132,19 @@ ORDER BY
                     conn.Open();
 
                     string sql = @"
-                SELECT DISTINCT(wrh_cd)
-                FROM inwrhm
-                WHERE status = 2
-                  AND TRIM(dept_id) = :costCenterId
-                  AND TRIM(dept_id) IN (
-                      SELECT TRIM(costcentre)
-                      FROM rep_roles_cct cct, rep_role_new r
-                      WHERE Trim(r.roleid) = Trim(cct.roleid)
-                        AND cct.lvl_no = 0
-                        AND r.epf_no = :epfNo
-                  )";
+                             SELECT DISTINCT(wrh_cd)
+                                FROM inwrhm
+                                WHERE status = 2
+                                    AND TRIM(dept_id) = TRIM(:costCenterId)
+                                    AND TRIM(dept_id) IN (
+                                            SELECT TRIM(costcentre)
+                                            FROM rep_roles_cct_new cct, rep_role_new r
+                                            WHERE TRIM(r.roleid) = TRIM(cct.roleid)
+                                                AND cct.lvl_no = 0
+                                                AND TRIM(r.epf_no) = TRIM(:epfNo))";
+
+
+              
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {

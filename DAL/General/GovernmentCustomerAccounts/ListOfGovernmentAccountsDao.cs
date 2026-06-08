@@ -5,129 +5,85 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
-using System.Text;
-using System.Web;
 
 namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
 {
-    public class ListOfGovernmentAccountsDao
+    public class GovernmentAccountsDao
     {
         private readonly DBConnection _dbConnection = new DBConnection();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        // billsmry uses the bulk connection (second parameter = true)
         public bool TestConnection(out string errorMessage)
         {
-            return _dbConnection.TestConnection(out errorMessage, true); // Use bulk connection
+            return _dbConnection.TestConnection(out errorMessage, true);
         }
 
-        /// <summary>
-        /// Gets the maximum bill cycle for a specific area
-        /// </summary>
-        public MaxBillCycleModel GetMaxBillCycle(string areaCode)
-        {
-            var result = new MaxBillCycleModel();
+        
 
-            try
-            {
-                logger.Info($"Getting max bill cycle for area: {areaCode}");
-
-                using (var conn = _dbConnection.GetConnection(false))
-                {
-                    conn.Open();
-
-                    string sql = "SELECT max(bill_cycle) FROM prn_dat_1 WHERE area_code = ?";
-
-                    using (var cmd = new OleDbCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@area_code", areaCode);
-
-                        var maxCycle = cmd.ExecuteScalar();
-                        result.MaxBillCycle = maxCycle != null && maxCycle != DBNull.Value
-                            ? maxCycle.ToString().Trim()
-                            : string.Empty;
-
-                        logger.Info($"Max bill cycle: {result.MaxBillCycle}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error getting max bill cycle");
-                result.ErrorMessage = ex.Message;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets all departments for dropdown
-        /// </summary>
+        // ── Departments dropdown ───────────────────────────────────────────────
+        // Excludes rows where characters 3-4 of dep_code equal '99'
         public List<DepartmentModel> GetDepartments()
         {
-            var departments = new List<DepartmentModel>();
+            var results = new List<DepartmentModel>();
 
             try
             {
-                logger.Info("Getting departments list");
-
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
 
-                    string sql = "SELECT dep_code, department FROM department ORDER BY dep_code";
+                    // Informix substring: dep_code[3,4] means chars starting at position 3, length 4
+                    string sql = "Select dep_code,department from department where dep_code[3,4]!='99' order by dep_code";
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            var department = new DepartmentModel
+                            results.Add(new DepartmentModel
                             {
                                 DepartmentCode = reader.IsDBNull(0) ? "" : reader.GetString(0).Trim(),
                                 DepartmentName = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim()
-                            };
-
-                            departments.Add(department);
+                            });
                         }
                     }
                 }
 
-                logger.Info($"Retrieved {departments.Count} departments");
+                logger.Info($"GetDepartments: returned {results.Count} departments.");
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error getting departments");
+                logger.Error(ex, "Error fetching departments for Government Accounts.");
                 throw;
             }
 
-            return departments;
+            return results;
         }
 
-        /// <summary>
-        /// Gets government accounts report based on request parameters
-        /// </summary>
-        public List<ListOfGovernmentAccountsModel> GetGovernmentAccountsReport(GovernmentAccountRequest request)
+        
+
+        // ── Report entry point ─────────────────────────────────────────────────
+        public List<GovernmentAccountsModel> GetGovernmentAccountsReport(GovernmentAccountsRequest request)
         {
-            var results = new List<ListOfGovernmentAccountsModel>();
+            var results = new List<GovernmentAccountsModel>();
 
             try
             {
                 logger.Info("=== START GetGovernmentAccountsReport ===");
                 logger.Info($"Request: BillCycle={request.BillCycle}, ReportType={request.ReportType}, " +
-                           $"AreaCode={request.AreaCode}, DepartmentCode={request.DepartmentCode}");
+                            $"AreaCode={request.AreaCode}, DepartmentCode={request.DepartmentCode}");
 
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
 
-                    if (request.ReportType?.ToLower() == "area")
+                    if (request.ReportType == "area")
                     {
-                        // Process Area report
                         results = GetAreaReportData(conn, request);
                     }
-                    else if (request.ReportType?.ToLower() == "department")
+                    else if (request.ReportType == "department")
                     {
-                        // Process Department report
                         results = GetDepartmentReportData(conn, request);
                     }
                     else
@@ -136,32 +92,44 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
                     }
 
                     logger.Info($"=== END GetGovernmentAccountsReport (Success) - {results.Count} records ===");
-                    return results;
                 }
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error occurred while fetching government accounts report");
+                logger.Error(ex, "Error occurred while fetching Government Accounts report.");
                 throw;
             }
+
+            return results;
         }
 
+        // ── Area report ────────────────────────────────────────────────────────
         /// <summary>
-        /// Gets data for Area report type
+        /// Returns all government accounts for the given area and bill cycle.
+        /// SQL: JOIN prn_dat_1 with govt_acct on acct_number, filtered by area_code and bill_cycle.
         /// </summary>
-        private List<ListOfGovernmentAccountsModel> GetAreaReportData(OleDbConnection conn, GovernmentAccountRequest request)
+        private List<GovernmentAccountsModel> GetAreaReportData(OleDbConnection conn, GovernmentAccountsRequest request)
         {
-            var results = new List<ListOfGovernmentAccountsModel>();
+            var results = new List<GovernmentAccountsModel>();
 
             try
             {
-                // SQL for Area report - includes all government accounts for the area
-                string sql = @"SELECT a.acct_number, a.cust_fname, a.cust_lname, a.address_1, a.address_2, a.address_3, 
-                               a.crnt_balance, a.kwh_charge, a.avg_cons 
-                               FROM prn_dat_1 a, govt_acct b 
-                               WHERE a.area_code = ? AND a.bill_cycle = ? AND a.acct_number = b.acct_number";
+                string sql = @"SELECT a.acct_number,
+                                      a.cust_fname,
+                                      a.cust_lname,
+                                      a.address_1,
+                                      a.address_2,
+                                      a.address_3,
+                                      a.crnt_balance,
+                                      a.kwh_charge,
+                                      a.avg_cons
+                               FROM prn_dat_1 a, govt_acct b
+                               WHERE a.area_code  = ?
+                                 AND a.bill_cycle  = ?
+                                 AND a.acct_number = b.acct_number
+                               ORDER BY a.acct_number";
 
-                logger.Info($"Executing Area SQL with BillCycle={request.BillCycle}, AreaCode={request.AreaCode}");
+                logger.Info($"Executing Area SQL: AreaCode={request.AreaCode}, BillCycle={request.BillCycle}");
 
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
@@ -175,43 +143,51 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
                             var model = MapReaderToModel(reader);
                             model.AreaCode = request.AreaCode;
                             model.BillCycle = request.BillCycle;
-
-                            // Get area name from areas table
-                            model.AreaName = GetAreaName(conn, request.AreaCode);
-
                             results.Add(model);
                         }
                     }
                 }
 
-                logger.Info($"Retrieved {results.Count} records for Area report");
+                logger.Info($"Area report: {results.Count} records retrieved.");
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error fetching Area report data");
+                logger.Error(ex, "Error fetching Area report data for Government Accounts.");
                 throw;
             }
 
             return results;
         }
 
+        // ── Department report ──────────────────────────────────────────────────
         /// <summary>
-        /// Gets data for Department report type
+        /// Returns government accounts for the given area, bill cycle, and department.
+        /// SQL: same JOIN as area report with the addition of b.dept = ?.
         /// </summary>
-        private List<ListOfGovernmentAccountsModel> GetDepartmentReportData(OleDbConnection conn, GovernmentAccountRequest request)
+        private List<GovernmentAccountsModel> GetDepartmentReportData(OleDbConnection conn, GovernmentAccountsRequest request)
         {
-            var results = new List<ListOfGovernmentAccountsModel>();
+            var results = new List<GovernmentAccountsModel>();
 
             try
             {
-                // SQL for Department report - includes government accounts filtered by department
-                string sql = @"SELECT a.acct_number, a.cust_fname, a.cust_lname, a.address_1, a.address_2, a.address_3, 
-                               a.crnt_balance, a.kwh_charge, a.avg_cons 
-                               FROM prn_dat_1 a, govt_acct b 
-                               WHERE a.area_code = ? AND a.bill_cycle = ? AND a.acct_number = b.acct_number AND b.dept = ?";
+                string sql = @"SELECT a.acct_number,
+                                      a.cust_fname,
+                                      a.cust_lname,
+                                      a.address_1,
+                                      a.address_2,
+                                      a.address_3,
+                                      a.crnt_balance,
+                                      a.kwh_charge,
+                                      a.avg_cons
+                               FROM prn_dat_1 a, govt_acct b
+                               WHERE a.area_code  = ?
+                                 AND a.bill_cycle  = ?
+                                 AND a.acct_number = b.acct_number
+                                 AND b.dept        = ?
+                               ORDER BY a.acct_number";
 
-                logger.Info($"Executing Department SQL with BillCycle={request.BillCycle}, " +
-                           $"AreaCode={request.AreaCode}, DepartmentCode={request.DepartmentCode}");
+                logger.Info($"Executing Department SQL: AreaCode={request.AreaCode}, " +
+                            $"BillCycle={request.BillCycle}, DepartmentCode={request.DepartmentCode}");
 
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
@@ -227,144 +203,90 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
                             model.AreaCode = request.AreaCode;
                             model.BillCycle = request.BillCycle;
                             model.DepartmentCode = request.DepartmentCode;
-
-                            // Get area name from areas table
-                            model.AreaName = GetAreaName(conn, request.AreaCode);
-
-                            // Get department name
-                            model.DepartmentName = GetDepartmentName(conn, request.DepartmentCode);
-
                             results.Add(model);
                         }
                     }
                 }
 
-                logger.Info($"Retrieved {results.Count} records for Department report");
+                logger.Info($"Department report: {results.Count} records retrieved.");
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error fetching Department report data");
+                logger.Error(ex, "Error fetching Department report data for Government Accounts.");
                 throw;
             }
 
             return results;
         }
 
+        // ── Reader → model mapping ─────────────────────────────────────────────
         /// <summary>
-        /// Gets area name from area code
+        /// Maps a data reader row to GovernmentAccountsModel.
+        /// Column order must match both SQL SELECT lists above:
+        ///   0  acct_number
+        ///   1  cust_fname
+        ///   2  cust_lname
+        ///   3  address_1
+        ///   4  address_2
+        ///   5  address_3
+        ///   6  crnt_balance
+        ///   7  kwh_charge
+        ///   8  avg_cons
         /// </summary>
-        private string GetAreaName(OleDbConnection conn, string areaCode)
+        private GovernmentAccountsModel MapReaderToModel(OleDbDataReader reader)
         {
-            try
-            {
-                string sql = "SELECT area_name FROM areas WHERE area_code = ?";
-
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@area_code", areaCode);
-                    var result = cmd.ExecuteScalar();
-
-                    return result != null && result != DBNull.Value
-                        ? result.ToString().Trim()
-                        : string.Empty;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Warn(ex, $"Error getting area name for code: {areaCode}");
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets department name from department code
-        /// </summary>
-        private string GetDepartmentName(OleDbConnection conn, string departmentCode)
-        {
-            try
-            {
-                string sql = "SELECT department FROM department WHERE dep_code = ?";
-
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@dep_code", departmentCode);
-                    var result = cmd.ExecuteScalar();
-
-                    return result != null && result != DBNull.Value
-                        ? result.ToString().Trim()
-                        : string.Empty;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Warn(ex, $"Error getting department name for code: {departmentCode}");
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Maps database reader to model
-        /// </summary>
-        private ListOfGovernmentAccountsModel MapReaderToModel(OleDbDataReader reader)
-        {
-            var model = new ListOfGovernmentAccountsModel();
+            var model = new GovernmentAccountsModel();
 
             try
             {
-                // Get raw values using ordinal positions
                 model.AccountNumber = reader.IsDBNull(0) ? "" : reader.GetString(0).Trim();
-                model.CustomerFirstName = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim();
-                model.CustomerLastName = reader.IsDBNull(2) ? "" : reader.GetString(2).Trim();
 
-                // Combine first and last name
-                model.CustomerName = $"{model.CustomerFirstName} {model.CustomerLastName}".Trim();
+                string firstName = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim();
+                string lastName = reader.IsDBNull(2) ? "" : reader.GetString(2).Trim();
+                model.CustomerName = string.IsNullOrEmpty(lastName)
+                    ? firstName
+                    : $"{firstName} {lastName}".Trim();
 
-                // Get address lines
-                model.Address1 = reader.IsDBNull(3) ? "" : reader.GetString(3).Trim();
-                model.Address2 = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
-                model.Address3 = reader.IsDBNull(5) ? "" : reader.GetString(5).Trim();
+                string addr1 = reader.IsDBNull(3) ? "" : reader.GetString(3).Trim();
+                string addr2 = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
+                string addr3 = reader.IsDBNull(5) ? "" : reader.GetString(5).Trim();
 
-                // Combine address lines
-                var addressParts = new List<string>();
-                if (!string.IsNullOrEmpty(model.Address1)) addressParts.Add(model.Address1);
-                if (!string.IsNullOrEmpty(model.Address2)) addressParts.Add(model.Address2);
-                if (!string.IsNullOrEmpty(model.Address3)) addressParts.Add(model.Address3);
-                model.Address = string.Join(" ", addressParts);
+                // System.Linq is now present — .Where() compiles correctly
+                model.Address = string.Join(" ",
+                    new[] { addr1, addr2, addr3 }.Where(s => !string.IsNullOrEmpty(s)));
 
-                // Get raw numeric values
+                // Raw numeric values
                 model.RawCurrentBalance = reader.IsDBNull(6) ? 0 : Convert.ToDecimal(reader.GetValue(6));
                 model.RawKwhCharge = reader.IsDBNull(7) ? 0 : Convert.ToDecimal(reader.GetValue(7));
                 model.RawAverageConsumption = reader.IsDBNull(8) ? 0 : Convert.ToDecimal(reader.GetValue(8));
 
-                // Format for display
+                // Formatted display values
                 model.CurrentBalance = FormatDecimal(model.RawCurrentBalance);
                 model.KwhCharge = FormatDecimal(model.RawKwhCharge);
-                model.AverageConsumption = FormatDecimal(model.RawAverageConsumption);
+                model.AverageConsumption = FormatInteger(model.RawAverageConsumption);
 
                 model.ErrorMessage = string.Empty;
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error mapping reader to model");
+                logger.Error(ex, "Error mapping reader to GovernmentAccountsModel.");
                 model.ErrorMessage = ex.Message;
             }
 
             return model;
         }
 
-        /// <summary>
-        /// Formats decimal value with commas and 2 decimal places
-        /// </summary>
+        // ── Helpers ───────────────────────────────────────────────────────────
         private string FormatDecimal(decimal value)
         {
-            try
-            {
-                return value.ToString("###,###.##");
-            }
-            catch
-            {
-                return "0.00";
-            }
+            try { return value.ToString("###,###.##"); }
+            catch { return "0.00"; }
+        }
+
+        private string FormatInteger(decimal value)
+        {
+            try { return ((int)value).ToString("###,###"); }
+            catch { return "0"; }
         }
     }
 }

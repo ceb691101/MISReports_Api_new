@@ -1,58 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace MISReports_Api.Models.General
+﻿namespace MISReports_Api.Models.General
 {
-    public class ListOfGovernmentAccountsModel
+    // ── Request ───────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Passed from GeneralController into GovernmentAccountsDao.
+    /// ReportType: "area" | "department"
+    /// </summary>
+    public class GovernmentAccountsRequest
     {
-        // Raw database values
+        public string BillCycle { get; set; }
+        public string ReportType { get; set; }
+        public string AreaCode { get; set; }
+        public string DepartmentCode { get; set; }
+    }
+
+    // ── Report row ────────────────────────────────────────────────────────────
+    /// <summary>
+    /// One row returned by GetGovernmentAccountsReport().
+    /// Raw numeric fields allow the frontend to sort/aggregate;
+    /// formatted string fields are ready for display.
+    /// </summary>
+    public class GovernmentAccountsModel
+    {
+        // Context (set by DAO after mapping)
+        public string AreaCode { get; set; }
+        public string BillCycle { get; set; }
+        public string DepartmentCode { get; set; }
+
+        // From prn_dat_1
         public string AccountNumber { get; set; }
-        public string CustomerFirstName { get; set; }
-        public string CustomerLastName { get; set; }
-        public string Address1 { get; set; }
-        public string Address2 { get; set; }
-        public string Address3 { get; set; }
+        public string CustomerName { get; set; }   // cust_fname + cust_lname
+        public string Address { get; set; }   // address_1 + address_2 + address_3
+
+        // Raw numeric values (for sorting / calculations on frontend)
         public decimal RawCurrentBalance { get; set; }
         public decimal RawKwhCharge { get; set; }
         public decimal RawAverageConsumption { get; set; }
 
-        // Formatted display values
+        // Formatted display strings
         public string CurrentBalance { get; set; }
         public string KwhCharge { get; set; }
         public string AverageConsumption { get; set; }
 
-        // Location information
-        public string AreaCode { get; set; }
-        public string AreaName { get; set; }
-        public string DepartmentCode { get; set; }
-        public string DepartmentName { get; set; }
-        public string BillCycle { get; set; }
-
-        // Combined customer name
-        public string CustomerName { get; set; }
-
-        // Combined address
-        public string Address { get; set; }
-
         public string ErrorMessage { get; set; }
     }
 
-    public class GovernmentAccountRequest
-    {
-        public string BillCycle { get; set; }
-        public string ReportType { get; set; } // "area" or "department"
-        public string AreaCode { get; set; }
-        public string DepartmentCode { get; set; }
-    }
-
-    public class MaxBillCycleModel
+    // ── Max bill cycle ────────────────────────────────────────────────────────
+    /// <summary>
+    /// Returned by GovernmentAccountsDao.GetMaxBillCycle().
+    /// </summary>
+    public class GovMaxBillCycleModel
     {
         public string MaxBillCycle { get; set; }
         public string ErrorMessage { get; set; }
     }
 
+    // ── Areas dropdown ────────────────────────────────────────────────────────
+    /// <summary>
+    /// One row from GovernmentAccountsDao.GetAreas().
+    /// </summary>
+    public class GovAreaModel
+    {
+        public string AreaCode { get; set; }
+        public string AreaName { get; set; }
+    }
+
+    // ── Departments dropdown ──────────────────────────────────────────────────
+    /// <summary>
+    /// One row from GovernmentAccountsDao.GetDepartments().
+    /// </summary>
     public class DepartmentModel
     {
         public string DepartmentCode { get; set; }

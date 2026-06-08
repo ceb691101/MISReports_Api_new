@@ -3,7 +3,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Odbc;
+using System.Data.OleDb;
 
 namespace MISReports_Api.DAL.Dashboard
 {
@@ -30,20 +30,20 @@ namespace MISReports_Api.DAL.Dashboard
 
             try
             {
-                using (var conn = new OdbcConnection(_connectionString))
+                using (var conn = new OleDbConnection(_connectionString))
                 {
                     conn.Open();
                     return true;
                 }
             }
-            catch (OdbcException ex)
+            catch (OleDbException ex)
             {
                 var message = string.IsNullOrWhiteSpace(ex.Message)
-                    ? "Odbc connection failed with no message."
+                    ? "OLE DB connection failed with no message."
                     : ex.Message;
 
                 errorMessage = $"{message} (HResult: 0x{ex.ErrorCode:X8})";
-                logger.Error(ex, "Kiosk POS DB connection test failed (Odbc).");
+                logger.Error(ex, "Kiosk POS DB connection test failed (OLE DB).");
                 return false;
             }
             catch (Exception ex)
@@ -67,7 +67,7 @@ namespace MISReports_Api.DAL.Dashboard
                 var toDate = DateTime.Today.AddDays(-1);
                 var fromDate = toDate.AddDays(-6);
                 // logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
-                logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yyyy} to {toDate:dd-MM-yyyy} ===");
+                logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yy} to {toDate:dd-MM-yy} ===");
 
                 rows = QueryKioskCollection(userId: userId, region: region);
 
@@ -110,11 +110,11 @@ namespace MISReports_Api.DAL.Dashboard
                                 GROUP BY 1
                                 ORDER BY 1";
 
-            using (var conn = new OdbcConnection(_connectionString))
+            using (var conn = new OleDbConnection(_connectionString))
             {
                 conn.Open();
 
-                using (var cmd = new OdbcCommand(sql, conn))
+                using (var cmd = new OleDbCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("?", userId);
                     if (hasRegionFilter)
@@ -140,7 +140,7 @@ namespace MISReports_Api.DAL.Dashboard
             return rows;
         }
 
-        private string GetDateStringValue(OdbcDataReader reader, string column)
+        private string GetDateStringValue(OleDbDataReader reader, string column)
         {
             try
             {
@@ -149,7 +149,7 @@ namespace MISReports_Api.DAL.Dashboard
                     return string.Empty;
 
                 // return Convert.ToDateTime(value).ToString("yyyy-MM-dd");
-                return Convert.ToDateTime(value).ToString("dd-MM-yyyy");
+                return Convert.ToDateTime(value).ToString("dd-MM-yy");
             }
             catch (IndexOutOfRangeException)
             {
@@ -163,7 +163,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private long GetLongValue(OdbcDataReader reader, string column)
+        private long GetLongValue(OleDbDataReader reader, string column)
         {
             try
             {

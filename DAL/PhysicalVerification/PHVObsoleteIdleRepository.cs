@@ -28,7 +28,8 @@ namespace MISReports_Api.DAL.PhysicalVerification
                     T1.CNTED_QTY AS QTY_ON_HAND,
                     T1.DOC_NO,
                     (T1.CNTED_QTY * T5.UNIT_COST) AS STOCKBOOK,
-                    T1.REASON
+                    T1.REASON,
+                    (SELECT dept_nm FROM gldeptm WHERE dept_id = :dept_id) AS CCT_NAME
                 FROM INPHVDMT T1
                 JOIN INPOSTMT T5 ON T1.DOC_NO = T5.DOC_NO
                                   AND T1.DOC_PF = T5.DOC_PF
@@ -90,7 +91,8 @@ namespace MISReports_Api.DAL.PhysicalVerification
                             StockBook = reader["STOCKBOOK"] != DBNull.Value
                                         ? Convert.ToDecimal(reader["STOCKBOOK"])
                                         : 0,
-                            Reason = reader["REASON"]?.ToString()
+                            Reason = reader["REASON"]?.ToString(),
+                            CostCentreName = reader["CCT_NAME"]?.ToString()?.Trim()
                         });
                     }
                 }
