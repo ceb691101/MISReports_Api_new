@@ -255,7 +255,7 @@ namespace MISReports_Api.DAL
                             if (roleCount > 0)
                             {
                                 transaction.Rollback();
-                                return false;
+                                throw new InvalidOperationException("A role mapping with the same EPF Number and User Type already exists.");
                             }
                         }
 
@@ -302,6 +302,12 @@ namespace MISReports_Api.DAL
                             cmd.ExecuteNonQuery();
                         }
 
+                        const string checkRoleCctSql = @"
+                            SELECT COUNT(1)
+                            FROM REP_ROLES_CCT_NEW
+                            WHERE TRIM(ROLEID) = :role_id
+                              AND TRIM(COSTCENTRE) = :costcentre";
+
                         const string insertRoleCctSql = @"
                             INSERT INTO REP_ROLES_CCT_NEW
                             (
@@ -320,6 +326,21 @@ namespace MISReports_Api.DAL
 
                         foreach (var costCentre in costCentres)
                         {
+                            bool cctExists = false;
+                            using (var checkCmd = new OracleCommand(checkRoleCctSql, conn))
+                            {
+                                checkCmd.Transaction = transaction;
+                                checkCmd.BindByName = true;
+                                checkCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
+                                checkCmd.Parameters.Add("costcentre", OracleDbType.Varchar2).Value = costCentre;
+                                cctExists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+                            }
+
+                            if (cctExists)
+                            {
+                                continue;
+                            }
+
                             int lvlNo = GetCostCentreLvlNo(conn, transaction, costCentre);
 
                             using (var cmd = new OracleCommand(insertRoleCctSql, conn))
@@ -407,7 +428,7 @@ namespace MISReports_Api.DAL
                             if (targetCount > 0 && !sameCompositeKey)
                             {
                                 transaction.Rollback();
-                                return false;
+                                throw new InvalidOperationException("A role mapping with the target EPF Number and User Type already exists.");
                             }
                         }
 

@@ -143,6 +143,14 @@ namespace MISReports_Api.Controllers
                     errorMessage = (string)null
                 }));
             }
+            catch (InvalidOperationException ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = ex.Message
+                }));
+            }
             catch (Exception ex)
             {
                 return Ok(JObject.FromObject(new
@@ -232,6 +240,14 @@ namespace MISReports_Api.Controllers
                         message = updated ? "Role updated successfully." : "Role not found."
                     },
                     errorMessage = (string)null
+                }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = ex.Message
                 }));
             }
             catch (Exception ex)
