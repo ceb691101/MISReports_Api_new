@@ -2,6 +2,7 @@ using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.General.ListingOfCustomer;
+using MISReports_Api.DAL.General.ArrearsPosition;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
@@ -48,6 +49,7 @@ namespace MISReports_Api.Controllers
 
         private readonly GovernmentAccountsDao _govAccountsDao = new GovernmentAccountsDao();
         private readonly ListingOfCustomerDao _listingOfCustomerDao = new ListingOfCustomerDao();
+        private readonly ArrearsPositionDao _arrearsPositionDao = new ArrearsPositionDao(); // ← ADDED
 
 
         // ================================================================== //
@@ -524,7 +526,7 @@ namespace MISReports_Api.Controllers
         // Response: { data: { MaxBillCycle: "438" }, errorMessage: null }    //
         // ------------------------------------------------------------------ //
 
-        
+
 
         // ------------------------------------------------------------------ //
         // GET api/government-accounts/areas                                   //
@@ -532,7 +534,7 @@ namespace MISReports_Api.Controllers
         //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
-        
+
 
         // ------------------------------------------------------------------ //
         // GET api/government-accounts/departments                             //
@@ -695,7 +697,7 @@ namespace MISReports_Api.Controllers
         // Response: { data: { billCycle: "438" }, errorMessage: null }       //
         // ------------------------------------------------------------------ //
 
-        
+
 
 
         // ================================================================== //
@@ -707,7 +709,7 @@ namespace MISReports_Api.Controllers
         // Response: { data: { billCycle: "438" }, errorMessage: null }       //
         // ------------------------------------------------------------------ //
 
-        
+
 
         // ------------------------------------------------------------------ //
         // GET api/listing-of-customers/filters?areaCode=43&billCycle=438     //
@@ -892,6 +894,75 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get listing of customers report data.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+
+        // ================================================================== //
+        //  ARREARS POSITION – METER READER WISE                                //
+        // ================================================================== //
+
+        // ------------------------------------------------------------------ //
+        // GET api/arrears-position/report?billCycle=438&areaCode=43          //
+        // Response: { data: [ ...ArrearsPositionModel... ], errorMessage: null }
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("arrears-position/report")]
+        public IHttpActionResult GetArrearsPositionReport(
+            [FromUri] string billCycle = null,
+            [FromUri] string areaCode = null)
+        {
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+            if (string.IsNullOrWhiteSpace(areaCode)) errors.Add("Area code is required.");
+
+            if (errors.Count > 0)
+                return Ok(new { data = (object)null, errorMessage = string.Join("; ", errors) });
+
+            try
+            {
+                if (!_arrearsPositionDao.TestConnection(out string connError))
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+
+                var request = new ArrearsPositionRequest
+                {
+                    BillCycle = billCycle.Trim(),
+                    AreaCode = areaCode.Trim()
+                };
+
+                var data = _arrearsPositionDao.GetArrearsPositionReport(request);
+
+                if (data == null || data.Count == 0)
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No data found for the selected criteria.",
+                        errorDetails = "Please check the bill cycle and area code."
+                    });
+
+                return Ok(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetArrearsPositionReport: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get arrears position report data.",
                     errorDetails = ex.Message
                 });
             }
