@@ -3,6 +3,7 @@ using MISReports_Api.DAL.SolarInformation.SolarPVConnections;
 using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
+using MISReports_Api.DAL.General.ArrearsPosition; // ← ADDED
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
 using Newtonsoft.Json.Linq;
@@ -31,6 +32,8 @@ namespace MISReports_Api.Controllers
         private readonly ActiveCustSalesBulkBillCycleDao _activeCustSalesBulkBillCycle = new ActiveCustSalesBulkBillCycleDao();
         private readonly CalcCycleFromAreaDao _calcCycleFromAreaDao = new CalcCycleFromAreaDao();
         private readonly GovernmentAccountsBillCycleDao _govAccountsBillCycleDao = new GovernmentAccountsBillCycleDao();
+        private readonly ArrearsPositionBillCycleDao _arrearsPositionBillCycleDao = new ArrearsPositionBillCycleDao(); // ← ADDED
+        private readonly ReceivablePositionBillCycleDao _receivablePositionBillCycleDao = new ReceivablePositionBillCycleDao();
 
         [HttpGet]
         [Route("ordinary/areas")]
@@ -533,6 +536,84 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get max bill cycle for Government Accounts.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Returns the last 24 bill cycles from the receivable_position table.
+        /// Used by the Receivable Position report to seed the bill-cycle dropdown.
+        /// DB: receivable_position (bulk connection).
+        /// </summary>
+        // GET api/receivable-position/billcycle/max
+        // Response: { data: { maxBillCycle: "454", billCycles: [...] }, errorMessage: null }
+        [HttpGet]
+        [Route("receivable-position/billcycle/max")]
+        public IHttpActionResult GetReceivablePositionBillCycle()
+        {
+            try
+            {
+                var result = _receivablePositionBillCycleDao.GetLast24BillCycles();
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = result.ErrorMessage
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle for Receivable Position.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Returns the maximum bill cycle from the <c>areas</c> table for a given area code.
+        /// Used by the Arrears Position (meter-reader wise) report to seed the bill-cycle dropdown.
+        /// DB: billsmry (bulk connection).
+        /// </summary>
+        // GET api/billsmry/areas/arrears-position/billcycle/max?areaCode=43
+        // Response: { data: { maxBillCycle: "438", billCycles: [...] }, errorMessage: null }
+        [HttpGet]
+        [Route("billsmry/areas/arrears-position/billcycle/max")]
+        public IHttpActionResult GetArrearsPositionBillCycle([FromUri] string areaCode = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(areaCode))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Area code is required."
+                    }));
+
+                var result = _arrearsPositionBillCycleDao.GetMaxBillCycle(areaCode);
+
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = result.ErrorMessage
+                    }));
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle for Arrears Position.",
                     errorDetails = ex.Message
                 }));
             }

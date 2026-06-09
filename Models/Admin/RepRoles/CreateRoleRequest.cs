@@ -1,4 +1,4 @@
-﻿// Models/Admin/RepRoles/CreateRoleRequest.cs
+// Models/Admin/RepRoles/CreateRoleRequest.cs
 using System.Collections.Generic;
 
 namespace MISReports_Api.Models
@@ -17,6 +17,8 @@ namespace MISReports_Api.Models
         public string CostCentre { get; set; }
         public List<string> CostCentres { get; set; }
         public int LvlNo { get; set; }
+        public string AddUser { get; set; }
+        public string UpdateUser { get; set; }
     }
 
     public class AddRoleCostCentresRequest

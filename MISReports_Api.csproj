@@ -100,8 +100,8 @@
     <Reference Include="Microsoft.Extensions.Logging, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Extensions.Logging.8.0.0\lib\net462\Microsoft.Extensions.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.2, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.8.0.2\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.3, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.8.0.3\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.ObjectPool, Version=8.0.11.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Extensions.ObjectPool.8.0.11\lib\net462\Microsoft.Extensions.ObjectPool.dll</HintPath>
@@ -413,7 +413,7 @@
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
-    <Compile Include="DAL\General\AreasPosition\AreasPositionDao.cs" />
+    <Compile Include="DAL\General\ArrearsPosition\ArrearsPositionDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
@@ -433,9 +433,11 @@
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
     <Compile Include="DAL\ReportParamFlagsRepository.cs" />
+    <Compile Include="DAL\Shared\ArrearsPositionbillcycleDao.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
+    <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -458,6 +460,9 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="Models\General\ArrearsPositionModel .cs" />
+    <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
+    <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
@@ -590,7 +595,6 @@
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
-    <Compile Include="Models\General\AreasPositionModel.cs" />
     <Compile Include="Models\General\ListingofcustomerModel .cs" />
     <Compile Include="Models\General\ListOfGovernmentAccountsModel.cs" />
     <Compile Include="Models\General\ActiveCustomersModel.cs" />
