@@ -10,7 +10,7 @@ namespace MISReports_Api.DAL
 {
 	public class RoleCrudRepository
 	{
-		private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+		private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
 		private static string Normalize(string value)
 		{
