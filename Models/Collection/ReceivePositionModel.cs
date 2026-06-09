@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -43,5 +43,12 @@ namespace MISReports_Api.Models.Collection
     {
         public string BillType { get; set; }
         public string DisplayName { get; set; }
+    }
+
+    // ── Area lookup model (areas-by-province / areas-by-region) ───────────────
+    public class ReceivablePositionAreaModel
+    {
+        public string AreaCode { get; set; }
+        public string AreaName { get; set; }
     }
 }

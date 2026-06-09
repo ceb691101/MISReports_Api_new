@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DAL.Collection.ReceivablePosition;
+using MISReports_Api.DAL.Collection.ReceivablePosition;
 using MISReports_Api.Models.Collection;
 using Newtonsoft.Json.Linq;
 using System;
@@ -94,6 +94,106 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get receivable position report data.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // GET api/receivable-position/areas-by-province?provinceCode=3       //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("receivable-position/areas-by-province")]
+        public IHttpActionResult GetReceivablePositionAreasByProvince(
+            [FromUri] string provinceCode = null,
+            [FromUri] string billType = null,
+            [FromUri] string billCycle = null)
+        {
+            if (string.IsNullOrWhiteSpace(provinceCode))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Province code is required."
+                }));
+
+            try
+            {
+                if (!_receivablePositionDao.TestConnection(out string connError))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    }));
+
+                var data = _receivablePositionDao.GetAreasByProvince(
+                    provinceCode.Trim(),
+                    billType,
+                    billCycle);
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get areas for province.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // GET api/receivable-position/areas-by-region?regionCode=R1          //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("receivable-position/areas-by-region")]
+        public IHttpActionResult GetReceivablePositionAreasByRegion(
+            [FromUri] string regionCode = null,
+            [FromUri] string billType = null,
+            [FromUri] string billCycle = null)
+        {
+            if (string.IsNullOrWhiteSpace(regionCode))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Region code is required."
+                }));
+
+            try
+            {
+                if (!_receivablePositionDao.TestConnection(out string connError))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    }));
+
+                var data = _receivablePositionDao.GetAreasByRegion(
+                    regionCode.Trim(),
+                    billType,
+                    billCycle);
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get areas for region.",
                     errorDetails = ex.Message
                 }));
             }
