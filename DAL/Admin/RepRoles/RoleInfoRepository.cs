@@ -117,9 +117,23 @@ namespace MISReports_Api.DAL
 
         private static string NormalizeRoleUserType(string userType)
         {
-            return string.IsNullOrWhiteSpace(userType)
-                ? string.Empty
-                : userType.Trim().ToUpperInvariant();
+            var t = userType?.Trim();
+            if (string.IsNullOrWhiteSpace(t))
+            {
+                return string.Empty;
+            }
+
+            if (string.Equals(t, "ADMINISTRATOR", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ADMIN";
+            }
+
+            if (string.Equals(t, "USER", StringComparison.OrdinalIgnoreCase))
+            {
+                return "USER";
+            }
+
+            return t.ToUpperInvariant();
         }
 
         public List<RoleInfoModel> GetAdminRoles()
@@ -242,7 +256,7 @@ namespace MISReports_Api.DAL
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var checkCmd = new OracleCommand(checkRoleSql, conn))
                         {
@@ -390,7 +404,7 @@ namespace MISReports_Api.DAL
                             SELECT TRIM(ROLEID)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :original_epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :original_user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :original_user_type";
 
                         using (var getCmd = new OracleCommand(getOriginalRoleIdSql, conn))
                         {
@@ -412,7 +426,7 @@ namespace MISReports_Api.DAL
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var targetCmd = new OracleCommand(targetRoleSql, conn))
                         {
@@ -440,11 +454,9 @@ namespace MISReports_Api.DAL
                                 USERTYPE = :user_type,
                                 COMPANY = :company,
                                 MCOMPANY = :mcompany,
-                                USER_GROUP = :user_group,
-                                UPDATE_USER = :update_user,
-                                UPDATE_DATE = SYSDATE
+                                USER_GROUP = :user_group
                             WHERE TRIM(EPF_NO) = :original_epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :original_user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :original_user_type";
 
                         using (var cmd = new OracleCommand(updateRoleSql, conn))
                         {
@@ -458,7 +470,6 @@ namespace MISReports_Api.DAL
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
-                            cmd.Parameters.Add("update_user", OracleDbType.Varchar2).Value = (object)request.UpdateUser?.Trim() ?? DBNull.Value;
                             cmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
                             cmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
 
@@ -588,7 +599,7 @@ namespace MISReports_Api.DAL
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var checkCmd = new OracleCommand(checkRoleSql, conn))
                         {
@@ -611,7 +622,7 @@ namespace MISReports_Api.DAL
                             SELECT TRIM(ROLEID)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var getCmd = new OracleCommand(getRoleIdSql, conn))
                         {
@@ -626,7 +637,7 @@ namespace MISReports_Api.DAL
                         const string deleteRoleSql = @"
                             DELETE FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var cmd = new OracleCommand(deleteRoleSql, conn))
                         {
@@ -709,8 +720,8 @@ namespace MISReports_Api.DAL
                         const string roleIdSql = @"
                             SELECT TRIM(ROLEID)
                             FROM REP_ROLE_NEW
-                                                        WHERE TRIM(EPF_NO) = :epf_no
-                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         string roleId = null;
 
