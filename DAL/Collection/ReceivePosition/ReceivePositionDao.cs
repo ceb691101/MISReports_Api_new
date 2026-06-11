@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DAL.CollectionInformation;
+using MISReports_Api.DAL.CollectionInformation;
 using MISReports_Api.Models.CollectionInformation;
 using System;
 using System.Collections.Generic;
