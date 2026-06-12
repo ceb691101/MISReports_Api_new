@@ -292,6 +292,7 @@
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
+    <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
@@ -408,6 +409,9 @@
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmPivTotalDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
@@ -457,6 +461,9 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
