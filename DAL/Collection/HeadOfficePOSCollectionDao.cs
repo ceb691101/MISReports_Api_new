@@ -46,8 +46,8 @@ namespace MISReports_Api.DAL.Collection
                         DateTime fromDate = DateTime.Parse(request.FromDate);
                         DateTime toDate = DateTime.Parse(request.ToDate);
 
-                        cmd.Parameters.AddWithValue("?", fromDate.ToString("yyyy-MM-dd"));
-                        cmd.Parameters.AddWithValue("?", toDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("?", fromDate.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("?", toDate.ToString("dd-MM-yyyy"));
 
                         using (var reader = cmd.ExecuteReader())
                         {
