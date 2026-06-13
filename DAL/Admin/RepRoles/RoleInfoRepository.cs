@@ -282,9 +282,7 @@ namespace MISReports_Api.DAL
                                 USERTYPE,
                                 COMPANY,
                                 MCOMPANY,
-                                USER_GROUP,
-                                ADD_USER,
-                                ADD_DATE
+                                USER_GROUP
                             )
                             VALUES
                             (
@@ -294,9 +292,7 @@ namespace MISReports_Api.DAL
                                 :user_type,
                                 :company,
                                 :mcompany,
-                                :user_group,
-                                :add_user,
-                                SYSDATE
+                                :user_group
                             )";
 
                         using (var cmd = new OracleCommand(insertRoleSql, conn))
@@ -311,7 +307,6 @@ namespace MISReports_Api.DAL
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
                             cmd.Parameters.Add("user_group", OracleDbType.Varchar2).Value = request.UserGroup?.Trim();
-                            cmd.Parameters.Add("add_user", OracleDbType.Varchar2).Value = (object)request.AddUser?.Trim() ?? DBNull.Value;
 
                             cmd.ExecuteNonQuery();
                         }
