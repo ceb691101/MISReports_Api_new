@@ -21,7 +21,7 @@ namespace MISReports_Api.DAL.DgmDashboard
                     select c.paid_date as PIV_Date, sum(c.grand_total) as PIV_collection
                     from piv_detail c 
                     where trim(c.status) in ('Q', 'P','F','FR','FA')
-                    and c.paid_date >= TRUNC(SYSDATE) - 7 
+                    and c.paid_date >= TRUNC(SYSDATE) - 30 
                     and c.paid_date <= TRUNC(SYSDATE) - 1
                     and c.dept_id in (
                         select dept_id from gldeptm 

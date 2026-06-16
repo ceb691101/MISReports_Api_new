@@ -412,6 +412,7 @@
     <Compile Include="DAL\DgmDashboard\DgmPivTotalDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
@@ -464,6 +465,7 @@
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />

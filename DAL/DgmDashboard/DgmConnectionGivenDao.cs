@@ -5,14 +5,14 @@ using MISReports_Api.Models.DgmDashboard;
 
 namespace MISReports_Api.DAL.DgmDashboard
 {
-    public class DgmAppCountDao
+    public class DgmConnectionGivenDao
     {
         private static readonly string ConnectionString = System.Configuration.ConfigurationManager
             .ConnectionStrings["HQOracle"].ConnectionString;
 
-        public List<DgmAppCountModel> Fetch(int year, string companyId)
+        public List<DgmConnectionGivenModel> Fetch(int year, string companyId)
         {
-            var result = new List<DgmAppCountModel>();
+            var result = new List<DgmConnectionGivenModel>();
 
             using (OracleConnection conn = new OracleConnection(ConnectionString))
             {
@@ -22,9 +22,11 @@ namespace MISReports_Api.DAL.DgmDashboard
                         app.dept_id,
                         appty.description,
                         app.application_type,
-                        COUNT(*) AS no_of_applications
+                        COUNT(*) AS no_of_connections
                     FROM applications app
                     INNER JOIN applicationtypes appty ON app.application_type = appty.apptype
+                    INNER JOIN pcesthmt T1 ON TRIM(T1.estimate_no) = TRIM(app.application_no)
+                    INNER JOIN spodrcrd L ON TRIM(T1.project_no) = TRIM(L.project_no)
                     WHERE app.status NOT IN ('D')
                     AND TO_CHAR(app.submit_date, 'YYYY') = :year
                     AND app.dept_id IN (
@@ -49,12 +51,12 @@ namespace MISReports_Api.DAL.DgmDashboard
                     {
                         while (reader.Read())
                         {
-                            result.Add(new DgmAppCountModel
+                            result.Add(new DgmConnectionGivenModel
                             {
                                 deptId = reader.IsDBNull(0) ? string.Empty : reader.GetString(0).Trim(),
                                 description = reader.IsDBNull(1) ? string.Empty : reader.GetString(1).Trim(),
                                 appType = reader.IsDBNull(2) ? string.Empty : reader.GetString(2).Trim(),
-                                noOfApplications = reader.IsDBNull(3) ? 0 : Convert.ToInt32(reader.GetValue(3))
+                                noOfConnections = reader.IsDBNull(3) ? 0 : Convert.ToInt32(reader.GetValue(3))
                             });
                         }
                     }

@@ -16,6 +16,7 @@ namespace MISReports_Api.Controllers.DgmDashboard
         private static readonly DgmPivTotalDao DgmPivTotalDao = new DgmPivTotalDao();
         private static readonly DgmStockValueDao DgmStockValueDao = new DgmStockValueDao();
         private static readonly DgmAppCountDao DgmAppCountDao = new DgmAppCountDao();
+        private static readonly DgmConnectionGivenDao DgmConnectionGivenDao = new DgmConnectionGivenDao();
         private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
         private const double CacheMinutes = 5;
 
@@ -115,15 +116,35 @@ namespace MISReports_Api.Controllers.DgmDashboard
 
         [HttpGet]
         [Route("application-count")]
-        public IHttpActionResult GetApplicationCount(bool refresh = false)
+        public IHttpActionResult GetApplicationCount(string companyId = "WPN", int? year = null, bool refresh = false)
         {
+            int targetYear = year ?? DateTime.Today.Year;
+            string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
+            string cacheKey = $"dgm-application-count-{targetCompany}-{targetYear}";
             if (refresh)
             {
-                Cache.TryRemove("dgm-application-count", out _);
+                Cache.TryRemove(cacheKey, out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("dgm-application-count", () =>
-                ExecuteWithTiming("dgm-application-count", DgmAppCountDao.Fetch));
+            var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
+                ExecuteWithTiming(cacheKey, () => DgmAppCountDao.Fetch(targetYear, targetCompany)));
+            return Ok(meta);
+        }
+
+        [HttpGet]
+        [Route("connections-given")]
+        public IHttpActionResult GetConnectionsGiven(string companyId = "WPN", int? year = null, bool refresh = false)
+        {
+            int targetYear = year ?? DateTime.Today.Year;
+            string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
+            string cacheKey = $"dgm-connections-given-{targetCompany}-{targetYear}";
+            if (refresh)
+            {
+                Cache.TryRemove(cacheKey, out _);
+            }
+
+            var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
+                ExecuteWithTiming(cacheKey, () => DgmConnectionGivenDao.Fetch(targetYear, targetCompany)));
             return Ok(meta);
         }
     }
