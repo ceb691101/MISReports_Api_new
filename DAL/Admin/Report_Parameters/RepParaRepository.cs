@@ -10,7 +10,7 @@ namespace MISReports_Api.DAL.Admin.Report_Parameters
 {
     public class RepParaRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public List<ReportParameterListItemModel> GetAllReportParams()
         {

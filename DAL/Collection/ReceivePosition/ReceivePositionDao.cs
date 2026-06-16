@@ -1,287 +1,191 @@
 ﻿using MISReports_Api.DBAccess;
-using MISReports_Api.Models.CollectionInformation;
+using MISReports_Api.Models.Collection;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 
-namespace MISReports_Api.DAL.CollectionInformation
+namespace MISReports_Api.DAL.Collection.ReceivablePosition
 {
-    public class ReceivePositionDao
+    public class ReceivablePositionDao
     {
         private readonly DBConnection _dbConnection = new DBConnection();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public bool TestConnection(out string errorMessage)
         {
-            return _dbConnection.TestConnection(out errorMessage, true);
+            return _dbConnection.TestConnection(out errorMessage, true); // bulk connection
         }
 
-        // Exposed only for the diagnostic endpoint in the controller
-        public OleDbConnection GetRawConnection()
+        public List<ReceivablePositionModel> GetReceivablePositionReport(ReceivablePositionRequest request)
         {
-            return _dbConnection.GetConnection(false);
-        }
-
-        // -----------------------------------------------------------------------
-        // Dropdowns
-        // -----------------------------------------------------------------------
-
-        public ReceivePositionDropdowns GetDropdowns()
-        {
-            var dropdowns = new ReceivePositionDropdowns
-            {
-                BillCycles = new List<string>(),
-                BillTypes = new List<string>(),
-                Areas = new List<AreaOption>(),
-                Provinces = new List<ProvinceOption>()   // NEW
-            };
+            var results = new List<ReceivablePositionModel>();
 
             try
             {
-                logger.Info("=== START GetDropdowns ===");
+                logger.Info("=== START GetReceivablePositionReport ===");
+                logger.Info($"Request: BillCycle={request.BillCycle}, BillType={request.BillType}, AreaCode={request.AreaCode}");
+
+                using (var conn = _dbConnection.GetConnection(false)) // bulk connection
+                {
+                    conn.Open();
+                    results = GetAreaReportData(conn, request);
+                    logger.Info($"=== END GetReceivablePositionReport (Success) - {results.Count} records ===");
+                    return results;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error occurred while fetching receivable position report");
+                throw;
+            }
+        }
+
+        public List<string> GetDistinctBillTypes()
+        {
+            var results = new List<string>();
+
+            try
+            {
+                logger.Info("=== START GetDistinctBillTypes ===");
 
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
 
-                    // Bill cycles
-                    using (var cmd = new OleDbCommand(
-                        "SELECT DISTINCT bill_cycle FROM receive_position ORDER BY bill_cycle DESC", conn))
+                    string sql = "SELECT DISTINCT bill_type FROM receive_position ORDER BY bill_type";
+                    using (var cmd = new OleDbCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            var val = GetColumnValue(reader, "bill_cycle");
-                            if (!string.IsNullOrEmpty(val))
-                                dropdowns.BillCycles.Add(val);
-                        }
-                    }
-
-                    // Bill types
-                    using (var cmd = new OleDbCommand(
-                        "SELECT DISTINCT bill_type FROM receive_position ORDER BY bill_type", conn))
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var val = GetColumnValue(reader, "bill_type");
-                            if (!string.IsNullOrEmpty(val))
-                                dropdowns.BillTypes.Add(val);
-                        }
-                    }
-
-                    // Areas
-                    using (var cmd = new OleDbCommand(
-                        "SELECT * FROM areas ORDER BY area_code", conn))
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var code = GetColumnValue(reader, "area_code");
-                            if (!string.IsNullOrEmpty(code))
-                            {
-                                var name = GetColumnValue(reader, "area_name");
-                                dropdowns.Areas.Add(new AreaOption
-                                {
-                                    AreaCode = code,
-                                    AreaName = string.IsNullOrEmpty(name) ? code : name
-                                });
-                            }
-                        }
-                    }
-
-                    // -----------------------------------------------------------
-                    // NEW: Provinces  –  read from prov_servers
-                    // Assumes columns: prov_code, prov_name
-                    // Adjust column names below if your table differs.
-                    // -----------------------------------------------------------
-                    using (var cmd = new OleDbCommand(
-                        "SELECT * FROM prov_servers ORDER BY prov_code", conn))
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var code = GetColumnValue(reader, "prov_code");
-                            if (!string.IsNullOrEmpty(code))
-                            {
-                                var name = GetColumnValue(reader, "prov_name");
-                                dropdowns.Provinces.Add(new ProvinceOption
-                                {
-                                    ProvCode = code,
-                                    ProvName = string.IsNullOrEmpty(name) ? code : name
-                                });
-                            }
+                            if (!reader.IsDBNull(0))
+                                results.Add(reader.GetString(0).Trim());
                         }
                     }
                 }
 
-                logger.Info(
-                    $"=== END GetDropdowns: BillCycles={dropdowns.BillCycles.Count}, " +
-                    $"BillTypes={dropdowns.BillTypes.Count}, " +
-                    $"Areas={dropdowns.Areas.Count}, " +
-                    $"Provinces={dropdowns.Provinces.Count} ===");
+                logger.Info($"Retrieved {results.Count} distinct bill types");
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error fetching dropdowns");
-                throw;
-            }
-
-            return dropdowns;
-        }
-
-        // -----------------------------------------------------------------------
-        // Main report  –  mirrors GetSolarReadingUsageBulkReport pattern exactly
-        // -----------------------------------------------------------------------
-
-        public List<ReceivePositionModel> GetReceivePositionReport(ReceivePositionRequest request)
-        {
-            var results = new List<ReceivePositionModel>();
-
-            try
-            {
-                logger.Info("=== START GetReceivePositionReport ===");
-                logger.Info($"Request: AreaCode={request.AreaCode}, BillCycle={request.BillCycle}, BillType={request.BillType}");
-
-                using (var conn = _dbConnection.GetConnection(false))
-                {
-                    conn.Open();
-
-                    // Step 1: fetch receive_position rows for the given bill_type
-                    var rows = GetReceivePositionRows(conn, request);
-                    logger.Info($"Retrieved {rows.Count} rows from receive_position");
-
-                    if (rows.Count == 0)
-                    {
-                        logger.Info("No data found");
-                        return results;
-                    }
-
-                    // Step 2: enrich each row with the area name from areas table
-                    foreach (var row in rows)
-                    {
-                        row.ErrorMessage = string.Empty;
-                        results.Add(row);
-                    }
-                }
-
-                logger.Info($"=== END GetReceivePositionReport (Success) - {results.Count} records ===");
-                return results;
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error occurred while fetching receive position report");
-                throw;
-            }
-        }
-
-        // -----------------------------------------------------------------------
-        // Private: fetch rows
-        //
-        // When the caller passes a province code (e.g. "WP"), the WHERE clause
-        // expands to all areas whose prov_code matches — via the sub-query on areas.
-        // When an individual area code is passed the first predicate (rp.area_code = ?)
-        // matches directly.
-        //
-        // bill_type is embedded as a literal (not a ? parameter) because the
-        // Informix OleDb driver returns ISAM -111 when it is parameterized.
-        // BillType is always "O" or "B" – validated by the controller.
-        // -----------------------------------------------------------------------
-
-        private List<ReceivePositionModel> GetReceivePositionRows(
-            OleDbConnection conn, ReceivePositionRequest request)
-        {
-            var results = new List<ReceivePositionModel>();
-
-            try
-            {
-                // Three area-filter modes:
-                //   CEB      → no area filter  (return every area)
-                //   Province → match area_code directly OR any area whose prov_code matches
-                //   Area     → same query; first predicate matches the exact code
-                bool isCebEntire = string.Equals(request.AreaCode, "CEB", StringComparison.OrdinalIgnoreCase);
-
-                string sql;
-                if (isCebEntire)
-                {
-                    sql = string.Format(
-                        "SELECT rp.*, a.area_name FROM receive_position rp " +
-                        "LEFT JOIN areas a ON rp.area_code = a.area_code " +
-                        "WHERE rp.bill_cycle = ? AND rp.bill_type = '{0}'",
-                        request.BillType);
-                }
-                else
-                {
-                    sql = string.Format(
-                        "SELECT rp.*, a.area_name FROM receive_position rp " +
-                        "LEFT JOIN areas a ON rp.area_code = a.area_code " +
-                        "WHERE (rp.area_code = ? OR rp.area_code IN (SELECT area_code FROM areas WHERE prov_code = ?)) " +
-                        "AND rp.bill_cycle = ? AND rp.bill_type = '{0}'",
-                        request.BillType);
-                }
-
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    if (isCebEntire)
-                    {
-                        cmd.Parameters.AddWithValue("?", request.BillCycle);
-                    }
-                    else
-                    {
-                        cmd.Parameters.AddWithValue("?", request.AreaCode);
-                        cmd.Parameters.AddWithValue("?", request.AreaCode);
-                        cmd.Parameters.AddWithValue("?", request.BillCycle);
-                    }
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var model = new ReceivePositionModel
-                            {
-                                AreaCode = GetColumnValue(reader, "area_code"),
-                                AreaName = GetColumnValue(reader, "area_name") ?? GetColumnValue(reader, "area_code"),
-                                BillCycle = request.BillCycle,
-                                BillType = request.BillType,
-                                OpeningBalance = GetDecimalValue(reader, "op_bal"),
-                                MonthlyCharge = GetDecimalValue(reader, "mon_chg"),
-                                Debits = GetDecimalValue(reader, "debits"),
-                                Credits = GetDecimalValue(reader, "credits"),
-                                UnderCharge = GetDecimalValue(reader, "un_chg"),
-                                OverCharge = GetDecimalValue(reader, "ov_chg"),
-                                Payments = GetDecimalValue(reader, "payments"),
-                                ClosingBalance = GetDecimalValue(reader, "close_bal"),
-                                ClosingBalanceWithoutFinAcc = GetDecimalValue(reader, "cl_bal_fin"),
-                                AverageCharge = GetDecimalValue(reader, "avg_3"),
-                                NoOfMonthsInArrears = GetDecimalValue(reader, "no_months"),
-                                NoOfMonthsInArrearsWithoutFinAcc = GetDecimalValue(reader, "mon_wofin")
-                            };
-
-                            results.Add(model);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Error fetching receive_position rows");
+                logger.Error(ex, "Error fetching distinct bill types");
                 throw;
             }
 
             return results;
         }
 
-        // -----------------------------------------------------------------------
-        // Helper methods  –  identical to Solar DAO pattern
-        // -----------------------------------------------------------------------
+        /// <summary>
+        /// Gets receivable position data for a given area code, bill cycle, and bill type.
+        /// SQL pattern:
+        ///   SELECT * FROM receive_position WHERE area_code = ? AND bill_cycle = ? AND bill_type = ?
+        /// </summary>
+        private List<ReceivablePositionModel> GetAreaReportData(OleDbConnection conn, ReceivablePositionRequest request)
+        {
+            var results = new List<ReceivablePositionModel>();
+
+            try
+            {
+                string sql = @"SELECT rp.area_code,
+                                      a.area_name,
+                                      rp.op_bal,
+                                      rp.mon_chg,
+                                      rp.debits,
+                                      rp.credits,
+                                      rp.un_chg,
+                                      rp.ov_chg,
+                                      rp.payments,
+                                      rp.close_bal,
+                                      rp.cl_bal_fin,
+                                      rp.avg_3,
+                                      rp.no_months,
+                                      rp.mon_wofin
+                               FROM receive_position rp
+                               LEFT JOIN areas a ON rp.area_code = a.area_code
+                               WHERE rp.area_code = ?
+                                 AND rp.bill_cycle = ?
+                                 AND rp.bill_type = ?
+                               ORDER BY rp.area_code";
+
+                logger.Info($"Executing SQL: AreaCode={request.AreaCode}, BillCycle={request.BillCycle}, BillType={request.BillType}");
+
+                using (var cmd = new OleDbCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("?", request.AreaCode);
+                    cmd.Parameters.AddWithValue("?", request.BillCycle);
+                    cmd.Parameters.AddWithValue("?", request.BillType);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var model = MapReaderToModel(reader);
+                            model.BillCycle = request.BillCycle;
+                            model.BillType = request.BillType;
+                            results.Add(model);
+                        }
+                    }
+                }
+
+                logger.Info($"Retrieved {results.Count} records for Receivable Position report");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error fetching Receivable Position report data");
+                throw;
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Maps database reader to ReceivablePositionModel using ordinal positions.
+        /// Columns 0-1: string fields. Columns 2-13: numeric fields.
+        /// </summary>
+        private ReceivablePositionModel MapReaderToModel(OleDbDataReader reader)
+        {
+            var model = new ReceivablePositionModel();
+
+            try
+            {
+                // String fields (ordinals 0-1)
+                model.AreaCode = reader.IsDBNull(0) ? "" : reader.GetString(0).Trim();
+                model.AreaName = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim();
+
+                // Numeric fields (ordinals 2-13) — read and format directly
+                model.OpeningBalance = FormatDecimal(reader.IsDBNull(2) ? 0 : Convert.ToDecimal(reader.GetValue(2)));
+                model.MonthlyCharge = FormatDecimal(reader.IsDBNull(3) ? 0 : Convert.ToDecimal(reader.GetValue(3)));
+                model.Debits = FormatDecimal(reader.IsDBNull(4) ? 0 : Convert.ToDecimal(reader.GetValue(4)));
+                model.Credits = FormatDecimal(reader.IsDBNull(5) ? 0 : Convert.ToDecimal(reader.GetValue(5)));
+                model.UnderCharge = FormatDecimal(reader.IsDBNull(6) ? 0 : Convert.ToDecimal(reader.GetValue(6)));
+                model.OverCharge = FormatDecimal(reader.IsDBNull(7) ? 0 : Convert.ToDecimal(reader.GetValue(7)));
+                model.Payments = FormatDecimal(reader.IsDBNull(8) ? 0 : Convert.ToDecimal(reader.GetValue(8)));
+                model.ClosingBalance = FormatDecimal(reader.IsDBNull(9) ? 0 : Convert.ToDecimal(reader.GetValue(9)));
+                model.ClosingBalanceWithoutFinAcc = FormatDecimal(reader.IsDBNull(10) ? 0 : Convert.ToDecimal(reader.GetValue(10)));
+                model.AverageCharge = FormatDecimal(reader.IsDBNull(11) ? 0 : Convert.ToDecimal(reader.GetValue(11)));
+                model.NoOfMonthsInArrears = FormatDecimal(reader.IsDBNull(12) ? 0 : Convert.ToDecimal(reader.GetValue(12)));
+                model.NoOfMonthsInArrearsWithoutFinAcc = FormatDecimal(reader.IsDBNull(13) ? 0 : Convert.ToDecimal(reader.GetValue(13)));
+
+                model.ErrorMessage = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Error mapping reader to ReceivablePositionModel");
+                model.ErrorMessage = ex.Message;
+            }
+
+            return model;
+        }
 
         private string GetColumnValue(OleDbDataReader reader, string columnName)
         {
             try
             {
-                var value = reader[columnName];
-                return value == DBNull.Value ? null : value.ToString()?.Trim();
+                int ordinal = reader.GetOrdinal(columnName);
+                if (reader.IsDBNull(ordinal))
+                    return null;
+                return reader.GetString(ordinal).Trim();
             }
             catch (IndexOutOfRangeException)
             {
@@ -290,22 +194,27 @@ namespace MISReports_Api.DAL.CollectionInformation
             }
         }
 
-        private decimal GetDecimalValue(OleDbDataReader reader, string columnName)
+        private string FormatDecimal(decimal value)
         {
             try
             {
-                var value = reader[columnName];
-                return value == DBNull.Value ? 0 : Convert.ToDecimal(value);
+                return value.ToString("###,###.##");
             }
-            catch (IndexOutOfRangeException)
+            catch
             {
-                logger.Warn($"Column '{columnName}' not found in result set");
-                return 0;
+                return "0.00";
             }
-            catch (FormatException ex)
+        }
+
+        private string FormatInteger(decimal value)
+        {
+            try
             {
-                logger.Warn(ex, $"Invalid decimal format in column '{columnName}'");
-                return 0;
+                return ((int)value).ToString("###,###");
+            }
+            catch
+            {
+                return "0";
             }
         }
     }

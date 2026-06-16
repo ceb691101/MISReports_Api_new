@@ -103,9 +103,6 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(request.RoleId))
                     validationErrors.Add("RoleId is required.");
 
-                if (string.IsNullOrWhiteSpace(request.RoleName))
-                    validationErrors.Add("RoleName is required.");
-
                 if (string.IsNullOrWhiteSpace(request.UserType))
                     validationErrors.Add("UserType is required.");
 
@@ -144,6 +141,14 @@ namespace MISReports_Api.Controllers
                         message = "Role created successfully."
                     },
                     errorMessage = (string)null
+                }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = ex.Message
                 }));
             }
             catch (Exception ex)
@@ -197,9 +202,6 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(request.RoleId))
                     validationErrors.Add("RoleId is required.");
 
-                if (string.IsNullOrWhiteSpace(request.RoleName))
-                    validationErrors.Add("RoleName is required.");
-
                 if (string.IsNullOrWhiteSpace(request.UserType))
                     validationErrors.Add("UserType is required.");
 
@@ -238,6 +240,14 @@ namespace MISReports_Api.Controllers
                         message = updated ? "Role updated successfully." : "Role not found."
                     },
                     errorMessage = (string)null
+                }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = ex.Message
                 }));
             }
             catch (Exception ex)
