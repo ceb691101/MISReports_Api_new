@@ -162,8 +162,8 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("{epfNo}/{userType}")]
+        [HttpPost]
+        [Route("{epfNo}/{userType}/update")]
         public IHttpActionResult UpdateRole(string epfNo, string userType, [FromBody] CreateRoleRequest request)
         {
             try
@@ -321,8 +321,8 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("{epfNo}/{userType}")]
+        [HttpPost]
+        [Route("{epfNo}/{userType}/delete")]
         public IHttpActionResult DeleteRole(string epfNo, string userType)
         {
             try
