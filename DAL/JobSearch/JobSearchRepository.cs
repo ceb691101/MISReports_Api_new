@@ -554,8 +554,8 @@ ORDER BY sl.submit_date DESC";
                             sscl,
                             security_deposit,
                             total_cost
-                        FROM SPESTSTD
-                        WHERE trim(estimate_no) =:estimate_no";
+                        FROM SPESTSTDH
+                        WHERE trim(estimate_no) ='511.20/ENC/26/0362'";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {

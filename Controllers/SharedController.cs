@@ -33,6 +33,7 @@ namespace MISReports_Api.Controllers
         private readonly CalcCycleFromAreaDao _calcCycleFromAreaDao = new CalcCycleFromAreaDao();
         private readonly GovernmentAccountsBillCycleDao _govAccountsBillCycleDao = new GovernmentAccountsBillCycleDao();
         private readonly ArrearsPositionBillCycleDao _arrearsPositionBillCycleDao = new ArrearsPositionBillCycleDao(); // ← ADDED
+        private readonly ReceivablePositionBillCycleDao _receivablePositionBillCycleDao = new ReceivablePositionBillCycleDao();
 
         [HttpGet]
         [Route("ordinary/areas")]
@@ -535,6 +536,38 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Cannot get max bill cycle for Government Accounts.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        /// <summary>
+        /// Returns the last 24 bill cycles from the receivable_position table.
+        /// Used by the Receivable Position report to seed the bill-cycle dropdown.
+        /// DB: receivable_position (bulk connection).
+        /// </summary>
+        // GET api/receivable-position/billcycle/max
+        // Response: { data: { maxBillCycle: "454", billCycles: [...] }, errorMessage: null }
+        [HttpGet]
+        [Route("receivable-position/billcycle/max")]
+        public IHttpActionResult GetReceivablePositionBillCycle()
+        {
+            try
+            {
+                var result = _receivablePositionBillCycleDao.GetLast24BillCycles();
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = result,
+                    errorMessage = result.ErrorMessage
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get max bill cycle for Receivable Position.",
                     errorDetails = ex.Message
                 }));
             }

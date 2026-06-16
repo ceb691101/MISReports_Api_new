@@ -286,6 +286,7 @@
     <Compile Include="Controllers\Admin\Report_Role\RoleCrudController.cs" />
     <Compile Include="Controllers\Admin\RepRoles\RoleInfoController.cs" />
     <Compile Include="Controllers\BillCalculationController.cs" />
+    <Compile Include="Controllers\BillMapController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
@@ -374,6 +375,7 @@
     <Compile Include="Controllers\Debtors\DebtorsController.cs" />
     <Compile Include="Controllers\OUMController.cs" />
     <Compile Include="Controllers\SolarController.cs" />
+    <Compile Include="Controllers\TrialBalance\AreaTrialBalanceController.cs" />
     <Compile Include="Controllers\TrialBalance\CompanyTrialBalanceController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureController.cs" />
@@ -395,6 +397,7 @@
     <Compile Include="DAL\Admin\Report_Parameters\ReportParameterRepository.cs" />
     <Compile Include="DAL\Admin\Report_Role\RoleCrudRepository.cs" />
     <Compile Include="DAL\Admin\RepRoles\RoleInfoRepository.cs" />
+    <Compile Include="DAL\BillMapRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
@@ -436,6 +439,7 @@
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
+    <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -458,12 +462,14 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
+    <Compile Include="Services\Reporting\AreaTrialBalanceJasperReportService.cs" />
     <Compile Include="Services\Reporting\PHVObsoleteIdleJasperReportService.cs" />
     <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
     <Compile Include="DAL\PIV\OtherCCtoProvinceRepository.cs" />
@@ -542,6 +548,7 @@
     <Compile Include="DAL\SolarInformation\SolarPVConnections\PVBulkConnectionDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVConnections\PVConnectionDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVConnections\PVBillCycleDao.cs" />
+    <Compile Include="DAL\TrialBalance\AreaTrialBalanceRepository.cs" />
     <Compile Include="DAL\TrialBalance\CompanyTrialBalanceRepository.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionRepository.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRepository.cs" />
@@ -692,6 +699,7 @@
     <Compile Include="Models\SRP\AreaWiseSRPApplicationPIVStatusModel.cs" />
     <Compile Include="Models\SRP\AreaWiseSRPEstimationPIVModel.cs" />
     <Compile Include="Models\SRP\DivisionWiseSRPEstimationModel.cs" />
+    <Compile Include="Models\TrialBalance\AreaTrialBalanceModel.cs" />
     <Compile Include="Models\TrialBalance\CompanyTrialBalanceModel.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureModels.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureRegionModel.cs" />
