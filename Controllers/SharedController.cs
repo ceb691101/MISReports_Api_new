@@ -550,16 +550,18 @@ namespace MISReports_Api.Controllers
         // Response: { data: { maxBillCycle: "454", billCycles: [...] }, errorMessage: null }
         [HttpGet]
         [Route("receivable-position/billcycle/max")]
-        public IHttpActionResult GetReceivablePositionBillCycle()
+        public IHttpActionResult GetReceivablePositionBillCycle([FromUri] string billType = null)
         {
             try
             {
-                var result = _receivablePositionBillCycleDao.GetLast24BillCycles();
+                var result = _receivablePositionBillCycleDao.GetLast24BillCycles(billType);
 
                 return Ok(JObject.FromObject(new
                 {
                     data = result,
-                    errorMessage = result.ErrorMessage
+                    errorMessage = result.BillCycles != null && result.BillCycles.Count > 0
+                        ? (string)null
+                        : result.ErrorMessage
                 }));
             }
             catch (Exception ex)

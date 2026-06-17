@@ -421,6 +421,7 @@
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
     <Compile Include="DAL\General\ArrearsPosition\ArrearsPositionDao.cs" />
+    <Compile Include="DAL\General\FinalizedAccounts\FinalizedAccountsDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
@@ -473,6 +474,7 @@
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
+    <Compile Include="Models\General\FinalizedAccountsModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />

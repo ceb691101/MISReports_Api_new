@@ -6,15 +6,18 @@ using MISReports_Api.DAL.General.ArrearsPosition;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
+using MISReports_Api.DAL.Collection;
 using MISReports_Api.Models;
 using MISReports_Api.Models.General;
 using MISReports_Api.Models.SolarInformation;
 using MISReports_Api.Models.Shared;
+using MISReports_Api.Models.Collection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace MISReports_Api.Controllers
 {
@@ -29,9 +32,11 @@ namespace MISReports_Api.Controllers
     ///   - Government Accounts (areas / departments / area / department)
     ///   - Areas Position
     ///   - Listing of Customers (area, with optional filters)
+    ///   - Finalized Accounts (dropdowns / report)
     ///
     /// Route prefix: api
     /// </summary>
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     [RoutePrefix("api")]
     public class GeneralController : ApiController
     {
@@ -49,7 +54,9 @@ namespace MISReports_Api.Controllers
 
         private readonly GovernmentAccountsDao _govAccountsDao = new GovernmentAccountsDao();
         private readonly ListingOfCustomerDao _listingOfCustomerDao = new ListingOfCustomerDao();
-        private readonly ArrearsPositionDao _arrearsPositionDao = new ArrearsPositionDao(); // ← ADDED
+        private readonly ArrearsPositionDao _arrearsPositionDao = new ArrearsPositionDao();
+
+        private readonly FinalizedAccountsDao _finalizedAccountsDao = new FinalizedAccountsDao();
 
 
         // ================================================================== //
@@ -522,21 +529,6 @@ namespace MISReports_Api.Controllers
         // ================================================================== //
 
         // ------------------------------------------------------------------ //
-        // GET api/government-accounts/max-bill-cycle?areaCode=43             //
-        // Response: { data: { MaxBillCycle: "438" }, errorMessage: null }    //
-        // ------------------------------------------------------------------ //
-
-
-
-        // ------------------------------------------------------------------ //
-        // GET api/government-accounts/areas                                   //
-        // Response: { data: [ { areaCode, areaName }, ... ],                 //
-        //             errorMessage: null }                                    //
-        // ------------------------------------------------------------------ //
-
-
-
-        // ------------------------------------------------------------------ //
         // GET api/government-accounts/departments                             //
         // Response: { data: [ { departmentCode, departmentName }, ... ],     //
         //             errorMessage: null }                                    //
@@ -556,7 +548,7 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     });
 
-                var data = _govAccountsDao.GetDepartments(); // returns List<DepartmentModel>
+                var data = _govAccountsDao.GetDepartments();
 
                 if (data == null || data.Count == 0)
                     return Ok(new
@@ -585,8 +577,6 @@ namespace MISReports_Api.Controllers
         // ------------------------------------------------------------------ //
         // GET api/government-accounts/area                                    //
         //     ?billCycle=438&areaCode=43                                      //
-        // Response: { data: [ ...GovernmentAccountsModel... ],               //
-        //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -613,8 +603,6 @@ namespace MISReports_Api.Controllers
         // ------------------------------------------------------------------ //
         // GET api/government-accounts/department                             //
         //     ?billCycle=438&areaCode=43&departmentCode=ABC                  //
-        // Response: { data: [ ...GovernmentAccountsModel... ],               //
-        //             errorMessage: null }                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -641,10 +629,6 @@ namespace MISReports_Api.Controllers
             });
         }
 
-        /// <summary>
-        /// Shared processor — keeps action methods thin.
-        /// Accepts GovernmentAccountsRequest to match GovernmentAccountsDao.GetGovernmentAccountsReport().
-        /// </summary>
         private IHttpActionResult ProcessGovernmentAccountsRequest(GovernmentAccountsRequest request)
         {
             try
@@ -689,38 +673,11 @@ namespace MISReports_Api.Controllers
 
 
         // ================================================================== //
-        //  AREAS POSITION                                                      //
-        // ================================================================== //
-
-        // ------------------------------------------------------------------ //
-        // GET api/areas-position/max-bill-cycle?areaCode=43                  //
-        // Response: { data: { billCycle: "438" }, errorMessage: null }       //
-        // ------------------------------------------------------------------ //
-
-
-
-
-        // ================================================================== //
         //  LISTING OF CUSTOMERS                                                //
         // ================================================================== //
 
         // ------------------------------------------------------------------ //
-        // GET api/listing-of-customers/max-bill-cycle?areaCode=43            //
-        // Response: { data: { billCycle: "438" }, errorMessage: null }       //
-        // ------------------------------------------------------------------ //
-
-
-
-        // ------------------------------------------------------------------ //
         // GET api/listing-of-customers/filters?areaCode=43&billCycle=438     //
-        // Response: {                                                          //
-        //   data: {                                                            //
-        //     billCycle,                                                       //
-        //     tariffs, transformers, phases, connectionTypes,                  //
-        //     readerCodes, dailyPacks, depots                                  //
-        //   },                                                                 //
-        //   errorMessage: null                                                 //
-        // }                                                                    //
         // ------------------------------------------------------------------ //
 
         [HttpGet]
@@ -778,45 +735,12 @@ namespace MISReports_Api.Controllers
 
         // ------------------------------------------------------------------ //
         // POST api/listing-of-customers/report                                //
-        //                                                                      //
-        // Request body (Content-Type: application/json):                       //
-        // {                                                                     //
-        //   "areaCode":            "43",       <- required                    //
-        //   "billCycle":           "438",      <- required                    //
-        //   "useTariff":           true,                                        //
-        //   "tariff":              "R1",                                        //
-        //   "useTransformer":      false,                                       //
-        //   "transformer":         null,                                        //
-        //   "usePhase":            false,                                       //
-        //   "phase":               null,                                        //
-        //   "useConnectionType":   false,                                       //
-        //   "connectionType":      null,                                        //
-        //   "useReaderCode":       false,                                       //
-        //   "readerCode":          null,                                        //
-        //   "useDailyPack":        false,                                       //
-        //   "dailyPackNo":         null,                                        //
-        //   "useDepot":            false,                                       //
-        //   "depot":               null,                                        //
-        //   "useBalance":          true,                                        //
-        //   "balanceOperator":     ">=",                                        //
-        //   "balanceAmount":       "1000",                                      //
-        //   "useLastPaymentDate":  false,                                       //
-        //   "lastPaymentOperator": null,                                        //
-        //   "lastPaymentDate":     null,                                        //
-        //   "useArrearsPosition":  true,                                        //
-        //   "arrearsOperator":     ">=",                                        //
-        //   "arrearsPosition":     "1"                                          //
-        // }                                                                     //
-        //                                                                      //
-        // Response: { data: [ ...ListingOfCustomerModel... ],                 //
-        //             errorMessage: null }                                     //
         // ------------------------------------------------------------------ //
 
         [HttpPost]
         [Route("listing-of-customers/report")]
         public IHttpActionResult GetListingOfCustomersReport()
         {
-            // Read and deserialise the JSON body manually
             ListingOfCustomerRequest request;
 
             try
@@ -854,7 +778,6 @@ namespace MISReports_Api.Controllers
             return ProcessListingOfCustomersRequest(request);
         }
 
-        /// <summary>Shared processor — keeps action methods thin.</summary>
         private IHttpActionResult ProcessListingOfCustomersRequest(ListingOfCustomerRequest request)
         {
             try
@@ -867,7 +790,6 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     });
 
-                // Returns List<ListingOfCustomerModel>
                 var data = _listingOfCustomerDao.GetListingOfCustomerReport(request);
 
                 if (data == null || data.Count == 0)
@@ -878,10 +800,9 @@ namespace MISReports_Api.Controllers
                         errorDetails = "Please check the bill cycle, area code, and filter values."
                     });
 
-                // Return flat array — frontend maps: json.data as ListingOfCustomerModel[]
                 return Ok(new
                 {
-                    data = data,   // List<ListingOfCustomerModel>
+                    data = data,
                     errorMessage = (string)null
                 });
             }
@@ -966,6 +887,46 @@ namespace MISReports_Api.Controllers
                     errorDetails = ex.Message
                 });
             }
+        }
+
+
+        // ================================================================== //
+        //  FINALIZED ACCOUNTS                                                  //
+        // ================================================================== //
+
+        // ------------------------------------------------------------------ //
+        // GET api/FinalizedAccounts/dropdowns?provCode=D                     //
+        // Response: FinalizedAccountsDropdownsResult                         //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("FinalizedAccounts/dropdowns")]
+        public IHttpActionResult GetFinalizedAccountsDropdowns([FromUri] string provCode = null)
+        {
+            var result = _finalizedAccountsDao.GetDropdowns(provCode);
+            if (!string.IsNullOrEmpty(result.ErrorMessage))
+                return InternalServerError(new Exception(result.ErrorMessage));
+
+            return Ok(result);
+        }
+
+        // ------------------------------------------------------------------ //
+        // POST api/FinalizedAccounts/report                                   //
+        // Body: FinalizedAccountsRequest                                      //
+        // ------------------------------------------------------------------ //
+
+        [HttpPost]
+        [Route("FinalizedAccounts/report")]
+        public IHttpActionResult GetFinalizedAccountsReport([FromBody] FinalizedAccountsRequest request)
+        {
+            if (request == null)
+                return BadRequest("Request payload is required.");
+
+            var result = _finalizedAccountsDao.GetReport(request);
+            if (!string.IsNullOrEmpty(result.ErrorMessage))
+                return InternalServerError(new Exception(result.ErrorMessage));
+
+            return Ok(result);
         }
     }
 }
