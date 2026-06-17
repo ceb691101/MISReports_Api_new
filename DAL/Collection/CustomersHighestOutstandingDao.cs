@@ -91,7 +91,8 @@ namespace MISReports_Api.DAL.Collection
                                            a.crnt_balance, 
                                            a.kwh_charge, 
                                            a.tariff_code, 
-                                           ROUND((a.crnt_balance / (a.kwh_charge + 0.0001)), 1) as arrears_months
+                                           ROUND((a.crnt_balance / (a.kwh_charge + 0.0001)), 1) as arrears_months,
+                                           a.crnt_cons as units
                                     FROM {tableName} a, customers b
                                     WHERE a.acct_number = b.acct_number
                                       AND (a.crnt_balance / (a.kwh_charge + 0.0001)) > ?
@@ -140,6 +141,7 @@ namespace MISReports_Api.DAL.Collection
                                                 decimal kwhChg = reader[9] != DBNull.Value ? Convert.ToDecimal(reader[9]) : 0;
                                                 string tariff = reader[10] != DBNull.Value ? reader[10].ToString().Trim() : "";
                                                 decimal arrears = reader[11] != DBNull.Value ? Convert.ToDecimal(reader[11]) : 0;
+                                                decimal units = reader[12] != DBNull.Value ? Convert.ToDecimal(reader[12]) : 0;
 
                                                 finalResults.Add(new CustomersHighestOutstandingModel
                                                 {
@@ -154,7 +156,8 @@ namespace MISReports_Api.DAL.Collection
                                                     KwhCharge = kwhChg,
                                                     ArrearsBalance = crntBal - kwhChg,
                                                     TariffCode = tariff,
-                                                    ArrearsMonths = arrears
+                                                    ArrearsMonths = arrears,
+                                                    Units = units
                                                 });
                                             }
                                         }
@@ -173,8 +176,8 @@ namespace MISReports_Api.DAL.Collection
                     }
                 }
 
-                // 4. Order final results globally by Outstanding Balance in descending order
-                finalResults = finalResults.OrderByDescending(r => r.CurrentBalance).ToList();
+                // 4. Order final results globally by AreaName ASC, then by ArrearsBalance DESC
+                finalResults = finalResults.OrderBy(r => r.AreaName).ThenByDescending(r => r.ArrearsBalance).ToList();
                 logger.Info($"=== END CustomersHighestOutstanding GetReportData (Success) - {finalResults.Count} records ===");
             }
             catch (Exception ex)

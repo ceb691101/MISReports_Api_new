@@ -25,5 +25,6 @@ namespace MISReports_Api.Models.Collection
         public decimal ArrearsBalance { get; set; }
         public string TariffCode { get; set; }
         public decimal ArrearsMonths { get; set; }
+        public decimal Units { get; set; }
     }
 }
