@@ -8,7 +8,7 @@ namespace MISReports_Api.DAL
 {
     public class ReportParamFlagsRepository
     {
-        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public ReportParamFlagsModel GetReportParamFlags(string repId)
         {
