@@ -286,12 +286,14 @@
     <Compile Include="Controllers\Admin\Report_Role\RoleCrudController.cs" />
     <Compile Include="Controllers\Admin\RepRoles\RoleInfoController.cs" />
     <Compile Include="Controllers\BillCalculationController.cs" />
+    <Compile Include="Controllers\BillMapController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookCCReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
+    <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
@@ -374,6 +376,7 @@
     <Compile Include="Controllers\Debtors\DebtorsController.cs" />
     <Compile Include="Controllers\OUMController.cs" />
     <Compile Include="Controllers\SolarController.cs" />
+    <Compile Include="Controllers\TrialBalance\AreaTrialBalanceController.cs" />
     <Compile Include="Controllers\TrialBalance\CompanyTrialBalanceController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureController.cs" />
@@ -395,6 +398,7 @@
     <Compile Include="DAL\Admin\Report_Parameters\ReportParameterRepository.cs" />
     <Compile Include="DAL\Admin\Report_Role\RoleCrudRepository.cs" />
     <Compile Include="DAL\Admin\RepRoles\RoleInfoRepository.cs" />
+    <Compile Include="DAL\BillMapRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookCCReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
@@ -408,10 +412,16 @@
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmPivTotalDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
+    <Compile Include="DAL\General\ArrearsPosition\ArrearsPositionDao.cs" />
+    <Compile Include="DAL\General\FinalizedAccounts\FinalizedAccountsDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustomersDao.cs" />
     <Compile Include="DAL\General\ActiveCustomersAndSalesTariff\ActiveCustSalesBulkBillCycleDao.cs" />
@@ -431,9 +441,11 @@
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
     <Compile Include="DAL\ReportParamFlagsRepository.cs" />
+    <Compile Include="DAL\Shared\ArrearsPositionbillcycleDao.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
+    <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -456,11 +468,19 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
+    <Compile Include="Models\BillMapModel.cs" />
+    <Compile Include="Models\General\ArrearsPositionModel .cs" />
+    <Compile Include="Models\General\FinalizedAccountsModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
+    <Compile Include="Services\Reporting\AreaTrialBalanceJasperReportService.cs" />
     <Compile Include="Services\Reporting\PHVObsoleteIdleJasperReportService.cs" />
     <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
     <Compile Include="DAL\PIV\OtherCCtoProvinceRepository.cs" />
@@ -539,6 +559,7 @@
     <Compile Include="DAL\SolarInformation\SolarPVConnections\PVBulkConnectionDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVConnections\PVConnectionDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVConnections\PVBillCycleDao.cs" />
+    <Compile Include="DAL\TrialBalance\AreaTrialBalanceRepository.cs" />
     <Compile Include="DAL\TrialBalance\CompanyTrialBalanceRepository.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionRepository.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRepository.cs" />
@@ -689,6 +710,7 @@
     <Compile Include="Models\SRP\AreaWiseSRPApplicationPIVStatusModel.cs" />
     <Compile Include="Models\SRP\AreaWiseSRPEstimationPIVModel.cs" />
     <Compile Include="Models\SRP\DivisionWiseSRPEstimationModel.cs" />
+    <Compile Include="Models\TrialBalance\AreaTrialBalanceModel.cs" />
     <Compile Include="Models\TrialBalance\CompanyTrialBalanceModel.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureModels.cs" />
     <Compile Include="Models\IncomeExpenditure\IncomeExpenditureRegionModel.cs" />
@@ -709,6 +731,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Admin\Report_Parameters\IReportParameterService.cs" />
     <Compile Include="Services\Admin\Report_Parameters\ReportParameterService.cs" />
+    <Compile Include="Models\Collection\HeadOfficePOSCollectionModel.cs" />
+    <Compile Include="DAL\Collection\HeadOfficePOSCollectionDao.cs" />
+    <Compile Include="Controllers\HeadOfficePOSCollectionController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
