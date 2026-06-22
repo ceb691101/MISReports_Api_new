@@ -9,7 +9,7 @@ namespace MISReports_Api.DAL
 {
     public class ReportEntryRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         private static string NormalizeRepId(string repId)
         {

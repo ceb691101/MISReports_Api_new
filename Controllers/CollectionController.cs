@@ -1,161 +1,261 @@
-﻿using MISReports_Api.DAL.CollectionInformation;
-using MISReports_Api.Models.CollectionInformation;
+using MISReports_Api.DAL.Collection.ReceivablePosition;
+using MISReports_Api.Models.Collection;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.Http;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("apicollection")]
+    /// <summary>
+    /// Handles collection-related reports.
+    /// Exposes endpoints for:
+    ///   - Receivable Position (area, by bill cycle and bill type)
+    ///
+    /// Route prefix: api
+    /// </summary>
+    [RoutePrefix("api")]
     public class CollectionController : ApiController
     {
-        private readonly ReceivePositionDao _receivePositionDao = new ReceivePositionDao();
+        // ── DAO fields ────────────────────────────────────────────────────────
+        private readonly ReceivablePositionDao _receivablePositionDao = new ReceivablePositionDao();
 
-        // -----------------------------------------------------------------------
-        // GET apicollection/receive-position-dropdowns
-        //
-        // Returns bill cycles, bill types, areas, and provinces (from prov_servers).
-        // Called once when the form loads to populate all dropdown lists.
-        // -----------------------------------------------------------------------
 
-        [HttpGet]
-        [Route("receive-position-dropdowns")]
-        public IHttpActionResult GetReceivePositionDropdowns()
-        {
-            try
-            {
-                if (!_receivePositionDao.TestConnection(out string connError))
-                {
-                    return Ok(new
-                    {
-                        data = (object)null,
-                        errorMessage = "Database connection failed.",
-                        errorDetails = connError
-                    });
-                }
+        // ================================================================== //
+        //  RECEIVABLE POSITION                                                 //
+        // ================================================================== //
 
-                var dropdowns = _receivePositionDao.GetDropdowns();
-
-                return Ok(new
-                {
-                    data = dropdowns,
-                    errorMessage = (string)null
-                });
-            }
-            catch (Exception ex)
-            {
-                return Ok(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot load dropdown data.",
-                    errorDetails = ex.Message
-                });
-            }
-        }
-
-        // -----------------------------------------------------------------------
-        // GET apicollection/receive-position
-        //     ?billCycle=438&billType=O&areaCode=01
-        //
-        // areaCode may be:
-        //   - an individual area code  (e.g. "01")
-        //   - a province code          (e.g. "WP")  → DAO expands to all areas in province
-        //   - "CEB"                                  → DAO returns all areas
-        //
-        // billType : "O" (Ordinary) or "B" (Bulk)
-        // -----------------------------------------------------------------------
+        // ------------------------------------------------------------------ //
+        // GET api/receivable-position/report                                  //
+        //     ?billCycle=454&areaCode=43&billType=O                           //
+        // Response: { data: [ ...ReceivablePositionModel... ],                //
+        //             errorMessage: null }                                     //
+        // ------------------------------------------------------------------ //
 
         [HttpGet]
-        [Route("receive-position")]
-        public IHttpActionResult GetReceivePositionReport(
+        [Route("receivable-position/report")]
+        public IHttpActionResult GetReceivablePositionReport(
             [FromUri] string billCycle = null,
-            [FromUri] string billType = null,
-            [FromUri] string areaCode = null)
+            [FromUri] string areaCode = null,
+            [FromUri] string billType = null)
         {
-            // Strip any accidental surrounding quotes from URL params
-            billCycle = StripQuotes(billCycle);
-            billType = StripQuotes(billType);
-            areaCode = StripQuotes(areaCode);
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(billCycle)) errors.Add("Bill cycle is required.");
+            if (string.IsNullOrWhiteSpace(areaCode)) errors.Add("Area code is required.");
+            if (string.IsNullOrWhiteSpace(billType)) errors.Add("Bill type is required.");
 
-            // Validate
-            var validationErrors = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(billCycle))
-                validationErrors.Add("Bill cycle is required.");
-
-            if (string.IsNullOrWhiteSpace(billType))
-                validationErrors.Add("Bill type is required.");
-            else if (billType.ToUpper() != "O" && billType.ToUpper() != "B")
-                validationErrors.Add("Bill type must be O (Ordinary) or B (Bulk).");
-
-            if (string.IsNullOrWhiteSpace(areaCode))
-                validationErrors.Add("Area code is required.");
-
-            if (validationErrors.Count > 0)
-            {
-                return Ok(new
+            if (errors.Count > 0)
+                return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = string.Join("; ", validationErrors)
-                });
-            }
+                    errorMessage = string.Join("; ", errors)
+                }));
 
-            var request = new ReceivePositionRequest
-            {
-                BillCycle = billCycle.Trim(),
-                BillType = billType.Trim().ToUpper(),
-                AreaCode = areaCode.Trim()
-            };
-
-            return ProcessReceivePositionRequest(request);
-        }
-
-        // -----------------------------------------------------------------------
-        // Private helpers
-        // -----------------------------------------------------------------------
-
-        private IHttpActionResult ProcessReceivePositionRequest(ReceivePositionRequest request)
-        {
             try
             {
-                if (!_receivePositionDao.TestConnection(out string connError))
-                {
-                    return Ok(new
+                if (!_receivablePositionDao.TestConnection(out string connError))
+                    return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
                         errorMessage = "Database connection failed.",
                         errorDetails = connError
-                    });
-                }
+                    }));
 
-                var data = _receivePositionDao.GetReceivePositionReport(request);
+                var request = new ReceivablePositionRequest
+                {
+                    BillCycle = billCycle.Trim(),
+                    AreaCode = areaCode.Trim(),
+                    BillType = billType.Trim().ToUpper()
+                };
 
-                return Ok(new
+                var data = _receivablePositionDao.GetReceivablePositionReport(request);
+
+                if (data == null || data.Count == 0)
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No data found for the selected criteria.",
+                        errorDetails = "Please check the bill cycle, area code, and bill type."
+                    }));
+
+                return Ok(JObject.FromObject(new
                 {
                     data = data,
                     errorMessage = (string)null
-                });
+                }));
             }
             catch (Exception ex)
             {
-                return Ok(new
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetReceivablePositionReport: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot get receive position report data.",
+                    errorMessage = "Cannot get receivable position report data.",
                     errorDetails = ex.Message
-                });
+                }));
             }
         }
 
-        // Removes surrounding ' or " that the frontend may include in the URL
-        private static string StripQuotes(string value)
+        // ------------------------------------------------------------------ //
+        // GET api/receivable-position/areas-by-province?provinceCode=3       //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("receivable-position/areas-by-province")]
+        public IHttpActionResult GetReceivablePositionAreasByProvince(
+            [FromUri] string provinceCode = null,
+            [FromUri] string billType = null,
+            [FromUri] string billCycle = null)
         {
-            if (string.IsNullOrWhiteSpace(value)) return value;
-            value = value.Trim();
-            if ((value.StartsWith("'") && value.EndsWith("'")) ||
-                (value.StartsWith("\"") && value.EndsWith("\"")))
-                value = value.Substring(1, value.Length - 2);
-            return value;
+            if (string.IsNullOrWhiteSpace(provinceCode))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Province code is required."
+                }));
+
+            try
+            {
+                if (!_receivablePositionDao.TestConnection(out string connError))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    }));
+
+                var data = _receivablePositionDao.GetAreasByProvince(
+                    provinceCode.Trim(),
+                    billType,
+                    billCycle);
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get areas for province.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // GET api/receivable-position/areas-by-region?regionCode=R1          //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("receivable-position/areas-by-region")]
+        public IHttpActionResult GetReceivablePositionAreasByRegion(
+            [FromUri] string regionCode = null,
+            [FromUri] string billType = null,
+            [FromUri] string billCycle = null)
+        {
+            if (string.IsNullOrWhiteSpace(regionCode))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Region code is required."
+                }));
+
+            try
+            {
+                if (!_receivablePositionDao.TestConnection(out string connError))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    }));
+
+                var data = _receivablePositionDao.GetAreasByRegion(
+                    regionCode.Trim(),
+                    billType,
+                    billCycle);
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get areas for region.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        // ------------------------------------------------------------------ //
+        // GET api/receivable-position/bill-types                             //
+        // Response: { data: [ { billType: "O", displayName: "Ordinary" },   //
+        //                      { billType: "B", displayName: "Bulk" } ],     //
+        //             errorMessage: null }                                    //
+        // ------------------------------------------------------------------ //
+
+        [HttpGet]
+        [Route("receivable-position/bill-types")]
+        public IHttpActionResult GetReceivablePositionBillTypes()
+        {
+            try
+            {
+                if (!_receivablePositionDao.TestConnection(out string connError))
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    }));
+
+                var rawTypes = _receivablePositionDao.GetDistinctBillTypes();
+
+                if (rawTypes == null || rawTypes.Count == 0)
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No bill types found in receive_position table."
+                    }));
+
+                // Map raw bill_type codes to display names
+                var billTypes = rawTypes.Select(bt => new ReceivablePositionBillTypeModel
+                {
+                    BillType = bt,
+                    DisplayName = bt == "O" ? "Ordinary"
+                                : bt == "B" ? "Bulk"
+                                : bt
+                }).ToList();
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = billTypes,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetReceivablePositionBillTypes: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get bill types.",
+                    errorDetails = ex.Message
+                }));
+            }
         }
     }
 }

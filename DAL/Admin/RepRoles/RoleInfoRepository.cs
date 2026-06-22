@@ -9,7 +9,7 @@ namespace MISReports_Api.DAL
 {
     public class RoleInfoRepository
     {
-        private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+        private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         private List<string> NormalizeCostCentres(CreateRoleRequest request)
         {
@@ -117,9 +117,23 @@ namespace MISReports_Api.DAL
 
         private static string NormalizeRoleUserType(string userType)
         {
-            return string.IsNullOrWhiteSpace(userType)
-                ? string.Empty
-                : userType.Trim().ToUpperInvariant();
+            var t = userType?.Trim();
+            if (string.IsNullOrWhiteSpace(t))
+            {
+                return string.Empty;
+            }
+
+            if (string.Equals(t, "ADMINISTRATOR", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ADMIN";
+            }
+
+            if (string.Equals(t, "USER", StringComparison.OrdinalIgnoreCase))
+            {
+                return "USER";
+            }
+
+            return t.ToUpperInvariant();
         }
 
         public List<RoleInfoModel> GetAdminRoles()
@@ -242,7 +256,7 @@ namespace MISReports_Api.DAL
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var checkCmd = new OracleCommand(checkRoleSql, conn))
                         {
@@ -255,7 +269,7 @@ namespace MISReports_Api.DAL
                             if (roleCount > 0)
                             {
                                 transaction.Rollback();
-                                return false;
+                                throw new InvalidOperationException("A role mapping with the same EPF Number and User Type already exists.");
                             }
                         }
 
@@ -288,7 +302,7 @@ namespace MISReports_Api.DAL
 
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
                             cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
-                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = request.RoleName?.Trim();
+                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = (object)request.RoleName?.Trim() ?? DBNull.Value;
                             cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
@@ -296,6 +310,12 @@ namespace MISReports_Api.DAL
 
                             cmd.ExecuteNonQuery();
                         }
+
+                        const string checkRoleCctSql = @"
+                            SELECT COUNT(1)
+                            FROM REP_ROLES_CCT_NEW
+                            WHERE TRIM(ROLEID) = :role_id
+                              AND TRIM(COSTCENTRE) = :costcentre";
 
                         const string insertRoleCctSql = @"
                             INSERT INTO REP_ROLES_CCT_NEW
@@ -315,6 +335,21 @@ namespace MISReports_Api.DAL
 
                         foreach (var costCentre in costCentres)
                         {
+                            bool cctExists = false;
+                            using (var checkCmd = new OracleCommand(checkRoleCctSql, conn))
+                            {
+                                checkCmd.Transaction = transaction;
+                                checkCmd.BindByName = true;
+                                checkCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
+                                checkCmd.Parameters.Add("costcentre", OracleDbType.Varchar2).Value = costCentre;
+                                cctExists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+                            }
+
+                            if (cctExists)
+                            {
+                                continue;
+                            }
+
                             int lvlNo = GetCostCentreLvlNo(conn, transaction, costCentre);
 
                             using (var cmd = new OracleCommand(insertRoleCctSql, conn))
@@ -358,32 +393,35 @@ namespace MISReports_Api.DAL
                 {
                     try
                     {
-                        const string checkRoleSql = @"
-                            SELECT COUNT(1)
+                        // 1. Fetch the original RoleId first to check if it has changed and if the role exists
+                        string originalRoleId = null;
+                        const string getOriginalRoleIdSql = @"
+                            SELECT TRIM(ROLEID)
                             FROM REP_ROLE_NEW
-                                                        WHERE TRIM(EPF_NO) = :original_epf_no
-                                                            AND UPPER(TRIM(USERTYPE)) = :original_user_type";
+                            WHERE TRIM(EPF_NO) = :original_epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :original_user_type";
 
-                        using (var checkCmd = new OracleCommand(checkRoleSql, conn))
+                        using (var getCmd = new OracleCommand(getOriginalRoleIdSql, conn))
                         {
-                            checkCmd.Transaction = transaction;
-                            checkCmd.BindByName = true;
-                            checkCmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
-                            checkCmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
+                            getCmd.Transaction = transaction;
+                            getCmd.BindByName = true;
+                            getCmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
+                            getCmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
 
-                            var roleCount = Convert.ToInt32(checkCmd.ExecuteScalar());
-                            if (roleCount == 0)
+                            var result = getCmd.ExecuteScalar();
+                            if (result == null || result == DBNull.Value)
                             {
                                 transaction.Rollback();
                                 return false;
                             }
+                            originalRoleId = result.ToString().Trim();
                         }
 
                         const string targetRoleSql = @"
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
                             WHERE TRIM(EPF_NO) = :epf_no
-                              AND UPPER(TRIM(USERTYPE)) = :user_type";
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var targetCmd = new OracleCommand(targetRoleSql, conn))
                         {
@@ -399,7 +437,7 @@ namespace MISReports_Api.DAL
                             if (targetCount > 0 && !sameCompositeKey)
                             {
                                 transaction.Rollback();
-                                return false;
+                                throw new InvalidOperationException("A role mapping with the target EPF Number and User Type already exists.");
                             }
                         }
 
@@ -412,7 +450,8 @@ namespace MISReports_Api.DAL
                                 COMPANY = :company,
                                 MCOMPANY = :mcompany,
                                 USER_GROUP = :user_group
-                            WHERE TRIM(EPF_NO) = :original_epf_no";
+                            WHERE TRIM(EPF_NO) = :original_epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :original_user_type";
 
                         using (var cmd = new OracleCommand(updateRoleSql, conn))
                         {
@@ -421,7 +460,7 @@ namespace MISReports_Api.DAL
 
                             cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = request.EpfNo?.Trim();
                             cmd.Parameters.Add("new_role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
-                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = request.RoleName?.Trim();
+                            cmd.Parameters.Add("role_name", OracleDbType.Varchar2).Value = (object)request.RoleName?.Trim() ?? DBNull.Value;
                             cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = normalizedUserType;
                             cmd.Parameters.Add("company", OracleDbType.Varchar2).Value = request.Company?.Trim();
                             cmd.Parameters.Add("mcompany", OracleDbType.Varchar2).Value = request.MotherCompany?.Trim();
@@ -432,22 +471,68 @@ namespace MISReports_Api.DAL
                             cmd.ExecuteNonQuery();
                         }
 
-                        const string deleteRoleCctSql = @"
-                            DELETE FROM REP_ROLES_CCT_NEW
-                            WHERE TRIM(ROLEID) = (
-                                SELECT TRIM(ROLEID)
-                                FROM REP_ROLE_NEW
-                                WHERE TRIM(EPF_NO) = :original_epf_no
-                                  AND UPPER(TRIM(USERTYPE)) = :original_user_type
-                            )";
+                        // 2. Handle cost centre deletion and addition.
+                        bool isRoleIdChanged = !string.Equals(originalRoleId, normalizedRoleId, StringComparison.OrdinalIgnoreCase);
 
-                        using (var deleteCmd = new OracleCommand(deleteRoleCctSql, conn))
+                        if (isRoleIdChanged)
                         {
-                            deleteCmd.Transaction = transaction;
-                            deleteCmd.BindByName = true;
-                            deleteCmd.Parameters.Add("original_epf_no", OracleDbType.Varchar2).Value = request.OriginalEpfNo?.Trim();
-                            deleteCmd.Parameters.Add("original_user_type", OracleDbType.Varchar2).Value = originalUserType;
-                            deleteCmd.ExecuteNonQuery();
+                            // If RoleId changed, delete old RoleId's cost centres ONLY if no other record is using it
+                            const string checkOldRoleIdInUseSql = @"
+                                SELECT COUNT(1)
+                                FROM REP_ROLE_NEW
+                                WHERE TRIM(ROLEID) = :original_role_id";
+
+                            bool oldRoleIdStillInUse = false;
+                            using (var checkUseCmd = new OracleCommand(checkOldRoleIdInUseSql, conn))
+                            {
+                                checkUseCmd.Transaction = transaction;
+                                checkUseCmd.BindByName = true;
+                                checkUseCmd.Parameters.Add("original_role_id", OracleDbType.Varchar2).Value = originalRoleId;
+                                oldRoleIdStillInUse = Convert.ToInt32(checkUseCmd.ExecuteScalar()) > 0;
+                            }
+
+                            if (!oldRoleIdStillInUse)
+                            {
+                                const string deleteOldRoleCctSql = @"
+                                    DELETE FROM REP_ROLES_CCT_NEW
+                                    WHERE TRIM(ROLEID) = :original_role_id";
+
+                                using (var deleteCmd = new OracleCommand(deleteOldRoleCctSql, conn))
+                                {
+                                    deleteCmd.Transaction = transaction;
+                                    deleteCmd.BindByName = true;
+                                    deleteCmd.Parameters.Add("original_role_id", OracleDbType.Varchar2).Value = originalRoleId;
+                                    deleteCmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // Delete any existing cost centres for the new role ID before inserting
+                            const string deleteNewRoleCctSql = @"
+                                DELETE FROM REP_ROLES_CCT_NEW
+                                WHERE TRIM(ROLEID) = :new_role_id";
+
+                            using (var deleteCmd = new OracleCommand(deleteNewRoleCctSql, conn))
+                            {
+                                deleteCmd.Transaction = transaction;
+                                deleteCmd.BindByName = true;
+                                deleteCmd.Parameters.Add("new_role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
+                                deleteCmd.ExecuteNonQuery();
+                            }
+                        }
+                        else
+                        {
+                            // If RoleId is the same, simply overwrite the cost centres for this RoleId
+                            const string deleteRoleCctSql = @"
+                                DELETE FROM REP_ROLES_CCT_NEW
+                                WHERE TRIM(ROLEID) = :role_id";
+
+                            using (var deleteCmd = new OracleCommand(deleteRoleCctSql, conn))
+                            {
+                                deleteCmd.Transaction = transaction;
+                                deleteCmd.BindByName = true;
+                                deleteCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = normalizedRoleId;
+                                deleteCmd.ExecuteNonQuery();
+                            }
                         }
 
                         const string insertRoleCctSql = @"
@@ -495,7 +580,6 @@ namespace MISReports_Api.DAL
                 }
             }
         }
-
         public bool DeleteRole(string epfNo, string userType)
         {
             using (var conn = new OracleConnection(connectionString))
@@ -509,8 +593,8 @@ namespace MISReports_Api.DAL
                         const string checkRoleSql = @"
                             SELECT COUNT(1)
                             FROM REP_ROLE_NEW
-                                                        WHERE TRIM(EPF_NO) = :epf_no
-                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var checkCmd = new OracleCommand(checkRoleSql, conn))
                         {
@@ -527,27 +611,28 @@ namespace MISReports_Api.DAL
                             }
                         }
 
-                        const string deleteRoleCctSql = @"                            DELETE FROM REP_ROLES_CCT_NEW
-                            WHERE TRIM(ROLEID) = (
-                                SELECT TRIM(ROLEID)
-                                FROM REP_ROLE_NEW
-                                WHERE TRIM(EPF_NO) = :epf_no
-                                  AND UPPER(TRIM(USERTYPE)) = :user_type
-                            )";
+                        // Fetch the roleId of the user being deleted first
+                        string roleId = null;
+                        const string getRoleIdSql = @"
+                            SELECT TRIM(ROLEID)
+                            FROM REP_ROLE_NEW
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
-                        using (var cmd = new OracleCommand(deleteRoleCctSql, conn))
+                        using (var getCmd = new OracleCommand(getRoleIdSql, conn))
                         {
-                            cmd.Transaction = transaction;
-                            cmd.BindByName = true;
-                            cmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
-                                                        cmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(userType);
-                            cmd.ExecuteNonQuery();
+                            getCmd.Transaction = transaction;
+                            getCmd.BindByName = true;
+                            getCmd.Parameters.Add("epf_no", OracleDbType.Varchar2).Value = epfNo?.Trim();
+                            getCmd.Parameters.Add("user_type", OracleDbType.Varchar2).Value = NormalizeRoleUserType(userType);
+                            roleId = getCmd.ExecuteScalar()?.ToString()?.Trim();
                         }
 
+                        // Delete the user role from REP_ROLE_NEW first
                         const string deleteRoleSql = @"
                             DELETE FROM REP_ROLE_NEW
-                                                        WHERE TRIM(EPF_NO) = :epf_no
-                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         using (var cmd = new OracleCommand(deleteRoleSql, conn))
                         {
@@ -562,10 +647,44 @@ namespace MISReports_Api.DAL
                                 transaction.Rollback();
                                 return false;
                             }
-
-                            transaction.Commit();
-                            return true;
                         }
+
+                        // Check if the roleId is still in use by any other record in REP_ROLE_NEW
+                        if (!string.IsNullOrWhiteSpace(roleId))
+                        {
+                            const string checkRoleIdInUseSql = @"
+                                SELECT COUNT(1)
+                                FROM REP_ROLE_NEW
+                                WHERE TRIM(ROLEID) = :role_id";
+
+                            bool roleIdStillInUse = false;
+                            using (var checkUseCmd = new OracleCommand(checkRoleIdInUseSql, conn))
+                            {
+                                checkUseCmd.Transaction = transaction;
+                                checkUseCmd.BindByName = true;
+                                checkUseCmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = roleId;
+                                roleIdStillInUse = Convert.ToInt32(checkUseCmd.ExecuteScalar()) > 0;
+                            }
+
+                            // If not in use, delete the cost centres for that roleId
+                            if (!roleIdStillInUse)
+                            {
+                                const string deleteRoleCctSql = @"
+                                    DELETE FROM REP_ROLES_CCT_NEW
+                                    WHERE TRIM(ROLEID) = :role_id";
+
+                                using (var cmd = new OracleCommand(deleteRoleCctSql, conn))
+                                {
+                                    cmd.Transaction = transaction;
+                                    cmd.BindByName = true;
+                                    cmd.Parameters.Add("role_id", OracleDbType.Varchar2).Value = roleId;
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+
+                        transaction.Commit();
+                        return true;
                     }
                     catch (Exception ex)
                     {
@@ -576,7 +695,6 @@ namespace MISReports_Api.DAL
                 }
             }
         }
-
         public int AddCostCentresToRole(string epfNo, string userType, List<string> requestedCostCentres)
         {
             var normalizedCostCentres = NormalizeCostCentres(requestedCostCentres);
@@ -597,8 +715,8 @@ namespace MISReports_Api.DAL
                         const string roleIdSql = @"
                             SELECT TRIM(ROLEID)
                             FROM REP_ROLE_NEW
-                                                        WHERE TRIM(EPF_NO) = :epf_no
-                                                            AND UPPER(TRIM(USERTYPE)) = :user_type";
+                            WHERE TRIM(EPF_NO) = :epf_no
+                              AND CASE WHEN UPPER(TRIM(USERTYPE)) = 'ADMINISTRATOR' THEN 'ADMIN' ELSE UPPER(TRIM(USERTYPE)) END = :user_type";
 
                         string roleId = null;
 

@@ -1,57 +1,54 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
-namespace MISReports_Api.Models.CollectionInformation
+namespace MISReports_Api.Models.Collection
 {
-    public class ReceivePositionModel
+    // ── Main report model ──────────────────────────────────────────────────────
+    public class ReceivablePositionModel
     {
         public string AreaCode { get; set; }
         public string AreaName { get; set; }
+
+        public string OpeningBalance { get; set; }
+        public string MonthlyCharge { get; set; }
+        public string Debits { get; set; }
+        public string Credits { get; set; }
+        public string UnderCharge { get; set; }
+        public string OverCharge { get; set; }
+        public string Payments { get; set; }
+        public string ClosingBalance { get; set; }
+        public string ClosingBalanceWithoutFinAcc { get; set; }
+        public string AverageCharge { get; set; }
+        public string NoOfMonthsInArrears { get; set; }
+        public string NoOfMonthsInArrearsWithoutFinAcc { get; set; }
+
         public string BillCycle { get; set; }
         public string BillType { get; set; }
-
-        public decimal OpeningBalance { get; set; }
-        public decimal MonthlyCharge { get; set; }
-        public decimal Debits { get; set; }
-        public decimal Credits { get; set; }
-        public decimal UnderCharge { get; set; }
-        public decimal OverCharge { get; set; }
-        public decimal Payments { get; set; }
-        public decimal ClosingBalance { get; set; }
-        public decimal ClosingBalanceWithoutFinAcc { get; set; }
-        public decimal AverageCharge { get; set; }
-        public decimal NoOfMonthsInArrears { get; set; }
-        public decimal NoOfMonthsInArrearsWithoutFinAcc { get; set; }
-
         public string ErrorMessage { get; set; }
     }
 
-    public class ReceivePositionRequest
+    // ── Request model ──────────────────────────────────────────────────────────
+    public class ReceivablePositionRequest
     {
         public string BillCycle { get; set; }
-        public string BillType { get; set; }   // "O" or "B"
+        public string BillType { get; set; }   // "O" = Ordinary, "B" = Bulk
         public string AreaCode { get; set; }
+        public string ProvCode { get; set; }
     }
 
-    public class AreaOption
+    // ── Bill type model (returned by GET api/receivable-position/bill-types) ──
+    public class ReceivablePositionBillTypeModel
+    {
+        public string BillType { get; set; }
+        public string DisplayName { get; set; }
+    }
+
+    // ── Area lookup model (areas-by-province / areas-by-region) ───────────────
+    public class ReceivablePositionAreaModel
     {
         public string AreaCode { get; set; }
         public string AreaName { get; set; }
-    }
-
-    // NEW: represents one row from prov_servers
-    public class ProvinceOption
-    {
-        public string ProvCode { get; set; }
-        public string ProvName { get; set; }
-    }
-
-    public class ReceivePositionDropdowns
-    {
-        public List<string> BillCycles { get; set; }
-        public List<string> BillTypes { get; set; }
-        public List<AreaOption> Areas { get; set; }
-
-        // NEW: province list populated from prov_servers
-        public List<ProvinceOption> Provinces { get; set; }
     }
 }

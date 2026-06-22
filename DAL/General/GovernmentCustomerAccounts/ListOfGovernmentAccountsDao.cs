@@ -19,7 +19,7 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
             return _dbConnection.TestConnection(out errorMessage, true);
         }
 
-        
+
 
         // ── Departments dropdown ───────────────────────────────────────────────
         // Excludes rows where characters 3-4 of dep_code equal '99'
@@ -61,7 +61,7 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
             return results;
         }
 
-        
+
 
         // ── Report entry point ─────────────────────────────────────────────────
         public List<GovernmentAccountsModel> GetGovernmentAccountsReport(GovernmentAccountsRequest request)
@@ -124,7 +124,7 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
                                       a.kwh_charge,
                                       a.avg_cons
                                FROM prn_dat_1 a, govt_acct b
-                               WHERE a.area_code  = ?
+                               WHERE a.area_code  LIKE ?
                                  AND a.bill_cycle  = ?
                                  AND a.acct_number = b.acct_number
                                ORDER BY a.acct_number";
@@ -133,7 +133,9 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
 
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("@area_code", request.AreaCode);
+                    // Use LIKE with wildcard so a 2-digit area prefix (e.g. "54")
+                    // correctly matches all sub-area codes (e.g. 5400, 5401, 5402 …)
+                    cmd.Parameters.AddWithValue("@area_code", request.AreaCode + "%");
                     cmd.Parameters.AddWithValue("@bill_cycle", request.BillCycle);
 
                     using (var reader = cmd.ExecuteReader())
@@ -180,7 +182,7 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
                                       a.kwh_charge,
                                       a.avg_cons
                                FROM prn_dat_1 a, govt_acct b
-                               WHERE a.area_code  = ?
+                               WHERE a.area_code  LIKE ?
                                  AND a.bill_cycle  = ?
                                  AND a.acct_number = b.acct_number
                                  AND b.dept        = ?
@@ -191,7 +193,9 @@ namespace MISReports_Api.DAL.General.ListOfGovernmentAccounts
 
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("@area_code", request.AreaCode);
+                    // Use LIKE with wildcard so a 2-digit area prefix (e.g. "54")
+                    // correctly matches all sub-area codes (e.g. 5400, 5401, 5402 …)
+                    cmd.Parameters.AddWithValue("@area_code", request.AreaCode + "%");
                     cmd.Parameters.AddWithValue("@bill_cycle", request.BillCycle);
                     cmd.Parameters.AddWithValue("@dept", request.DepartmentCode);
 

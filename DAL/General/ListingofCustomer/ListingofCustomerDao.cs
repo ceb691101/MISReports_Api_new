@@ -28,42 +28,7 @@ namespace MISReports_Api.DAL.General.ListingOfCustomer
         //  Max Bill Cycle
         // ════════════════════════════════════════════════════════════════════
 
-        /// <summary>
-        /// Returns the maximum bill cycle available for the given area.
-        /// Matches the query used in ListOfGovernmentAccountsDao.GetMaxBillCycle().
-        /// </summary>
-        public string GetMaxBillCycle(string areaCode)
-        {
-            try
-            {
-                logger.Info($"Getting max bill cycle for area: {areaCode}");
-
-                using (var conn = _dbConnection.GetConnection(false))
-                {
-                    conn.Open();
-
-                    const string sql = "SELECT max(bill_cycle) FROM prn_dat_1 WHERE area_code = ?";
-
-                    using (var cmd = new OleDbCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@area_code", areaCode);
-
-                        var result = cmd.ExecuteScalar();
-                        var billCycle = (result != null && result != DBNull.Value)
-                            ? result.ToString().Trim()
-                            : string.Empty;
-
-                        logger.Info($"Max bill cycle: {billCycle}");
-                        return billCycle;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, $"Error getting max bill cycle for area {areaCode}");
-                throw;
-            }
-        }
+      
 
         // ════════════════════════════════════════════════════════════════════
         //  Filter Dropdowns
