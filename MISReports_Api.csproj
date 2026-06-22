@@ -308,6 +308,7 @@
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
+    <Compile Include="Controllers\SolarJobs\SolarPendingJobsController.cs" />
     <Compile Include="Controllers\LedgerCard\DivisionalLedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardTotalController.cs" />
@@ -359,7 +360,6 @@
     <Compile Include="Controllers\RepRoleReport\RepRoleReportController.cs" />
     <Compile Include="Controllers\SharedController.cs" />
     <Compile Include="Controllers\SolarDetails\SolarBillingController.cs" />
-    <Compile Include="Controllers\SolarDetails\SolarPendingJobsController.cs" />
     <Compile Include="Controllers\AnalysisController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVPaidReportController.cs" />
@@ -447,6 +447,7 @@
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
+    <Compile Include="DAL\SolarJobs\SolarPendingJobsRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\AnnualVerificationSheetRepository.cs" />
@@ -477,6 +478,7 @@
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
+    <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
@@ -513,7 +515,6 @@
     <Compile Include="DAL\PIV\StampDutyDetailedRepository.cs" />
     <Compile Include="DAL\PIV\TypewisePIVRepository.cs" />
     <Compile Include="DAL\SolarDetails\SolarBillingRepository.cs" />
-    <Compile Include="DAL\SolarDetails\SolarPendingJobsRepository.cs" />
     <Compile Include="DAL\SolarInformation\RoofTopSolarInputData\RoofTopSolarInputDataDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingRetailDetailedDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingRetailSummaryDao.cs" />
@@ -630,6 +631,7 @@
     <Compile Include="Models\ReportParamFlagsModel.cs" />
     <Compile Include="Models\Shared\CalcCycleModel.cs" />
     <Compile Include="Models\SolarJobs\CcApplicationModel.cs" />
+    <Compile Include="Models\SolarJobs\SolarPendingJobsModel.cs" />
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardTotalModel.cs" />
@@ -685,7 +687,6 @@
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\VariableSolarDataModel.cs" />
     <Compile Include="Models\RepRoleReport\RepRoleReportModel.cs" />
     <Compile Include="Models\SolarDetails\SolarBillingModel.cs" />
-    <Compile Include="Models\SolarDetails\SolarPendingJobsModel.cs" />
     <Compile Include="Models\SolarInformation\AreaBulkModel.cs" />
     <Compile Include="Models\Shared\BillCycleModel.cs" />
     <Compile Include="Models\SolarInformation\BulkConnectionModel.cs" />
