@@ -13,6 +13,7 @@ namespace MISReports_Api.Models.Collection
 
     public class CustomersHighestOutstandingModel
     {
+        public string Province { get; set; }
         public string AreaName { get; set; }
         public string AccountNumber { get; set; }
         public string CustomerName { get; set; }
