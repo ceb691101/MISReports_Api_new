@@ -9,7 +9,7 @@ namespace MISReports_Api.DAL
 {
     public class RoleReportRepository
     {
-        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
+        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         private OracleConnection OpenConnection()
         {

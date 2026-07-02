@@ -346,7 +346,7 @@ namespace MISReports_Api.DAL
                                 ACTIVE    = :active
                             WHERE 
                                 REPID_NO = :repid_no
-                                AND CATCODE = :current_catcode";
+                                AND UPPER(TRIM(CATCODE)) = UPPER(TRIM(:current_catcode))";
 
                         using (var cmd = new OracleCommand(sql, conn))
                         {
@@ -367,16 +367,18 @@ namespace MISReports_Api.DAL
                                 const string countSql = @"
                                     SELECT COUNT(1)
                                     FROM REP_REPORTS_NEW
-                                    WHERE REPID_NO = :repid_no";
+                                    WHERE REPID_NO = :repid_no
+                                      AND UPPER(TRIM(CATCODE)) = UPPER(TRIM(:current_catcode))";
 
                                 using (var countCmd = new OracleCommand(countSql, conn))
                                 {
                                     countCmd.Transaction = transaction;
                                     countCmd.BindByName = true;
                                     countCmd.Parameters.Add("repid_no", OracleDbType.Int32).Value = repIdNo;
+                                    countCmd.Parameters.Add("current_catcode", OracleDbType.Varchar2).Value = currentCatCode?.Trim();
                                     var countByRepIdNo = Convert.ToInt32(countCmd.ExecuteScalar());
 
-                                    if (countByRepIdNo == 1)
+                                    if (countByRepIdNo >= 1)
                                     {
                                         const string fallbackSql = @"
                                             UPDATE REP_REPORTS_NEW
