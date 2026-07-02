@@ -1,5 +1,6 @@
-﻿using MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection;
+using MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection;
 using MISReports_Api.Models.PUCSLReports.PUCSLSolarConnection;
+using MISReports_Api.Models.PUCSLReports;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace MISReports_Api.Controllers
         private readonly TotalSolarCustomersDao _totalSolarCustomersDao = new TotalSolarCustomersDao();
         private readonly RawDataForSolarDao _rawDataForSolarDao = new RawDataForSolarDao();
         private readonly NetMeteringDao _netMeteringDao = new NetMeteringDao();
+        private readonly SolarDataUNTCalculationDao _untCalculationDao = new SolarDataUNTCalculationDao();
 
         // ================================================================
         //  POST  pucsl/solarConnections
@@ -279,6 +281,74 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Error processing Net Metering report.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+        
+        // ================================================================
+        //  POST  pucsl/solarDataUNT
+        // ================================================================
+        [HttpPost]
+        [Route("pucsl/solarDataUNT")]
+        public IHttpActionResult GetSolarDataUNT([FromBody] PUCSLRequest request)
+        {
+            if (request == null)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Request body is required."
+                }));
+            }
+
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(request.BillCycle))
+                errors.Add("BillCycle is required.");
+
+            if ((request.ReportCategory == PUCSLReportCategory.Province ||
+                 request.ReportCategory == PUCSLReportCategory.Region) &&
+                string.IsNullOrWhiteSpace(request.TypeCode))
+            {
+                errors.Add("TypeCode (province or region code) is required for Province/Region report category.");
+            }
+
+            if (errors.Count > 0)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = string.Join(" ", errors)
+                }));
+            }
+
+            try
+            {
+                if (!_untCalculationDao.TestConnection(out string connError))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    }));
+                }
+
+                var data = _untCalculationDao.GetSolarDataUNTReport(request);
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = data,
+                    errorMessage = data.ErrorMessage
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Error processing Solar Data UNT Calculation report.",
                     errorDetails = ex.Message
                 }));
             }
