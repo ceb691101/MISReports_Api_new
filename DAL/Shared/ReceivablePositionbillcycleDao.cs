@@ -2,131 +2,147 @@
 using MISReports_Api.DBAccess;
 using MISReports_Api.Helpers;
 using System;
-using System.Data;
 using System.Data.OleDb;
 
 namespace MISReports_Api.DAL.Shared
 {
-    /// <summary>
-    /// Retrieves the last 24 bill cycles from receive_position.
-    ///
-    /// CONNECTION ROUTING (same as ReceivablePositionDao):
-    ///   bill_type = 'O'  →  InformixConnection     (GetConnection(false))
-    ///   bill_type = 'B'  →  InformixBulkConnection (GetConnection(true))
-    /// </summary>
     public class ReceivablePositionBillCycleDao
     {
         private readonly DBConnection _dbConnection = new DBConnection();
 
-        private static bool IsBulk(string billType)
-            => !string.IsNullOrWhiteSpace(billType)
-               && billType.Trim().Equals("B", StringComparison.OrdinalIgnoreCase);
-
+        // ── Primary method used by CollectionController ────────────────────
+        /// <summary>
+        /// Returns the last 24 bill cycles from receive_position.
+        /// Optionally filtered by bill_type ("O" or "B").
+        /// Uses ordinary connection.
+        /// </summary>
         public BillCycleModel GetLast24BillCycles(string billType = null)
         {
             var model = new BillCycleModel();
-            try
-            {
-                int? maxCycle = GetMaxBillCycle(billType);
-                if (maxCycle.HasValue)
-                {
-                    model.MaxBillCycle = maxCycle.Value.ToString();
-                    model.BillCycles = BillCycleHelper.Generate24MonthYearStrings(maxCycle.Value);
-                }
-                else
-                {
-                    model.ErrorMessage = "Error retrieving max bill cycle";
-                }
-            }
-            catch (OleDbException ex)
-            {
-                System.Diagnostics.Trace.WriteLine($"OleDb error reading max bill cycle: {ex.Message}");
-                model.ErrorMessage = "Error retrieving max bill cycle";
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
-                model.ErrorMessage = "Unexpected error occurred";
-            }
-            return model;
-        }
 
-        private int? GetMaxBillCycle(string billType)
-        {
-            bool bulk = IsBulk(billType);
-
-            // 1. Filtered by bill_type on the correct DB (most precise)
-            // 2. Unfiltered on the correct DB (fallback if no typed rows yet)
-            // 3. mon_tot on the correct DB (last resort)
-            return FirstAvailableMax(
-                QueryMaxBillCycle(bulk, billType),
-                QueryMaxBillCycle(bulk, null),
-                QueryMaxBillCycleFromMonTot(bulk));
-        }
-
-        private static int? FirstAvailableMax(params int?[] values)
-        {
-            foreach (var v in values)
-                if (v.HasValue) return v;
-            return null;
-        }
-
-        private int? QueryMaxBillCycle(bool useBulk, string billType = null)
-        {
-            try
+            using (var conn = _dbConnection.GetConnection(false))
             {
-                using (var conn = _dbConnection.GetConnection(useBulk))
+                try
                 {
                     conn.Open();
 
-                    bool filter = !string.IsNullOrWhiteSpace(billType);
-                    string sql = filter
-                        ? "SELECT MAX(bill_cycle) FROM receive_position WHERE bill_type = ?"
-                        : "SELECT MAX(bill_cycle) FROM receive_position";
+                    string sql = string.IsNullOrWhiteSpace(billType)
+                        ? "SELECT MAX(bill_cycle) FROM receive_position"
+                        : "SELECT MAX(bill_cycle) FROM receive_position WHERE bill_type = ?";
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        if (filter)
-                            cmd.Parameters.AddWithValue("?", billType.Trim().ToUpper());
+                        if (!string.IsNullOrWhiteSpace(billType))
+                            cmd.Parameters.AddWithValue("@bill_type", billType.Trim().ToUpper());
 
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value
-                            && int.TryParse(result.ToString(), out int max))
-                            return max;
+                        object maxCycleObj = cmd.ExecuteScalar();
+
+                        if (maxCycleObj != null && maxCycleObj != DBNull.Value)
+                        {
+                            int maxCycle;
+                            if (int.TryParse(maxCycleObj.ToString(), out maxCycle))
+                            {
+                                model.MaxBillCycle = maxCycle.ToString();
+                                model.BillCycles = BillCycleHelper.Generate24MonthYearStrings(maxCycle);
+                            }
+                        }
                     }
                 }
+                catch (OleDbException ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(
+                        $"Error retrieving max bill cycle from receive_position: {ex.Message}");
+                    model.ErrorMessage = "Error retrieving max bill cycle";
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
+                    model.ErrorMessage = "Unexpected error occurred";
+                }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"Could not read max bill_cycle from receive_position " +
-                    $"({(useBulk ? "bulk" : "ordinary")} DB): {ex.Message}");
-            }
+
+            return model;
+        }
+
+        // ── Helper: identifies bulk bill types ────────────────────────────
+        public bool IsBulk(string billType)
+        {
+            return string.Equals(billType?.Trim(), "B", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // ── Get max bill cycle string for a given bill type ───────────────
+        public string GetMaxBillCycle(string billType)
+        {
+            bool useBulk = IsBulk(billType);
+            return QueryMaxBillCycle(useBulk, billType);
+        }
+
+        // ── Return the first non-null max from multiple candidate cycles ──
+        public int? FirstAvailableMax(params int?[] candidates)
+        {
+            foreach (var c in candidates)
+                if (c.HasValue) return c;
             return null;
         }
 
-        private int? QueryMaxBillCycleFromMonTot(bool useBulk)
+        // ── Query max bill_cycle from receive_position ────────────────────
+        public string QueryMaxBillCycle(bool useBulkConnection, string billType)
         {
-            try
+            using (var conn = _dbConnection.GetConnection(true)) // always ordinary
             {
-                using (var conn = _dbConnection.GetConnection(useBulk))
+                try
                 {
                     conn.Open();
-                    using (var cmd = new OleDbCommand("SELECT MAX(bill_cycle) FROM mon_tot", conn))
+
+                    string sql = string.IsNullOrWhiteSpace(billType)
+                        ? "SELECT MAX(bill_cycle) FROM receive_position"
+                        : "SELECT MAX(bill_cycle) FROM receive_position WHERE bill_type = ?";
+
+                    using (var cmd = new OleDbCommand(sql, conn))
                     {
+                        if (!string.IsNullOrWhiteSpace(billType))
+                            cmd.Parameters.AddWithValue("@bill_type", billType.Trim().ToUpper());
+
                         object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value
-                            && int.TryParse(result.ToString(), out int max))
-                            return max;
+                        if (result != null && result != DBNull.Value)
+                            return result.ToString();
                     }
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(
+                        $"Error in QueryMaxBillCycle: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+
+            return null;
+        }
+
+        // ── Query max bill_cycle from mon_tot (bulk connection) ───────────
+        public string QueryMaxBillCycleFromMonTot(bool useBulkConnection)
+        {
+            using (var conn = _dbConnection.GetConnection(useBulkConnection))
             {
-                System.Diagnostics.Trace.WriteLine(
-                    $"Could not read max bill_cycle from mon_tot " +
-                    $"({(useBulk ? "bulk" : "ordinary")} DB): {ex.Message}");
+                try
+                {
+                    conn.Open();
+
+                    string sql = "SELECT MAX(bill_cycle) FROM mon_tot";
+
+                    using (var cmd = new OleDbCommand(sql, conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                            return result.ToString();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(
+                        $"Error in QueryMaxBillCycleFromMonTot: {ex.Message}");
+                }
             }
+
             return null;
         }
     }

@@ -1,5 +1,8 @@
 using MISReports_Api.DAL.Collection.ReceivablePosition;
+using MISReports_Api.DAL.Collection.SalesAndCollection;
+using MISReports_Api.DAL.Shared;
 using MISReports_Api.Models.Collection;
+using MISReports_Api.Models.Shared;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -12,6 +15,8 @@ namespace MISReports_Api.Controllers
     /// Handles collection-related reports.
     /// Exposes endpoints for:
     ///   - Receivable Position (area, by bill cycle and bill type)
+    ///   - Sales &amp; Collections – Region Wise (province / region / entire CEB)
+    ///   - Receive Position (province / region / entire CEB scope, ordinary + bulk)
     ///
     /// Route prefix: api
     /// </summary>
@@ -20,18 +25,16 @@ namespace MISReports_Api.Controllers
     {
         // ── DAO fields ────────────────────────────────────────────────────────
         private readonly ReceivablePositionDao _receivablePositionDao = new ReceivablePositionDao();
+        private readonly SalesAndCollectionDao _salesAndCollectionDao = new SalesAndCollectionDao();
+        private readonly ReceivablePositionBillCycleDao _salesBillCycleDao = new ReceivablePositionBillCycleDao();
+        private readonly ReceivablePositionBillCycleDao _receivePosBillCycleDao = new ReceivablePositionBillCycleDao();
+        private readonly ProvinceDao _provinceDao = new ProvinceDao();
+        private readonly RegionDao _regionDao = new RegionDao();
 
 
         // ================================================================== //
-        //  RECEIVABLE POSITION                                                 //
+        //  RECEIVABLE POSITION (existing)                                      //
         // ================================================================== //
-
-        // ------------------------------------------------------------------ //
-        // GET api/receivable-position/report                                  //
-        //     ?billCycle=454&areaCode=43&billType=O                           //
-        // Response: { data: [ ...ReceivablePositionModel... ],                //
-        //             errorMessage: null }                                     //
-        // ------------------------------------------------------------------ //
 
         [HttpGet]
         [Route("receivable-position/report")]
@@ -69,9 +72,9 @@ namespace MISReports_Api.Controllers
                     BillType = billType.Trim().ToUpper()
                 };
 
-                var data = _receivablePositionDao.GetReceivablePositionReport(request);
+                var row = _receivablePositionDao.GetReceivablePositionReport(request);
 
-                if (data == null || data.Count == 0)
+                if (row == null)
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
@@ -81,7 +84,7 @@ namespace MISReports_Api.Controllers
 
                 return Ok(JObject.FromObject(new
                 {
-                    data = data,
+                    data = new List<ReceivablePositionModel> { row },
                     errorMessage = (string)null
                 }));
             }
@@ -99,16 +102,11 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        // ------------------------------------------------------------------ //
-        // GET api/receivable-position/areas-by-province?provinceCode=3       //
-        // ------------------------------------------------------------------ //
-
         [HttpGet]
         [Route("receivable-position/areas-by-province")]
         public IHttpActionResult GetReceivablePositionAreasByProvince(
             [FromUri] string provinceCode = null,
-            [FromUri] string billType = null,
-            [FromUri] string billCycle = null)
+            [FromUri] string billType = null)
         {
             if (string.IsNullOrWhiteSpace(provinceCode))
                 return Ok(JObject.FromObject(new
@@ -127,16 +125,10 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     }));
 
-                var data = _receivablePositionDao.GetAreasByProvince(
-                    provinceCode.Trim(),
-                    billType,
-                    billCycle);
+                bool isBulk = string.Equals(billType?.Trim(), "B", StringComparison.OrdinalIgnoreCase);
+                var data = _receivablePositionDao.GetAreasByProvince(provinceCode.Trim(), isBulk);
 
-                return Ok(JObject.FromObject(new
-                {
-                    data = data,
-                    errorMessage = (string)null
-                }));
+                return Ok(JObject.FromObject(new { data, errorMessage = (string)null }));
             }
             catch (Exception ex)
             {
@@ -149,16 +141,11 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        // ------------------------------------------------------------------ //
-        // GET api/receivable-position/areas-by-region?regionCode=R1          //
-        // ------------------------------------------------------------------ //
-
         [HttpGet]
         [Route("receivable-position/areas-by-region")]
         public IHttpActionResult GetReceivablePositionAreasByRegion(
             [FromUri] string regionCode = null,
-            [FromUri] string billType = null,
-            [FromUri] string billCycle = null)
+            [FromUri] string billType = null)
         {
             if (string.IsNullOrWhiteSpace(regionCode))
                 return Ok(JObject.FromObject(new
@@ -177,16 +164,10 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     }));
 
-                var data = _receivablePositionDao.GetAreasByRegion(
-                    regionCode.Trim(),
-                    billType,
-                    billCycle);
+                bool isBulk = string.Equals(billType?.Trim(), "B", StringComparison.OrdinalIgnoreCase);
+                var data = _receivablePositionDao.GetAreasByRegion(regionCode.Trim(), isBulk);
 
-                return Ok(JObject.FromObject(new
-                {
-                    data = data,
-                    errorMessage = (string)null
-                }));
+                return Ok(JObject.FromObject(new { data, errorMessage = (string)null }));
             }
             catch (Exception ex)
             {
@@ -199,20 +180,108 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        // ------------------------------------------------------------------ //
-        // GET api/receivable-position/bill-types                             //
-        // Response: { data: [ { billType: "O", displayName: "Ordinary" },   //
-        //                      { billType: "B", displayName: "Bulk" } ],     //
-        //             errorMessage: null }                                    //
-        // ------------------------------------------------------------------ //
+        // NOTE: GetReceivablePositionBillTypes endpoint removed —
+        // ReceivablePositionDao has no GetDistinctBillTypes() method.
+        // Bill type is a fixed choice in this system: "O" (Ordinary) or "B" (Bulk).
+        // The frontend dropdown for Customer Type is hardcoded; no API call needed.
+
+
+        // ================================================================== //
+        //  SALES & COLLECTIONS – REGION WISE (existing)                        //
+        // ================================================================== //
 
         [HttpGet]
-        [Route("receivable-position/bill-types")]
-        public IHttpActionResult GetReceivablePositionBillTypes()
+        [Route("sales-collection/dropdowns")]
+        public IHttpActionResult GetSalesCollectionDropdowns()
         {
             try
             {
-                if (!_receivablePositionDao.TestConnection(out string connError))
+                var billCycleModel = _salesBillCycleDao.GetLast24BillCycles("O");
+
+                List<ProvinceModel> provinces;
+                try
+                {
+                    provinces = _provinceDao.GetProvince();
+                    provinces = provinces
+                        .Where(p => !string.Equals(p.ProvinceName, "Head Office",
+                                                   StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine($"Province fetch error: {ex.Message}");
+                    provinces = new List<ProvinceModel>();
+                }
+
+                List<RegionModel> regions;
+                try { regions = _regionDao.GetRegion(); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine($"Region fetch error: {ex.Message}");
+                    regions = new List<RegionModel>();
+                }
+
+                return Ok(JObject.FromObject(new
+                {
+                    billCycles = billCycleModel.BillCycles,
+                    maxBillCycle = billCycleModel.MaxBillCycle,
+                    provinces,
+                    regions,
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(
+                    $"ERROR GetSalesCollectionDropdowns: {ex.Message}\n{ex.StackTrace}");
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get dropdown data.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        [HttpGet]
+        [Route("sales-collection/report")]
+        public IHttpActionResult GetSalesCollectionReport(
+            [FromUri] string billCycle = null,
+            [FromUri] string reportType = "EntireCEB",
+            [FromUri] string provinceName = null,
+            [FromUri] string regionCode = null)
+        {
+            if (string.IsNullOrWhiteSpace(billCycle))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Bill cycle is required."
+                }));
+
+            if (!Enum.TryParse(reportType?.Trim() ?? "EntireCEB", true,
+                               out SalesCollectionReportType parsedType))
+                parsedType = SalesCollectionReportType.EntireCEB;
+
+            if (parsedType == SalesCollectionReportType.Province &&
+                string.IsNullOrWhiteSpace(provinceName))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Province name is required for Province report type."
+                }));
+
+            if (parsedType == SalesCollectionReportType.Region &&
+                string.IsNullOrWhiteSpace(regionCode))
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Region code is required for Region report type."
+                }));
+
+            try
+            {
+                if (!_salesAndCollectionDao.TestConnection(out string connError))
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
@@ -220,42 +289,40 @@ namespace MISReports_Api.Controllers
                         errorDetails = connError
                     }));
 
-                var rawTypes = _receivablePositionDao.GetDistinctBillTypes();
+                var request = new SalesAndCollectionRequest
+                {
+                    BillCycle = billCycle,
+                    ReportType = parsedType,
+                    ProvinceName = provinceName,
+                    RegionCode = regionCode
+                };
 
-                if (rawTypes == null || rawTypes.Count == 0)
+                var data = _salesAndCollectionDao.GetSalesAndCollectionReport(request);
+
+                if (data == null || data.Count == 0)
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
-                        errorMessage = "No bill types found in receive_position table."
+                        errorMessage = "No data found for the selected criteria."
                     }));
 
-                // Map raw bill_type codes to display names
-                var billTypes = rawTypes.Select(bt => new ReceivablePositionBillTypeModel
-                {
-                    BillType = bt,
-                    DisplayName = bt == "O" ? "Ordinary"
-                                : bt == "B" ? "Bulk"
-                                : bt
-                }).ToList();
-
-                return Ok(JObject.FromObject(new
-                {
-                    data = billTypes,
-                    errorMessage = (string)null
-                }));
+                return Ok(JObject.FromObject(new { data, errorMessage = (string)null }));
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetReceivablePositionBillTypes: {ex.Message}\n{ex.StackTrace}");
+                    $"ERROR GetSalesCollectionReport: {ex.Message}\n{ex.StackTrace}");
 
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Cannot get bill types.",
+                    errorMessage = "Cannot get sales and collection report data.",
                     errorDetails = ex.Message
                 }));
             }
         }
+
+
+
     }
 }
