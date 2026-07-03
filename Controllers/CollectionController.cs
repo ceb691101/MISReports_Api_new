@@ -322,7 +322,33 @@ namespace MISReports_Api.Controllers
             }
         }
 
+        // ================================================================== //
+        //  HEAD OFFICE POS COLLECTION                                          //
+        // ================================================================== //
 
+        [HttpPost]
+        [Route("collection/headofficepos")]
+        public IHttpActionResult GetHeadOfficePOSReport([FromBody] HeadOfficePOSCollectionRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest("Request cannot be null.");
 
+                if (string.IsNullOrEmpty(request.FromDate) || string.IsNullOrEmpty(request.ToDate))
+                    return BadRequest("FromDate and ToDate are required.");
+
+                if (request.ReportType != "Bulk" && request.ReportType != "Ordinary")
+                    return BadRequest("Invalid ReportType.");
+
+                var dao = new MISReports_Api.DAL.Collection.HeadOfficePOSCollectionDao();
+                var data = dao.GetReportData(request);
+                return Ok(new { data, errorMessage = "" });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Failed to fetch report data.", errorDetails = ex.Message });
+            }
+        }
     }
 }
