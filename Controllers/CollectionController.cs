@@ -322,7 +322,92 @@ namespace MISReports_Api.Controllers
             }
         }
 
+        // ================================================================== //
+        //  HEAD OFFICE POS COLLECTION                                          //
+        // ================================================================== //
 
+        [HttpPost]
+        [Route("collection/headofficepos")]
+        public IHttpActionResult GetHeadOfficePOSReport([FromBody] HeadOfficePOSCollectionRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest("Request cannot be null.");
 
+                if (string.IsNullOrEmpty(request.FromDate) || string.IsNullOrEmpty(request.ToDate))
+                    return BadRequest("FromDate and ToDate are required.");
+
+                if (request.ReportType != "Bulk" && request.ReportType != "Ordinary")
+                    return BadRequest("Invalid ReportType.");
+
+                var dao = new MISReports_Api.DAL.Collection.HeadOfficePOSCollectionDao();
+                var data = dao.GetReportData(request);
+                return Ok(new { data, errorMessage = "" });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Failed to fetch report data.", errorDetails = ex.Message });
+            }
+        }
+
+        // ================================================================== //
+        //  CUSTOMERS WITH HIGHEST OUTSTANDING BALANCE (ORDINARY)              //
+        // ================================================================== //
+
+        [HttpPost]
+        [Route("collection/highest-outstanding")]
+        public IHttpActionResult GetHighestOutstandingReport([FromBody] CustomersHighestOutstandingRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest("Request payload cannot be null.");
+
+                if (string.IsNullOrEmpty(request.Scope))
+                    return BadRequest("Scope (Province/Division) is required.");
+
+                if (request.Scope.Equals("Province", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(request.ProvinceCode))
+                    return BadRequest("ProvinceCode is required when Scope is Province.");
+
+                if (request.Scope.Equals("Division", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(request.RegionCode))
+                    return BadRequest("RegionCode (Division) is required when Scope is Division.");
+
+                if (request.MonthsInArrears < 0)
+                    return BadRequest("MonthsInArrears must be greater than or equal to 0.");
+
+                if (request.OutstandingBalance < 0)
+                    return BadRequest("OutstandingBalance must be greater than or equal to 0.");
+
+                var dao = new MISReports_Api.DAL.Collection.CustomersHighestOutstandingDao();
+                // Test connection to the main database first
+                if (!dao.TestConnection(out string connError))
+                {
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Main database connection failed.",
+                        errorDetails = connError
+                    });
+                }
+
+                var data = dao.GetReportData(request);
+                return Ok(new
+                {
+                    data = data,
+                    errorMessage = ""
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"ERROR CustomersHighestOutstanding GetReport: {ex.Message}\n{ex.StackTrace}");
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Failed to fetch report data.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
     }
 }
