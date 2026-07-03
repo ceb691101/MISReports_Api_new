@@ -572,6 +572,7 @@
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\FixedSolarDataDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\NetMeteringDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\RawDataForSolarDao.cs" />
+    <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\SolarDataUNTCalculationDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\TotalSolarCustomersDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\VariableSolarDataDao.cs" />
     <Compile Include="DAL\RepRoleReport\RepRoleReportRepository.cs" />
@@ -751,6 +752,7 @@
     <Compile Include="Models\PIV\RegionWiseVatReportModel.cs" />
     <Compile Include="Models\PIV\StampDutyDetailedModel.cs" />
     <Compile Include="Models\PIV\TypewisePIVModel.cs" />
+    <Compile Include="Models\PUCSLReports\SolarDataUNTCalculationModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\RawDataForSolarModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\TotalSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\VariableSolarDataModel.cs" />
