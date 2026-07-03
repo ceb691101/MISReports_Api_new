@@ -7,8 +7,8 @@ namespace MISReports_Api.Models.PUCSLReports
         public string Month { get; set; }
         public int Accts { get; set; }
         public decimal UnitsExpD { get; set; }
-        public string UnitsExpP { get; set; }
-        public string UnitsExpOffP { get; set; }
+        public decimal UnitsExpP { get; set; }
+        public decimal UnitsExpOffP { get; set; }
         public decimal UnitsImpD { get; set; }
         public decimal UnitsImpP { get; set; }
         public decimal UnitsImpOffP { get; set; }
