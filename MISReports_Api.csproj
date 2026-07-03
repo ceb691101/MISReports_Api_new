@@ -353,7 +353,6 @@
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
-    <Compile Include="Controllers\CustomersHighestOutstandingController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
