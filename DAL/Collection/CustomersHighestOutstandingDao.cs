@@ -19,6 +19,7 @@ namespace MISReports_Api.DAL.Collection
             public string AreaCode { get; set; }
             public string AreaName { get; set; }
             public string ProvCode { get; set; }
+            public string Province { get; set; }
         }
 
         public bool TestConnection(out string errorMessage)
@@ -145,6 +146,7 @@ namespace MISReports_Api.DAL.Collection
 
                                                 finalResults.Add(new CustomersHighestOutstandingModel
                                                 {
+                                                    Province = !string.IsNullOrEmpty(area.Province) ? area.Province : area.ProvCode,
                                                     AreaName = area.AreaName,
                                                     AccountNumber = acctNumber,
                                                     CustomerName = customerName,
@@ -176,8 +178,8 @@ namespace MISReports_Api.DAL.Collection
                     }
                 }
 
-                // 4. Order final results globally by AreaName ASC, then by ArrearsBalance DESC
-                finalResults = finalResults.OrderBy(r => r.AreaName).ThenByDescending(r => r.ArrearsBalance).ToList();
+                // 4. Order final results globally by Province ASC, AreaName ASC, then by ArrearsBalance DESC
+                finalResults = finalResults.OrderBy(r => r.Province).ThenBy(r => r.AreaName).ThenByDescending(r => r.ArrearsBalance).ToList();
                 logger.Info($"=== END CustomersHighestOutstanding GetReportData (Success) - {finalResults.Count} records ===");
             }
             catch (Exception ex)
@@ -200,7 +202,11 @@ namespace MISReports_Api.DAL.Collection
 
                 if (request.Scope.Equals("Province", StringComparison.OrdinalIgnoreCase))
                 {
-                    sql = "SELECT area_code, area_name, prov_code FROM areas WHERE prov_code = ? ORDER BY area_name";
+                    sql = @"SELECT a.area_code, a.area_name, a.prov_code, p.prov_name 
+                            FROM areas a 
+                            LEFT JOIN prov_servers p ON TRIM(a.prov_code) = TRIM(p.prov_code) 
+                            WHERE a.prov_code = ? 
+                            ORDER BY a.area_name";
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("?", request.ProvinceCode.Trim());
@@ -212,7 +218,8 @@ namespace MISReports_Api.DAL.Collection
                                 {
                                     AreaCode = reader[0]?.ToString().Trim(),
                                     AreaName = reader[1]?.ToString().Trim(),
-                                    ProvCode = reader[2]?.ToString().Trim()
+                                    ProvCode = reader[2]?.ToString().Trim(),
+                                    Province = reader[3]?.ToString().Trim()
                                 });
                             }
                         }
@@ -220,7 +227,11 @@ namespace MISReports_Api.DAL.Collection
                 }
                 else
                 {
-                    sql = "SELECT area_code, area_name, prov_code FROM areas WHERE region = ? ORDER BY area_name";
+                    sql = @"SELECT a.area_code, a.area_name, a.prov_code, p.prov_name 
+                            FROM areas a 
+                            LEFT JOIN prov_servers p ON TRIM(a.prov_code) = TRIM(p.prov_code) 
+                            WHERE a.region = ? 
+                            ORDER BY a.area_name";
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("?", request.RegionCode.Trim());
@@ -232,7 +243,8 @@ namespace MISReports_Api.DAL.Collection
                                 {
                                     AreaCode = reader[0]?.ToString().Trim(),
                                     AreaName = reader[1]?.ToString().Trim(),
-                                    ProvCode = reader[2]?.ToString().Trim()
+                                    ProvCode = reader[2]?.ToString().Trim(),
+                                    Province = reader[3]?.ToString().Trim()
                                 });
                             }
                         }

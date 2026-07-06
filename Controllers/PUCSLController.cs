@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection;
+using MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection;
 using MISReports_Api.Models.PUCSLReports.PUCSLSolarConnection;
 using MISReports_Api.DAL.PUCSLReports;
 using MISReports_Api.Models.PUCSLReports;

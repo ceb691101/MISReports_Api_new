@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -353,7 +353,6 @@
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
-    <Compile Include="Controllers\CustomersHighestOutstandingController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
@@ -467,6 +466,7 @@
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
     <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
+    <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
@@ -536,6 +536,7 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
@@ -574,6 +575,7 @@
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\FixedSolarDataDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\NetMeteringDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\RawDataForSolarDao.cs" />
+    <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\SolarDataUNTCalculationDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\TotalSolarCustomersDao.cs" />
     <Compile Include="DAL\PUCSLReports\PUCSLSolarConnection\VariableSolarDataDao.cs" />
     <Compile Include="DAL\RepRoleReport\RepRoleReportRepository.cs" />
@@ -753,6 +755,7 @@
     <Compile Include="Models\PIV\RegionWiseVatReportModel.cs" />
     <Compile Include="Models\PIV\StampDutyDetailedModel.cs" />
     <Compile Include="Models\PIV\TypewisePIVModel.cs" />
+    <Compile Include="Models\PUCSLReports\SolarDataUNTCalculationModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\RawDataForSolarModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\TotalSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\PUCSLSolarConnection\VariableSolarDataModel.cs" />
@@ -805,7 +808,6 @@
     <Compile Include="Services\Admin\Report_Parameters\ReportParameterService.cs" />
     <Compile Include="Models\Collection\HeadOfficePOSCollectionModel.cs" />
     <Compile Include="DAL\Collection\HeadOfficePOSCollectionDao.cs" />
-    <Compile Include="Controllers\HeadOfficePOSCollectionController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
