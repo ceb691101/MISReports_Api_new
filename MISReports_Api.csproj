@@ -505,6 +505,8 @@
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
+    <Compile Include="DAL\PUCSLReports\BulkPUCSLSolarCustomersDao.cs" />
+    <Compile Include="DAL\PUCSLReports\OrdinaryPUCSLSolarCustomersDao.cs" />
     <Compile Include="DAL\ReportParamFlagsRepository.cs" />
     <Compile Include="DAL\Shared\ArrearsPositionbillcycleDao.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
@@ -542,6 +544,8 @@
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
+    <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
+    <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
