@@ -87,14 +87,12 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
                         {
                             while (reader.Read())
                             {
-                                // Ordinal mapping mirrors original VB: rs(3), rs(6), rs(7), rs(8), rs(17), rs(18)
-                                decimal col3 = GetDecimal(reader, 3);
-                                decimal col6 = GetDecimal(reader, 6);
-                                decimal col7 = GetDecimal(reader, 7);
-                                decimal col8 = GetDecimal(reader, 8);
-                                string pCode = GetString(reader, 17);
-                                string aName = GetString(reader, 18);
-                                // Read area_code by name — used to match bulk DB rows
+                                decimal monChg = GetDecimalByName(reader, "mon_chg");
+                                decimal un_chg = GetDecimalByName(reader, "un_chg");
+                                decimal ov_chg = GetDecimalByName(reader, "ov_chg");
+                                decimal payments = GetDecimalByName(reader, "payments");
+                                string pCode = GetStringByName(reader, "prov_code");
+                                string aName = GetStringByName(reader, "area_name");
                                 string aCode = GetStringByName(reader, "area_code");
 
                                 var row = new SalesAndCollectionModel
@@ -102,8 +100,8 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
                                     ProvinceCode = pCode,
                                     AreaCode = aCode,
                                     AreaName = aName,
-                                    RawOrdinarySupply = col3 + col6 - col7,
-                                    RawOrdinaryCollection = col8
+                                    RawOrdinarySupply = monChg + un_chg - ov_chg,
+                                    RawOrdinaryCollection = payments
                                 };
 
                                 rows.Add(row);
@@ -127,13 +125,14 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
             List<SalesAndCollectionModel> ordinaryRows)
         {
             const string bulkSql =
-                "SELECT * FROM receive_position r, areas a " +
+                "SELECT r.mon_chg, r.un_chg, r.ov_chg, r.payments " +
+                "FROM receive_position r, areas a " +
                 "WHERE r.bill_cycle = ? AND r.bill_type = 'B' " +
                 "AND r.area_code = ? AND a.area_code = r.area_code";
 
             try
             {
-                using (var conn = _dbConnection.GetConnection(true)) // bulk
+                using (var conn = _dbConnection.GetConnection(false)) // ordinary summary DB
                 {
                     conn.Open();
 
@@ -151,13 +150,13 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
                                 {
                                     if (reader.Read())
                                     {
-                                        decimal col3 = GetDecimal(reader, 3);
-                                        decimal col6 = GetDecimal(reader, 6);
-                                        decimal col7 = GetDecimal(reader, 7);
-                                        decimal col8 = GetDecimal(reader, 8);
+                                        decimal monChg = GetDecimalByName(reader, "mon_chg");
+                                        decimal un_chg = GetDecimalByName(reader, "un_chg");
+                                        decimal ov_chg = GetDecimalByName(reader, "ov_chg");
+                                        decimal payments = GetDecimalByName(reader, "payments");
 
-                                        row.RawBulkSupply = col3 + col6 - col7;
-                                        row.RawBulkCollection = col8;
+                                        row.RawBulkSupply = monChg + un_chg - ov_chg;
+                                        row.RawBulkCollection = payments;
                                     }
                                     // If no bulk row exists, bulk fields remain 0
                                 }
@@ -192,7 +191,8 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
             {
                 case SalesCollectionReportType.Region:
                     return
-                        "SELECT * FROM receive_position r, areas a, provinces p " +
+                        "SELECT r.mon_chg, r.un_chg, r.ov_chg, r.payments, a.prov_code, a.area_name, r.area_code " +
+                        "FROM receive_position r, areas a, provinces p " +
                         "WHERE r.bill_cycle = ? AND r.bill_type = 'O' " +
                         "AND r.area_code = a.area_code AND a.area_code = r.area_code " +
                         "AND a.prov_code = p.prov_code " +
@@ -202,7 +202,8 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
 
                 case SalesCollectionReportType.Province:
                     return
-                        "SELECT * FROM receive_position r, areas a, provinces p " +
+                        "SELECT r.mon_chg, r.un_chg, r.ov_chg, r.payments, a.prov_code, a.area_name, r.area_code " +
+                        "FROM receive_position r, areas a, provinces p " +
                         "WHERE r.bill_cycle = ? AND r.bill_type = 'O' " +
                         "AND r.area_code = a.area_code AND a.area_code = r.area_code " +
                         "AND a.prov_code = p.prov_code " +
@@ -212,7 +213,8 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
 
                 default: // EntireCEB
                     return
-                        "SELECT * FROM receive_position r, areas a, provinces p " +
+                        "SELECT r.mon_chg, r.un_chg, r.ov_chg, r.payments, a.prov_code, a.area_name, r.area_code " +
+                        "FROM receive_position r, areas a, provinces p " +
                         "WHERE r.bill_cycle = ? AND r.bill_type = 'O' " +
                         "AND r.area_code = a.area_code AND a.area_code = r.area_code " +
                         "AND a.prov_code = p.prov_code " +
@@ -260,6 +262,16 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
                 return reader.IsDBNull(ordinal) ? "" : reader.GetValue(ordinal).ToString().Trim();
             }
             catch { return ""; }
+        }
+
+        private static decimal GetDecimalByName(OleDbDataReader reader, string columnName)
+        {
+            try
+            {
+                int ordinal = reader.GetOrdinal(columnName);
+                return reader.IsDBNull(ordinal) ? 0 : Convert.ToDecimal(reader.GetValue(ordinal));
+            }
+            catch { return 0; }
         }
     }
 }
