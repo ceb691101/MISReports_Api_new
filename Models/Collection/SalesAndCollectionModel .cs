@@ -29,17 +29,19 @@ namespace MISReports_Api.Models.Collection
         public string AreaName { get; set; }
 
         // --- Ordinary supply (from ordinary DB receive_position) ---
-        // ord_sup = rs(3) + rs(6) - rs(7)  i.e. col3 + col6 - col7
+        // ord_sup = mon_chg + debits - credits
         public decimal RawOrdinarySupply { get; set; }
 
         // --- Bulk supply (from bulk DB receive_position) ---
-        // bulk_sup = dr(3) + dr(6) - dr(7)
+        // bulk_sup = mon_chg + debits - credits
         public decimal RawBulkSupply { get; set; }
 
-        // --- Ordinary collection (col 8 from ordinary DB) ---
+        // --- Ordinary collection (from ordinary DB receive_position) ---
+        // ord_collect = payments
         public decimal RawOrdinaryCollection { get; set; }
 
-        // --- Bulk collection (col 8 from bulk DB) ---
+        // --- Bulk collection (from bulk DB receive_position) ---
+        // bulk_collect = payments
         public decimal RawBulkCollection { get; set; }
 
         // --- Computed fields ---
