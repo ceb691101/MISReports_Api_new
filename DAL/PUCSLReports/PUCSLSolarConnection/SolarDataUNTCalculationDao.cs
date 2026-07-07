@@ -29,10 +29,17 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 Data = new List<SolarDataUNTCalculationModel>()
             };
 
+            if (request.SolarType != SolarNetType.NetMetering)
+            {
+                logger.Warn($"SolarType {request.SolarType} is not supported for Solar Data UNT Calculation report.");
+                response.ErrorMessage = $"{request.SolarType} is not supported for Solar Data UNT Calculation report. Please select Net Metering.";
+                return response;
+            }
+
             try
             {
                 logger.Info("=== START GetSolarDataUNTReport ===");
-                logger.Info($"Category={request.ReportCategory}, TypeCode={request.TypeCode}, BillCycle={request.BillCycle}");
+                logger.Info($"Category={request.ReportCategory}, TypeCode={request.TypeCode}, BillCycle={request.BillCycle}, SolarType={request.SolarType}");
 
                 SolarReportType reportType = MapReportType(request.ReportCategory);
 
