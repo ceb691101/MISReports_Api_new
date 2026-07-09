@@ -14,7 +14,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly CashSheetDAL _dal = new CashSheetDAL();
 
-        // PATH: /api/cashsheet/report/2022/05/510.00
+        // PATH: /api/cashsheet/report/year/month/costctr
         [HttpGet]
         [Route("report/{repYear:regex(^\\d{4}$)}/{repMonth:regex(^\\d{1,2}$)}/{costCtr}")]
         public IHttpActionResult GetReport(string repYear, string repMonth, string costCtr)
@@ -22,7 +22,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(repYear, repMonth, costCtr);
         }
 
-        // QUERY: /api/cashsheet/report?repYear=2022&repMonth=05&costCtr=510.00
+        // QUERY: /api/cashsheet/report?repYear=...&repMonth=...&costCtr=...
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string costCtr)
