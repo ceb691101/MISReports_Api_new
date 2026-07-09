@@ -159,6 +159,7 @@
     </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
@@ -188,7 +189,7 @@
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.23.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>packages\Oracle.ManagedDataAccess.23.26.200\lib\net472\Oracle.ManagedDataAccess.dll</HintPath>
-    </Reference>
+    </Reference>  
     <Reference Include="PdfSharp, Version=6.2.4.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <HintPath>packages\PDFsharp.6.2.4\lib\netstandard2.0\PdfSharp.dll</HintPath>
     </Reference>
@@ -836,7 +837,6 @@
     <Compile Include="Services\Admin\Report_Parameters\ReportParameterService.cs" />
     <Compile Include="Models\Collection\HeadOfficePOSCollectionModel.cs" />
     <Compile Include="DAL\Collection\HeadOfficePOSCollectionDao.cs" />
-    <Compile Include="Controllers\HeadOfficePOSCollectionController.cs" />
     <Compile Include="Services\Reporting\SolarPendingJobsRdlcReportService.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
