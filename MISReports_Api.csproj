@@ -467,7 +467,7 @@
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
-    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
+    <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
