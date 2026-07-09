@@ -14,6 +14,7 @@ namespace MISReports_Api.Controllers.DgmDashboard
     public class DgmDashboardController : ApiController
     {
         private static readonly DgmPivTotalDao DgmPivTotalDao = new DgmPivTotalDao();
+        private static readonly DgmPivPeriodSummaryDao DgmPivPeriodSummaryDao = new DgmPivPeriodSummaryDao();
         private static readonly DgmStockValueDao DgmStockValueDao = new DgmStockValueDao();
         private static readonly DgmAppCountDao DgmAppCountDao = new DgmAppCountDao();
         private static readonly DgmConnectionGivenDao DgmConnectionGivenDao = new DgmConnectionGivenDao();
@@ -85,31 +86,54 @@ namespace MISReports_Api.Controllers.DgmDashboard
 
         [HttpGet]
         [Route("piv-total")]
-        public IHttpActionResult GetPivTotal(bool refresh = false)
+        public IHttpActionResult GetPivTotal(string companyId = "WPN", bool refresh = false)
         {
+            string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
+            string cacheKey = $"dgm-piv-total-{targetCompany}";
             if (refresh)
             {
-                Cache.TryRemove("dgm-piv-total", out _);
+                Cache.TryRemove(cacheKey, out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("dgm-piv-total", () =>
-                ExecuteWithTiming("dgm-piv-total", DgmPivTotalDao.Fetch));
+            var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
+                ExecuteWithTiming(cacheKey, () => DgmPivTotalDao.Fetch(targetCompany)));
+            return Ok(meta);
+        }
+
+        [HttpGet]
+        [Route("piv-period-summary")]
+        public IHttpActionResult GetPivPeriodSummary(string companyId = "WPN", string startDate = null, string endDate = null, bool refresh = false)
+        {
+            string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
+            string cacheKey = $"dgm-piv-period-summary-{targetCompany}-{startDate ?? ""}-{endDate ?? ""}";
+            if (refresh)
+            {
+                Cache.TryRemove(cacheKey, out _);
+            }
+
+            var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
+                ExecuteWithTiming(cacheKey, () => new DgmPivPeriodSummaryModel
+                {
+                    pivCollection = DgmPivPeriodSummaryDao.Fetch(targetCompany, startDate, endDate)
+                }));
             return Ok(meta);
         }
 
         [HttpGet]
         [Route("stock-value")]
-        public IHttpActionResult GetStockValue(bool refresh = false)
+        public IHttpActionResult GetStockValue(string companyId = "WPN", bool refresh = false)
         {
+            string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
+            string cacheKey = $"dgm-stock-value-{targetCompany}";
             if (refresh)
             {
-                Cache.TryRemove("dgm-stock-value", out _);
+                Cache.TryRemove(cacheKey, out _);
             }
 
-            var meta = GetOrReturnStaleAndRefreshWithMetadata("dgm-stock-value", () =>
-                ExecuteWithTiming("dgm-stock-value", () => new DgmStockValueModel
+            var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
+                ExecuteWithTiming(cacheKey, () => new DgmStockValueModel
                 {
-                    stockValue = DgmStockValueDao.Fetch()
+                    stockValue = DgmStockValueDao.Fetch(targetCompany)
                 }));
             return Ok(meta);
         }

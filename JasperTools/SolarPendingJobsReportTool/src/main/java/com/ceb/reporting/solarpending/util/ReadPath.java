@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ReadPath {
@@ -16,7 +17,7 @@ public class ReadPath {
     public String getPath(String reportType) throws IOException {
         Properties properties = new Properties();
 
-        Path externalPath = Path.of(System.getProperty("user.home"), "Downloads", PROP_FILE);
+        Path externalPath = Paths.get(System.getProperty("user.home"), "Downloads", PROP_FILE);
         if (Files.exists(externalPath)) {
             try (InputStream inputStream = Files.newInputStream(externalPath)) {
                 properties.load(inputStream);
@@ -61,7 +62,7 @@ public class ReadPath {
         }
 
         if (path.startsWith("C:/Users/") || path.startsWith("c:/Users/")) {
-            Path p = Path.of(path);
+            Path p = Paths.get(path);
             if (!Files.exists(p)) {
                 int desktopIdx = path.indexOf("/Desktop/");
                 if (desktopIdx != -1) {

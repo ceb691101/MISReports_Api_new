@@ -1,10 +1,27 @@
 package com.ceb.reporting.phvvalidation.cli;
 
-public record CommandLineOptions(
-        String inputJsonPath,
-        String outputPdfPath,
-        String templatePath,
-        String costCenterLabel,
-        int reportYear,
-        int reportMonth) {
+public class CommandLineOptions {
+    private final String inputJsonPath;
+    private final String outputPdfPath;
+    private final String templatePath;
+    private final String costCenterLabel;
+    private final int reportYear;
+    private final int reportMonth;
+
+    public CommandLineOptions(String inputJsonPath, String outputPdfPath, String templatePath,
+                              String costCenterLabel, int reportYear, int reportMonth) {
+        this.inputJsonPath = inputJsonPath;
+        this.outputPdfPath = outputPdfPath;
+        this.templatePath = templatePath;
+        this.costCenterLabel = costCenterLabel;
+        this.reportYear = reportYear;
+        this.reportMonth = reportMonth;
+    }
+
+    public String inputJsonPath() { return inputJsonPath; }
+    public String outputPdfPath() { return outputPdfPath; }
+    public String templatePath() { return templatePath; }
+    public String costCenterLabel() { return costCenterLabel; }
+    public int reportYear() { return reportYear; }
+    public int reportMonth() { return reportMonth; }
 }

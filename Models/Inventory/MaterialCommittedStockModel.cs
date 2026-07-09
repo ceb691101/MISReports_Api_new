@@ -1,14 +1,16 @@
-﻿namespace MISReports_Api.Models
+namespace MISReports_Api.Models
 {
     public class MaterialCommittedStockModel
     {
+        public string DeptId { get; set; }
+        public string WrhCd { get; set; }
         public string MatCd { get; set; }
         public string MatNm { get; set; }
-        public decimal CommittedCost { get; set; }
-        public string DeptInfo { get; set; }
-        public string Area { get; set; }
-        public string UomCd { get; set; }
-        public string Region { get; set; }
+        public string GradeCd { get; set; }
+        public string Major { get; set; }
+        public decimal QtyOnHand { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal Value { get; set; }
     }
 
     public class MaterialCommittedStockProvinceModel
