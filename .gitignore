@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Java / Maven build output
+*.class
+target/
+*.jar
+!JasperTools/**/src/
