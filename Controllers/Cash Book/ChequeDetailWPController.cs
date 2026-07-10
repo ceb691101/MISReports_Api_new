@@ -26,7 +26,6 @@ namespace MISReports_Api.Controllers
         }
 
         // QUERY: /api/chequedetailwp/report?fromDate=2022-01-01&toDate=2022-03-01&costCtr=510.00
-        //aaaaa
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
