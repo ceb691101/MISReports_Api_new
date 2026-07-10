@@ -6,6 +6,6 @@ namespace MISReports_Api.Models
     {
         public string MatCd { get; set; }
         public string MatNm { get; set; }
-        public string ErrorMessage { get; set; } 
+        public string ErrorMessage { get; set; }
     }
 }
