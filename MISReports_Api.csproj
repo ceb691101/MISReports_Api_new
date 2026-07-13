@@ -355,6 +355,7 @@
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
+    <Compile Include="Controllers\Cash Book\ChequeDetailsExpController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
@@ -473,6 +474,7 @@
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDateRangePayeeDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeDetailsExpDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
@@ -551,6 +553,7 @@
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
