@@ -16,13 +16,14 @@ namespace MISReports_Api.DAL.BillMap
             var result = new List<BillMapModel>();
 
             string sql = @"
-                SELECT
-                    b.BILL_MAP,
-                    b.COMP_NM
-                FROM REP_ROLE_NEW r
-                JOIN REP_BILL_MAP b
-                    ON TRIM(b.COMP_ID) = TRIM(r.COMPANY)
-                WHERE r.EPF_NO = :epf_no";
+        SELECT
+            b.BILL_MAP,
+            b.COMP_NM,
+            b.LEVEL_NO
+        FROM REP_ROLE_NEW r
+        JOIN REP_BILL_MAP b
+            ON TRIM(b.COMP_ID) = TRIM(r.COMPANY)
+        WHERE r.EPF_NO = :epf_no";
 
             using (var conn = new OracleConnection(_connectionString))
             using (var cmd = new OracleCommand(sql, conn))
@@ -40,7 +41,8 @@ namespace MISReports_Api.DAL.BillMap
                         result.Add(new BillMapModel
                         {
                             BillMap = reader["BILL_MAP"]?.ToString(),
-                            CompanyName = reader["COMP_NM"]?.ToString()
+                            CompanyName = reader["COMP_NM"]?.ToString(),
+                            LevelNo = reader["LEVEL_NO"]?.ToString()
                         });
                     }
                 }
