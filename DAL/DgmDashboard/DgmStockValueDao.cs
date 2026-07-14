@@ -8,7 +8,7 @@ namespace MISReports_Api.DAL.DgmDashboard
         private static readonly string ConnectionString = System.Configuration.ConfigurationManager
             .ConnectionStrings["HQOracle"].ConnectionString;
 
-        public double Fetch()
+        public double Fetch(string companyId)
         {
             double total = 0;
 
@@ -28,16 +28,21 @@ namespace MISReports_Api.DAL.DgmDashboard
                             select comp_id 
                             from glcompm
                             where status = 2 
-                            and (comp_id = 'WPN' or parent_id = 'WPN')
+                            and (TRIM(comp_id) = :companyId1 or TRIM(parent_id) = :companyId2)
                         )
                     )";
 
                 using (OracleCommand cmd = new OracleCommand(query, conn))
-                using (OracleDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read() && !reader.IsDBNull(0))
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
+                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
+                    using (OracleDataReader reader = cmd.ExecuteReader())
                     {
-                        total = Convert.ToDouble(reader.GetValue(0));
+                        if (reader.Read() && !reader.IsDBNull(0))
+                        {
+                            total = Convert.ToDouble(reader.GetValue(0));
+                        }
                     }
                 }
             }

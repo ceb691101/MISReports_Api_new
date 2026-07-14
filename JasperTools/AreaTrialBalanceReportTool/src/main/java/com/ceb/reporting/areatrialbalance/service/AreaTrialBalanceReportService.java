@@ -13,8 +13,10 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +25,8 @@ public class AreaTrialBalanceReportService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void generate(CommandLineOptions options) throws Exception {
-        Path inputPath = Path.of(options.inputJsonPath());
-        Path outputPath = Path.of(options.outputPdfPath());
+        Path inputPath = Paths.get(options.inputJsonPath());
+        Path outputPath = Paths.get(options.outputPdfPath());
         Path templatePath = resolveTemplatePath(options.templatePath());
 
         List<AreaTrialBalanceRow> rows = readRows(inputPath);
@@ -61,7 +63,7 @@ public class AreaTrialBalanceReportService {
 
     private List<AreaTrialBalanceRow> readRows(Path inputPath) throws IOException {
         return objectMapper.readValue(
-                Files.readString(inputPath),
+                new String(Files.readAllBytes(inputPath), StandardCharsets.UTF_8),
                 new TypeReference<List<AreaTrialBalanceRow>>() {
                 });
     }
@@ -77,10 +79,21 @@ public class AreaTrialBalanceReportService {
     }
 
     private Path resolveTemplatePath(String fallbackTemplatePath) throws IOException {
-        String configuredPath = new ReadPath().getPath();
-        if (configuredPath != null && !configuredPath.isBlank()) {
-            return Path.of(configuredPath);
+        // 1. Prefer the CLI --template argument when it points to an existing file
+        if (fallbackTemplatePath != null && !fallbackTemplatePath.trim().isEmpty()) {
+            Path cliPath = Paths.get(fallbackTemplatePath);
+            if (Files.exists(cliPath)) {
+                return cliPath;
+            }
         }
-        return Path.of(fallbackTemplatePath);
+
+        // 2. Fall back to the path from pathConfig.properties
+        String configuredPath = new ReadPath().getPath();
+        if (configuredPath != null && !configuredPath.trim().isEmpty()) {
+            return Paths.get(configuredPath);
+        }
+
+        // 3. Last resort: return the CLI path even if it doesn't exist (will fail with a clear error)
+        return Paths.get(fallbackTemplatePath);
     }
 }

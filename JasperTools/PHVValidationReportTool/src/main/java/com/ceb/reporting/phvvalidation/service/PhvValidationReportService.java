@@ -12,8 +12,10 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +24,9 @@ public class PhvValidationReportService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void generate(CommandLineOptions options) throws Exception {
-        Path inputPath = Path.of(options.inputJsonPath());
-        Path outputPath = Path.of(options.outputPdfPath());
-        Path templatePath = Path.of(options.templatePath());
+        Path inputPath = Paths.get(options.inputJsonPath());
+        Path outputPath = Paths.get(options.outputPdfPath());
+        Path templatePath = Paths.get(options.templatePath());
 
         List<PhvValidationRow> rows = readRows(inputPath);
         if (rows.isEmpty()) {
@@ -53,7 +55,7 @@ public class PhvValidationReportService {
 
     private List<PhvValidationRow> readRows(Path inputPath) throws IOException {
         return objectMapper.readValue(
-                Files.readString(inputPath),
+                new String(Files.readAllBytes(inputPath), StandardCharsets.UTF_8),
                 new TypeReference<List<PhvValidationRow>>() {
                 });
     }

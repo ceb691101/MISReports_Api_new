@@ -33,7 +33,7 @@ public final class CommandLineParser {
 
     private static String require(Map<String, String> values, String key) {
         String value = values.get(key);
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException("Missing required argument: --" + key);
         }
         return value;

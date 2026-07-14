@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -138,6 +138,9 @@
     </Reference>
     <Reference Include="Microsoft.Net.Http.Headers, Version=2.3.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Net.Http.Headers.2.3.0\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -364,7 +367,10 @@
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
+    <Compile Include="Controllers\Inventory\CcwiseissueController.cs" />
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
+    <Compile Include="Controllers\Inventory\IssueReceiptWPController.cs" />
+    <Compile Include="Controllers\Inventory\MaterialMasterController.cs" />
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
     <Compile Include="Controllers\Inventory\MaterialCommittedStockController.cs" />
     <Compile Include="Controllers\Inventory\QtyonHandAllRegionController.cs" />
@@ -472,8 +478,7 @@
     <Compile Include="DAL\Cash Book\ChequeDetailsExpDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
-    <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
-    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
+    <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
@@ -486,6 +491,7 @@
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmPivTotalDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmPivPeriodSummaryDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
@@ -506,7 +512,10 @@
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
+    <Compile Include="DAL\Inventory\Ccwiseissuedal.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
+    <Compile Include="DAL\Inventory\IssueReceiptWPDAL.cs" />
+    <Compile Include="DAL\Inventory\MaterialMasterDAL.cs" />
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
     <Compile Include="DAL\Inventory\MaterialCommittedStockRepository.cs" />
     <Compile Include="DAL\Inventory\QtyonHandAllRegionRepository.cs" />
@@ -551,12 +560,16 @@
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
+    <Compile Include="Models\Inventory\Ccwiseissuemodel.cs" />
+    <Compile Include="Models\Inventory\MaterialMasterModel.cs" />
+    <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
@@ -861,6 +874,9 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -894,7 +910,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeDetailWP\" />
+    <Folder Include="Views\IssueReceiptWP\" />
+    <Folder Include="Views\MaterialMaster\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

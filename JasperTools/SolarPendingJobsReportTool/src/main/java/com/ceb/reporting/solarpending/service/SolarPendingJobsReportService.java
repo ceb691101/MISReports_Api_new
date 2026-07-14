@@ -17,8 +17,10 @@ import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,8 +32,8 @@ public class SolarPendingJobsReportService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void generate(CommandLineOptions options) throws Exception {
-        Path inputPath = Path.of(options.inputJsonPath());
-        Path outputPath = Path.of(options.outputPdfPath());
+        Path inputPath = Paths.get(options.inputJsonPath());
+        Path outputPath = Paths.get(options.outputPdfPath());
         Path templatePath = resolveTemplatePath(options.templatePath());
 
         List<SolarPendingJobsRow> rows = readRows(inputPath);
@@ -79,7 +81,7 @@ public class SolarPendingJobsReportService {
 
     private List<SolarPendingJobsRow> readRows(Path inputPath) throws IOException {
         return objectMapper.readValue(
-                Files.readString(inputPath),
+                new String(Files.readAllBytes(inputPath), StandardCharsets.UTF_8),
                 new TypeReference<List<SolarPendingJobsRow>>() {
                 });
     }
@@ -102,7 +104,7 @@ public class SolarPendingJobsReportService {
     }
 
     private String formatDate(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return value;
         }
 
@@ -133,13 +135,13 @@ public class SolarPendingJobsReportService {
 
     private Path resolveTemplatePath(String fallbackTemplatePath) throws IOException {
         String configuredPath = new ReadPath().getPath();
-        if (configuredPath != null && !configuredPath.isBlank()) {
-            Path configured = Path.of(configuredPath);
+        if (configuredPath != null && !configuredPath.trim().isEmpty()) {
+            Path configured = Paths.get(configuredPath);
             if (Files.exists(configured)) {
                 return configured;
             }
         }
 
-        return Path.of(fallbackTemplatePath);
+        return Paths.get(fallbackTemplatePath);
     }
 }
