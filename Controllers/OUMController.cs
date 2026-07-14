@@ -183,7 +183,7 @@ namespace MISReports_Api.Controllers
                     {
                         message = "CrdTemp table refreshed successfully",
                         recordCount = records.Count,
-                        records = records
+                        records = records 
                     },
                     errorMessage = (string)null
                 }));
