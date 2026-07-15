@@ -311,7 +311,7 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
         }
 
         // ================================================================
-        //  GET ORDINARY DATA
+        //  GET ORDINARY DATA NET METERING
         // ================================================================
         private (int customers, decimal unitsExp, decimal unitsImp) GetOrdinaryData(SolarReportType rt, string typeCode,
             string calcCycle, string tariffCode)
@@ -381,7 +381,7 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
         }
 
         // ================================================================
-        //  GET BULK DATA
+        //  GET BULK DATA NET METERING
         // ================================================================
         private (int customers, decimal unitsExp, decimal unitsImp, decimal unitsImpPeak, decimal unitsImpOffPeak) GetBulkData(
             SolarReportType rt, string typeCode, string billCycle, string tariff)
