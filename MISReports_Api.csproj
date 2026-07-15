@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -359,6 +359,7 @@
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
+    <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
@@ -478,6 +479,8 @@
     <Compile Include="DAL\Cash Book\ChequeDetailsExpDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
+    <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
+    <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
@@ -557,6 +560,7 @@
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
+    <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
