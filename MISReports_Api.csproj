@@ -368,8 +368,10 @@
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
     <Compile Include="Controllers\Inventory\CcwiseissueController.cs" />
+    <Compile Include="Controllers\Inventory\GrnRaisedForPurchasingController.cs" />
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
     <Compile Include="Controllers\Inventory\IssueReceiptWPController.cs" />
+    <Compile Include="Controllers\Inventory\IssuesRaisedForJobsController.cs" />
     <Compile Include="Controllers\Inventory\MaterialMasterController.cs" />
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
     <Compile Include="Controllers\Inventory\MaterialCommittedStockController.cs" />
@@ -513,8 +515,10 @@
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
     <Compile Include="DAL\Inventory\Ccwiseissuedal.cs" />
+    <Compile Include="DAL\Inventory\GrnRaisedForPurchasingDAL.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
     <Compile Include="DAL\Inventory\IssueReceiptWPDAL.cs" />
+    <Compile Include="DAL\Inventory\IssuesRaisedForJobsDAL.cs" />
     <Compile Include="DAL\Inventory\MaterialMasterDAL.cs" />
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
     <Compile Include="DAL\Inventory\MaterialCommittedStockRepository.cs" />
@@ -568,6 +572,9 @@
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
     <Compile Include="Models\Inventory\Ccwiseissuemodel.cs" />
+    <Compile Include="Models\Inventory\GrnPeriodSummaryModel.cs" />
+    <Compile Include="Models\Inventory\GrnRaisedForPurchasingModels.cs" />
+    <Compile Include="Models\Inventory\IssuesRaisedForJobsModel.cs" />
     <Compile Include="Models\Inventory\MaterialMasterModel.cs" />
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
@@ -912,7 +919,9 @@
     <Folder Include="App_Data\" />
     <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeDetailWP\" />
+    <Folder Include="Views\GrnRaisedForPurchasing\" />
     <Folder Include="Views\IssueReceiptWP\" />
+    <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialMaster\" />
   </ItemGroup>
   <ItemGroup>
