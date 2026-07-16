@@ -357,6 +357,8 @@
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailsExpController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
+    <Compile Include="Controllers\Cash Book\ChequeSummaryController.cs" />
+    <Compile Include="Controllers\Cash Book\ChqDetailsExpRegionController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
@@ -478,6 +480,7 @@
     <Compile Include="DAL\Cash Book\CashSheetDateRangePayeeDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailsExpDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeSummaryDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
     <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
     <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
@@ -559,6 +562,7 @@
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
