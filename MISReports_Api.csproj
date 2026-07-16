@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -475,6 +475,7 @@
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
+    <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -548,6 +549,7 @@
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
+    <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
