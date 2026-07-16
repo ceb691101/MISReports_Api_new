@@ -368,6 +368,7 @@
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
+    <Compile Include="Controllers\Inventory\CcgrnnotgenController.cs" />
     <Compile Include="Controllers\Inventory\CcwiseissueController.cs" />
     <Compile Include="Controllers\Inventory\GrnRaisedForPurchasingController.cs" />
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
@@ -518,6 +519,7 @@
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
+    <Compile Include="DAL\Inventory\Ccgrnnotgendal.cs" />
     <Compile Include="DAL\Inventory\Ccwiseissuedal.cs" />
     <Compile Include="DAL\Inventory\GrnRaisedForPurchasingDAL.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
@@ -577,6 +579,7 @@
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
+    <Compile Include="Models\Inventory\Ccgrnnotgenmodel.cs" />
     <Compile Include="Models\Inventory\Ccwiseissuemodel.cs" />
     <Compile Include="Models\Inventory\GrnPeriodSummaryModel.cs" />
     <Compile Include="Models\Inventory\GrnRaisedForPurchasingModels.cs" />
@@ -923,6 +926,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeDetailWP\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
