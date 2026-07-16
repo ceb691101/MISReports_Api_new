@@ -486,6 +486,7 @@
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
+    <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -567,6 +568,7 @@
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
+    <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
