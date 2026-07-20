@@ -479,6 +479,7 @@
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDateRangePayeeDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailsExpDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeDetailsExpRegionDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeSummaryDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
@@ -561,6 +562,7 @@
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
