@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models;
+using MISReports_Api.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -155,7 +155,61 @@ STATUS_LOGIC AS (
                 WHEN b.app_base_status = 'P' THEN 'Application fee paid'
                 ELSE 'Unknown / Other stage'
             END
-        ) AS derived_status
+        ) AS derived_status,
+        COALESCE(
+            (SELECT CASE
+                WHEN L.account_no IS NOT NULL THEN 'Account Created. Account No - ' || L.account_no
+                WHEN L.exported_date IS NOT NULL THEN 'Ready to open an Account'
+                WHEN f.connected_date IS NOT NULL THEN 'Connection Given on ' || TO_CHAR(f.connected_date, 'YYYY/MM/DD')
+                WHEN t2.status = 3 THEN 'Account Created. Account No - ' || L.account_no
+                WHEN t2.status = 1 THEN 'Job Ongoing'
+                WHEN t2.status = 5 THEN 'Job on revising'
+                WHEN t2.status = 55 THEN 'Revised Job to be approved by Electrical Superintend(ES)'
+                WHEN t2.status = 56 THEN 'Revised Job to be approved by Engineer Assistant(EA)'
+                WHEN t2.status = 57 THEN 'Revised Job to be approved by Electrical Engineer(EE)'
+                WHEN t2.status = 58 THEN 'Revised Job to be approved by Deputy General Manager(DGM)'
+                WHEN t2.status = 61 THEN 'Revised Job to be approved by Chief Engineer(CE)'
+                WHEN t2.status = 41 THEN 'Job Ongoing'
+                WHEN t2.status = 60 THEN 'Supplementary Estimation Fee to be paid by the Customer'
+                WHEN t2.status = 22 THEN 'Ready to start the Job'
+             END
+             FROM pcesthmt t2
+             LEFT JOIN spodrcrd f ON TRIM(f.project_no) = TRIM(t2.project_no)
+             LEFT JOIN spexpjob L ON TRIM(L.project_no) = TRIM(t2.project_no)
+             WHERE TRIM(t2.project_no) = TRIM(b.projectno)
+               AND ROWNUM = 1
+            ),
+            (SELECT CASE
+                WHEN t2.status = 22 THEN 'Ready to start the Job'
+                WHEN t2.status = 1 THEN 'Job Ongoing'
+                WHEN t2.status = 41 THEN 'Job Ongoing'
+                WHEN t2.status = 60 THEN 'Supplementary Estimation Fee to be paid by the Customer'
+             END
+             FROM pcesthmt t2
+             WHERE TRIM(t2.project_no) = TRIM(b.projectno)
+               AND ROWNUM = 1
+            ),
+            (SELECT CASE
+                WHEN t2.status = 75 THEN 'Estimation on progress'
+                WHEN t2.status BETWEEN 44 AND 49 THEN 'Estimation approval pending'
+                WHEN t2.status = 31 THEN 'Estimation Rejected'
+                WHEN t2.status = 30 THEN 'Estimation Approved – PIV to issue'
+                WHEN t2.status = 33 THEN 'PIV2 Estimation Fee Paid'
+                WHEN t2.status = 22 THEN 'Job started'
+             END
+             FROM pcesthtt t2
+             WHERE TRIM(t2.estimate_no) = TRIM(b.application_no)
+               AND ROWNUM = 1
+            ),
+            CASE
+                WHEN b.app_base_status IN ('C','A') THEN 'Site visit pending (ESV)'
+                WHEN b.app_base_status = 'S' THEN 'Site visited – estimation pending'
+                WHEN b.app_base_status = 'E' THEN 'Estimation in progress'
+                WHEN b.app_base_status = 'N' THEN 'Application submitted – PIV1 pending'
+                WHEN b.app_base_status = 'P' THEN 'Application fee paid'
+                ELSE 'Unknown / Other stage'
+            END
+        ) AS customer_status
     FROM BASE b
 )
 SELECT
@@ -171,12 +225,12 @@ SELECT
     t.description AS application_type_desc,
     sl.submit_date,
     sl.derived_status,
-    app.telephone_no AS TEL,
-    app.mobile_no   AS MOBILE
+    sl.customer_status,
+    a.telephone_no AS TEL,
+    a.mobile_no   AS MOBILE
 FROM STATUS_LOGIC sl
 JOIN APPLICATIONS ap ON ap.application_id = sl.application_id
 LEFT JOIN APPLICANT a   ON a.id_no = sl.id_no
-LEFT JOIN APPLICANT app ON app.id_no = sl.id_no
 JOIN APPLICATIONTYPES t ON t.apptype = ap.application_type
 ORDER BY sl.submit_date DESC";
 
@@ -212,6 +266,7 @@ ORDER BY sl.submit_date DESC";
                                     ApplicationTypeDesc = SafeGetString(reader, "application_type_desc"),
                                     SubmitDate = SafeGetDateTime(reader, "submit_date"),
                                     Status = SafeGetString(reader, "derived_status"),
+                                    CustomerStatus = SafeGetString(reader, "customer_status"),
 
                                     // ── New fields ───────────────────────────────────────────────
                                     Telephone = SafeGetString(reader, "TEL"),
