@@ -2,6 +2,7 @@ using MISReports_Api.DAL.Collection.ReceivablePosition;
 using MISReports_Api.DAL.Collection.SalesAndCollection;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.Models.Collection;
+using MISReports_Api.DAL.Collection;
 using MISReports_Api.Models.Shared;
 using Newtonsoft.Json.Linq;
 using System;
@@ -28,6 +29,7 @@ namespace MISReports_Api.Controllers
         private readonly SalesAndCollectionDao _salesAndCollectionDao = new SalesAndCollectionDao();
         private readonly ReceivablePositionBillCycleDao _salesBillCycleDao = new ReceivablePositionBillCycleDao();
         private readonly ReceivablePositionBillCycleDao _receivePosBillCycleDao = new ReceivablePositionBillCycleDao();
+        private readonly SuspensePaymentDetailsDao _suspensePaymentDetailsDao = new SuspensePaymentDetailsDao();
         private readonly ProvinceDao _provinceDao = new ProvinceDao();
         private readonly RegionDao _regionDao = new RegionDao();
 
@@ -405,6 +407,75 @@ namespace MISReports_Api.Controllers
                 {
                     data = (object)null,
                     errorMessage = "Failed to fetch report data.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("suspense-payment-details")]
+        public IHttpActionResult GetSuspensePaymentDetails(
+    [FromUri] string fromDate,
+    [FromUri] string toDate,
+    [FromUri] bool isBulk = true)   // true = Bulk, false = Ordinary (matches the UI's default "Bulk" radio)
+        {
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(fromDate))
+                validationErrors.Add("From date is required.");
+
+            if (string.IsNullOrWhiteSpace(toDate))
+                validationErrors.Add("To date is required.");
+
+            if (validationErrors.Count > 0)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = string.Join("; ", validationErrors)
+                });
+            }
+
+            var request = new SuspensePaymentDetailsRequest
+            {
+                FromDate = fromDate,
+                ToDate = toDate,
+                IsBulk = isBulk
+            };
+
+            return ProcessSuspensePaymentDetailsRequest(request);
+        }
+
+        private IHttpActionResult ProcessSuspensePaymentDetailsRequest(SuspensePaymentDetailsRequest request)
+        {
+            try
+            {
+                if (!_suspensePaymentDetailsDao.TestConnection(out string connError))
+                {
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+                }
+
+                var data = request.IsBulk
+                    ? _suspensePaymentDetailsDao.GetBulkReport(request)
+                    : _suspensePaymentDetailsDao.GetOrdinaryReport(request);
+
+                return Ok(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get suspense payment details data.",
                     errorDetails = ex.Message
                 });
             }

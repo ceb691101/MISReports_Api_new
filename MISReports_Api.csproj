@@ -368,6 +368,8 @@
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
+    <Compile Include="Controllers\Inventory\BranchgrnnotgenController.cs" />
+    <Compile Include="Controllers\Inventory\CcgrnnotgenController.cs" />
     <Compile Include="Controllers\Inventory\CcwiseissueController.cs" />
     <Compile Include="Controllers\Inventory\GrnRaisedForPurchasingController.cs" />
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
@@ -486,6 +488,7 @@
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
+    <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -517,6 +520,8 @@
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
+    <Compile Include="DAL\Inventory\Branchgrnnotgendal.cs" />
+    <Compile Include="DAL\Inventory\Ccgrnnotgendal.cs" />
     <Compile Include="DAL\Inventory\Ccwiseissuedal.cs" />
     <Compile Include="DAL\Inventory\GrnRaisedForPurchasingDAL.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
@@ -567,6 +572,7 @@
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
+    <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
@@ -575,6 +581,8 @@
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
+    <Compile Include="Models\Inventory\Branchgrnnotgenmodel.cs" />
+    <Compile Include="Models\Inventory\Ccgrnnotgenmodel.cs" />
     <Compile Include="Models\Inventory\Ccwiseissuemodel.cs" />
     <Compile Include="Models\Inventory\GrnPeriodSummaryModel.cs" />
     <Compile Include="Models\Inventory\GrnRaisedForPurchasingModels.cs" />
@@ -921,6 +929,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Branchgrnnotgen\" />
+    <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeDetailWP\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
