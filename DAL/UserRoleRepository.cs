@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models;
+using MISReports_Api.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -21,9 +21,10 @@ namespace MISReports_Api.DAL
                 {
                     conn.Open();
 
-                    string sql = @"SELECT UPPER(r.roleid) AS RoleId,USERTYPE, COMPANY, r.USER_GROUP
-                                   FROM rep_role_new r
-                                   WHERE r.epf_no = :epf_no";
+                    string sql = @"SELECT UPPER(r.roleid) AS RoleId,USERTYPE, COMPANY, r.USER_GROUP,b.bill_map,b.level_no
+                                   FROM rep_role_new r , REP_BILL_MAP b
+                                   WHERE r.epf_no = :epf_no
+                                   AND trim(r.company)=trim(b.comp_id)";
 
                     using (var cmd = new OracleCommand(sql, conn))
                     {
@@ -39,7 +40,9 @@ namespace MISReports_Api.DAL
                                     RoleId = reader["RoleId"]?.ToString(),
                                     USERTYPE = reader["USERTYPE"]?.ToString(),
                                     COMPANY = reader["COMPANY"]?.ToString(),
-                                    UserGroup = reader["USER_GROUP"]?.ToString()
+                                    UserGroup = reader["USER_GROUP"]?.ToString(),
+                                    BillMap = reader["bill_map"]?.ToString(),
+                                    LevelNo = reader["level_no"]?.ToString()
                                 });
                             }
                         }
