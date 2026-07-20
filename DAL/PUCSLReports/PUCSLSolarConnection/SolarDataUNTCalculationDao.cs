@@ -58,6 +58,11 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 // Process each category
                 foreach (var category in categories)
                 {
+                    if (request.SolarType == SolarNetType.NetPlusPlus && category != "N++")
+                    {
+                        continue;
+                    }
+
                     var rowModel = new SolarDataUNTCalculationModel
                     {
                         Category = category,
@@ -317,17 +322,29 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
-                    string sql = "SELECT c.tariff_code FROM cat_tariff_table c, tariff_category t " +
-                                 "WHERE c.tariff_cat=t.tariff_cat AND t.tariff_cat=? AND cus_cat=?";
+                    string sql;
                     if (isNetPlusPlus)
                     {
-                        sql += " AND flag=1";
+                        sql = "SELECT c.tariff_code FROM cat_tariff_table c " +
+                              "WHERE c.cus_cat=? AND c.flag=1";
+                    }
+                    else
+                    {
+                        sql = "SELECT c.tariff_code FROM cat_tariff_table c, tariff_category t " +
+                              "WHERE c.tariff_cat=t.tariff_cat AND t.tariff_cat=? AND c.cus_cat=?";
                     }
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("?", category);
-                        cmd.Parameters.AddWithValue("?", cusCategory);
+                        if (isNetPlusPlus)
+                        {
+                            cmd.Parameters.AddWithValue("?", cusCategory);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", category);
+                            cmd.Parameters.AddWithValue("?", cusCategory);
+                        }
 
                         using (var reader = cmd.ExecuteReader())
                         {
