@@ -357,6 +357,7 @@
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
+    <Compile Include="Controllers\FIFO\PHVSlowMovingWHController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
@@ -490,6 +491,7 @@
     <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
+    <Compile Include="DAL\FIFO\PHVSlowMovingWHDAL.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
@@ -560,6 +562,7 @@
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
+    <Compile Include="Models\FIFO\PHVSlowMovingWHModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
     <Compile Include="Models\Inventory\Branchgrnnotgenmodel.cs" />
@@ -915,6 +918,7 @@
     <Folder Include="Views\IssueReceiptWP\" />
     <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialMaster\" />
+    <Folder Include="Views\PHVSlowMovingWH\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
