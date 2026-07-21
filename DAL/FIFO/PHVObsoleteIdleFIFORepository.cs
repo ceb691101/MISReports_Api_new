@@ -31,7 +31,8 @@ namespace MISReports_Api.DAL.FIFO
 
         public async Task<List<PHVObsoleteIdleFIFOModel>> GetPHVObsoleteIdleFIFOAsync(
             string deptId,
-            string warehouseCode)
+            string warehouseCode,
+            int repYear)
         {
             var result = new List<PHVObsoleteIdleFIFOModel>();
 
@@ -48,7 +49,7 @@ namespace MISReports_Api.DAL.FIFO
                                         (SELECT dept_nm FROM gldeptm WHERE dept_id = :dept_id) AS cct_name
                 FROM fifo_phv f, inmatm m
                 WHERE TRIM(f.mat_cd) = TRIM(m.mat_cd)
-                  AND f.status = 2020
+                  AND f.status = :rep_year
                                     AND TRIM(f.dept_id) = :dept_id
                                     AND TRIM(f.wrh_cd) = :wrh_cd
                 GROUP BY
@@ -68,6 +69,7 @@ namespace MISReports_Api.DAL.FIFO
                 cmd.BindByName = true;
                 cmd.Parameters.Add("dept_id", OracleDbType.Varchar2).Value = deptId.Trim();
                 cmd.Parameters.Add("wrh_cd", OracleDbType.Varchar2).Value = warehouseCode.Trim();
+                cmd.Parameters.Add("rep_Year", OracleDbType.Int32).Value = repYear;
 
                 await conn.OpenAsync();
 

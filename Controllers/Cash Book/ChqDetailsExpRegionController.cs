@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Web.Http;
 using MISReports_Api.DAL;
-using MISReports_Api.Models;
+using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
