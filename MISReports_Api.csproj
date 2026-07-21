@@ -494,7 +494,6 @@
     <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Cash Book\RegionPeriodStatusDAL.cs" />
-    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
@@ -956,8 +955,6 @@
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
     <Folder Include="Views\RegionPeriodStatus\" />
-    <Folder Include="Views\PHVNonMovingWH\" />
-    <Folder Include="Views\PHVSlowMovingWH\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
