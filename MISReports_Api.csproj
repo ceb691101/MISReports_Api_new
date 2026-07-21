@@ -362,6 +362,7 @@
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
+    <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
@@ -492,6 +493,8 @@
     <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
     <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
+    <Compile Include="DAL\Cash Book\RegionPeriodStatusDAL.cs" />
+    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
@@ -580,6 +583,7 @@
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
+    <Compile Include="Models\Cash Book\RegionPeriodStatusModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
@@ -949,6 +953,9 @@
     <Folder Include="Views\IssueReceiptWP\" />
     <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialMaster\" />
+    <Folder Include="Views\PHVNonMovingWH\" />
+    <Folder Include="Views\PHVSlowMovingWH\" />
+    <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
   </ItemGroup>
