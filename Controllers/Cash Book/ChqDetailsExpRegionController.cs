@@ -1,17 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using MISReports_Api.DAL;
 using MISReports_Api.Models.Accounts;
+
 namespace MISReports_Api.Controllers
 {
     [RoutePrefix("api/chqdetailsexpregion")]
     public class ChqDetailsExpRegionController : ApiController
     {
-        private readonly ChqDetailsExpRegionDAL _dal = new ChqDetailsExpRegionDAL();
+        private readonly ChequeDetailsExpRegionDAL _dal;
+
+        public ChqDetailsExpRegionController()
+        {
+            _dal = new ChequeDetailsExpRegionDAL(GetConnectionString());
+        }
 
         // PATH: /api/chqdetailsexpregion/report/2026-01-01/2026-01-31/100?glCode=6001
         // glCode is optional - omit or leave blank to match all account codes.
@@ -34,21 +42,24 @@ namespace MISReports_Api.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(fromDate) || !DateTime.TryParse(fromDate, out DateTime fromDt))
-                    return BadRequest("fromDate must be a valid date (e.g., 2026-01-01).");
-                if (string.IsNullOrWhiteSpace(toDate) || !DateTime.TryParse(toDate, out DateTime toDt))
-                    return BadRequest("toDate must be a valid date (e.g., 2026-01-31).");
+                // Parsed with an explicit format + InvariantCulture so behavior doesn't
+                // change depending on the server's regional settings (e.g. 01/02/2026
+                // being read as Jan 2 on one machine and Feb 1 on another).
+                if (string.IsNullOrWhiteSpace(fromDate) ||
+                    !DateTime.TryParseExact(fromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fromDt))
+                    return BadRequest("fromDate must be a valid date in yyyy-MM-dd format (e.g., 2026-01-01).");
+
+                if (string.IsNullOrWhiteSpace(toDate) ||
+                    !DateTime.TryParseExact(toDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime toDt))
+                    return BadRequest("toDate must be a valid date in yyyy-MM-dd format (e.g., 2026-01-31).");
+
                 if (toDt < fromDt)
                     return BadRequest("toDate cannot be earlier than fromDate.");
                 if (string.IsNullOrWhiteSpace(compId))
                     return BadRequest("compId is required.");
 
-                // SQL uses TO_DATE(:param,'yyyy/mm/dd'), so format to match the mask.
-                string fromDateFormatted = fromDt.ToString("yyyy/MM/dd");
-                string toDateFormatted = toDt.ToString("yyyy/MM/dd");
                 string glCodeValue = glCode?.Trim() ?? "";
-
-                var data = _dal.GetChqDetailsExpRegion(fromDateFormatted, toDateFormatted, compId.Trim(), glCodeValue);
+                var data = _dal.GetChequeDetailsExpRegionModel(compId.Trim(), glCodeValue, fromDt, toDt);
 
                 // Amount column has both positive and negative values (Dr/Cr), so the grand
                 // total is a straight sum, not an absolute-value sum.
@@ -89,6 +100,23 @@ namespace MISReports_Api.Controllers
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }
+        }
+
+        private static string GetConnectionString()
+        {
+            var connectionStringSetting = ConfigurationManager.ConnectionStrings["OracleDb"];
+            if (connectionStringSetting != null && !string.IsNullOrWhiteSpace(connectionStringSetting.ConnectionString))
+                return connectionStringSetting.ConnectionString;
+
+            string[] fallbackNames = { "HQOracle", "OracleTest", "THQOracle", "wareHQOracle" };
+            foreach (string name in fallbackNames)
+            {
+                var fallbackSetting = ConfigurationManager.ConnectionStrings[name];
+                if (fallbackSetting != null && !string.IsNullOrWhiteSpace(fallbackSetting.ConnectionString))
+                    return fallbackSetting.ConnectionString;
+            }
+
+            throw new InvalidOperationException("No Oracle connection string is configured. Please set 'OracleDb' in web.config.");
         }
     }
 }
