@@ -26,7 +26,8 @@ namespace MISReports_Api.Controllers.FIFO
         [Route("list")]
         public async Task<IHttpActionResult> GetPHVObsoleteIdleFIFO(
             string deptId,
-            string warehouseCode)
+            string warehouseCode,
+            int repYear)
         {
             try
             {
@@ -35,7 +36,8 @@ namespace MISReports_Api.Controllers.FIFO
 
                 var data = await _repository.GetPHVObsoleteIdleFIFOAsync(
                     deptId.Trim(),
-                    warehouseCode.Trim());
+                    warehouseCode.Trim(),
+                    repYear);
 
                 return Json(data);
             }
@@ -74,7 +76,8 @@ namespace MISReports_Api.Controllers.FIFO
 
                 var data = await _repository.GetPHVObsoleteIdleFIFOAsync(
                     deptId.Trim(),
-                    warehouseCode.Trim());
+                    warehouseCode.Trim(),
+                    repYear);
 
                 if (data == null || !data.Any())
                 {
@@ -147,7 +150,8 @@ namespace MISReports_Api.Controllers.FIFO
 
                 var data = await _repository.GetPHVObsoleteIdleFIFOAsync(
                     deptId.Trim(),
-                    warehouseCode.Trim());
+                    warehouseCode.Trim(),
+                    repYear);
 
                 if (data == null || !data.Any())
                 {

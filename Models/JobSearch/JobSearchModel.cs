@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace MISReports_Api.Models
 {
@@ -16,6 +16,7 @@ namespace MISReports_Api.Models
         public string ApplicationTypeDesc { get; set; }
         public DateTime? SubmitDate { get; set; }
         public string Status { get; set; }
+        public string CustomerStatus { get; set; }
         public string Telephone { get; set; }
         public string Mobile { get; set; }
     }

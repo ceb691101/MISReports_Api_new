@@ -360,23 +360,26 @@
     <Compile Include="Controllers\Cash Book\ChequeSummaryController.cs" />
     <Compile Include="Controllers\Cash Book\ChqDetailsExpRegionController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
-<<<<<<< Updated upstream
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
-=======
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
->>>>>>> Stashed changes
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
+    <Compile Include="Controllers\FIFO\PHVNonMovingWHController.cs" />
+    <Compile Include="Controllers\FIFO\PHVSlowMovingWHController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
+    <Compile Include="Controllers\Inventory\BranchgrnnotgenController.cs" />
+    <Compile Include="Controllers\Inventory\CcgrnnotgenController.cs" />
     <Compile Include="Controllers\Inventory\CcwiseissueController.cs" />
+    <Compile Include="Controllers\Inventory\GrnRaisedForPurchasingController.cs" />
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
     <Compile Include="Controllers\Inventory\IssueReceiptWPController.cs" />
+    <Compile Include="Controllers\Inventory\IssuesRaisedForJobsController.cs" />
     <Compile Include="Controllers\Inventory\MaterialMasterController.cs" />
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
     <Compile Include="Controllers\Inventory\MaterialCommittedStockController.cs" />
@@ -487,16 +490,14 @@
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeSummaryDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
-<<<<<<< Updated upstream
     <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
     <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
-=======
     <Compile Include="DAL\Cash Book\RegionPeriodStatusDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
->>>>>>> Stashed changes
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
+    <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -511,6 +512,8 @@
     <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
+    <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
+    <Compile Include="DAL\FIFO\PHVSlowMovingWHDAL.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
@@ -528,9 +531,13 @@
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
+    <Compile Include="DAL\Inventory\Branchgrnnotgendal.cs" />
+    <Compile Include="DAL\Inventory\Ccgrnnotgendal.cs" />
     <Compile Include="DAL\Inventory\Ccwiseissuedal.cs" />
+    <Compile Include="DAL\Inventory\GrnRaisedForPurchasingDAL.cs" />
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
     <Compile Include="DAL\Inventory\IssueReceiptWPDAL.cs" />
+    <Compile Include="DAL\Inventory\IssuesRaisedForJobsDAL.cs" />
     <Compile Include="DAL\Inventory\MaterialMasterDAL.cs" />
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
     <Compile Include="DAL\Inventory\MaterialCommittedStockRepository.cs" />
@@ -573,24 +580,29 @@
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
-<<<<<<< Updated upstream
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
-=======
     <Compile Include="Models\Cash Book\RegionPeriodStatusModel.cs" />
->>>>>>> Stashed changes
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
+    <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
+    <Compile Include="Models\FIFO\PHVNonMovingWHModel.cs" />
+    <Compile Include="Models\FIFO\PHVSlowMovingWHModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
+    <Compile Include="Models\Inventory\Branchgrnnotgenmodel.cs" />
+    <Compile Include="Models\Inventory\Ccgrnnotgenmodel.cs" />
     <Compile Include="Models\Inventory\Ccwiseissuemodel.cs" />
+    <Compile Include="Models\Inventory\GrnPeriodSummaryModel.cs" />
+    <Compile Include="Models\Inventory\GrnRaisedForPurchasingModels.cs" />
+    <Compile Include="Models\Inventory\IssuesRaisedForJobsModel.cs" />
     <Compile Include="Models\Inventory\MaterialMasterModel.cs" />
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
@@ -933,16 +945,19 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Branchgrnnotgen\" />
+    <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeDetailWP\" />
+    <Folder Include="Views\GrnRaisedForPurchasing\" />
     <Folder Include="Views\IssueReceiptWP\" />
+    <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialMaster\" />
-<<<<<<< Updated upstream
-=======
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
     <Folder Include="Views\RegionPeriodStatus\" />
->>>>>>> Stashed changes
+    <Folder Include="Views\PHVNonMovingWH\" />
+    <Folder Include="Views\PHVSlowMovingWH\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
