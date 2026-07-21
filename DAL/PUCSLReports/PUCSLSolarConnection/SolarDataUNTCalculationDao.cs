@@ -29,10 +29,10 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 Data = new List<SolarDataUNTCalculationModel>()
             };
 
-            if (request.SolarType != SolarNetType.NetMetering && request.SolarType != SolarNetType.NetAccounting && request.SolarType != SolarNetType.NetPlus)
+            if (request.SolarType != SolarNetType.NetMetering && request.SolarType != SolarNetType.NetAccounting && request.SolarType != SolarNetType.NetPlus && request.SolarType != SolarNetType.NetPlusPlus)
             {
                 logger.Warn($"SolarType {request.SolarType} is not supported for Solar Data UNT Calculation report.");
-                response.ErrorMessage = $"{request.SolarType} is not supported for Solar Data UNT Calculation report. Please select Net Metering, Net Accounting or Net Plus.";
+                response.ErrorMessage = $"{request.SolarType} is not supported for Solar Data UNT Calculation report. Please select Net Metering, Net Accounting, Net Plus or Net Plus Plus.";
                 return response;
             }
 
@@ -58,6 +58,11 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 // Process each category
                 foreach (var category in categories)
                 {
+                    if (request.SolarType == SolarNetType.NetPlusPlus && category != "N++")
+                    {
+                        continue;
+                    }
+
                     var rowModel = new SolarDataUNTCalculationModel
                     {
                         Category = category,
@@ -193,6 +198,42 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                         rowModel.UnitsImpP = 0;
                         rowModel.UnitsImpOffP = 0;
                     }
+                    else if (request.SolarType == SolarNetType.NetPlusPlus)
+                    {
+                        decimal kWhimp = 0;
+                        decimal kWhimpBulk = 0;
+
+                        // 1) Get Ordinary tariff codes for this category (with flag=1)
+                        var ordinaryTariffs = GetTariffCodesForCategory(category, "O", true);
+                        foreach (var tariffCode in ordinaryTariffs)
+                        {
+                            var ordData = GetOrdinaryNetPlusPlusData(reportType, request.TypeCode, request.BillCycle, tariffCode);
+                            totAccts += ordData.customers;
+                            kWhpurchased += ordData.kWhpurchased;
+                            pdAmt += ordData.pdAmt;
+                            kWhimp += ordData.kWhimp;
+                        }
+
+                        // 2) Get Bulk tariff codes for this category (with flag=1)
+                        var bulkTariffs = GetTariffCodesForCategory(category, "B", true);
+                        foreach (var tariffCode in bulkTariffs)
+                        {
+                            var bulkData = GetBulkNetPlusPlusData(reportType, request.TypeCode, request.BillCycle, tariffCode);
+                            totAcctsBulk += bulkData.customers;
+                            kWhpurchasedBulk += bulkData.kWhpurchased;
+                            pdAmtBulk += bulkData.pdAmt;
+                            kWhimpBulk += bulkData.kWhimp;
+                        }
+
+                        // 3) Aggregate values
+                        rowModel.Accts = totAccts + totAcctsBulk;
+                        rowModel.UnitsExpP = kWhpurchased + kWhpurchasedBulk; // Solar meter_export_kWh
+                        rowModel.UnitsExpOffP = pdAmt + pdAmtBulk; // paid_amount
+                        rowModel.UnitsExpD = kWhimp + kWhimpBulk; // Solar meter_import_kWh
+                        rowModel.UnitsImpD = 0; // Not used / hidden
+                        rowModel.UnitsImpP = 0;
+                        rowModel.UnitsImpOffP = 0;
+                    }
 
                     response.Data.Add(rowModel);
                 }
@@ -273,7 +314,7 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
         // ================================================================
         //  GET TARIFF CODES FOR CATEGORY
         // ================================================================
-        private List<string> GetTariffCodesForCategory(string category, string cusCategory)
+        private List<string> GetTariffCodesForCategory(string category, string cusCategory, bool isNetPlusPlus = false)
         {
             var tariffCodes = new List<string>();
             try
@@ -281,13 +322,29 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
-                    string sql = "SELECT c.tariff_code FROM cat_tariff_table c, tariff_category t " +
-                                 "WHERE c.tariff_cat=t.tariff_cat AND t.tariff_cat=? AND cus_cat=?";
+                    string sql;
+                    if (isNetPlusPlus)
+                    {
+                        sql = "SELECT c.tariff_code FROM cat_tariff_table c " +
+                              "WHERE c.cus_cat=? AND c.flag=1";
+                    }
+                    else
+                    {
+                        sql = "SELECT c.tariff_code FROM cat_tariff_table c, tariff_category t " +
+                              "WHERE c.tariff_cat=t.tariff_cat AND t.tariff_cat=? AND c.cus_cat=?";
+                    }
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("?", category);
-                        cmd.Parameters.AddWithValue("?", cusCategory);
+                        if (isNetPlusPlus)
+                        {
+                            cmd.Parameters.AddWithValue("?", cusCategory);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", category);
+                            cmd.Parameters.AddWithValue("?", cusCategory);
+                        }
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -325,49 +382,89 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 using (var conn = _dbConnection.GetConnection(false))
                 {
                     conn.Open();
-                    string sql;
-                    OleDbCommand cmd = new OleDbCommand { Connection = conn };
+                    string countSql = "";
+                    string unitsSql = "";
 
                     switch (rt)
                     {
                         case SolarReportType.Province:
-                            sql = "SELECT COUNT(n.acct_number), COALESCE(SUM(n.units_out),0), COALESCE(SUM(n.units_in),0) " +
-                                  "FROM netmtcons n, areas a " +
-                                  "WHERE n.net_type='1' AND n.calc_cycle =? AND a.area_code=n.area_code AND a.prov_code=? AND tariff_code=?";
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("?", calcCycle);
-                            cmd.Parameters.AddWithValue("?", typeCode);
-                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            countSql = "SELECT COUNT(n.acct_number) FROM netmtcons n, areas a " +
+                                       "WHERE n.net_type='1' AND n.calc_cycle=? " +
+                                       "AND a.area_code=n.area_code AND a.prov_code=? AND n.tariff_code=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(units_out),0), COALESCE(SUM(units_in),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE tariff_code=? AND n.calc_cycle=? AND n.net_type='1' " +
+                                       "AND a.area_code=n.area_code AND a.prov_code=?";
                             break;
 
                         case SolarReportType.Region:
-                            sql = "SELECT COUNT(n.acct_number), COALESCE(SUM(n.units_out),0), COALESCE(SUM(n.units_in),0) " +
-                                  "FROM netmtcons n, areas a " +
-                                  "WHERE n.net_type='1' AND n.calc_cycle =? AND a.area_code=n.area_code AND a.region=? AND tariff_code=?";
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("?", calcCycle);
-                            cmd.Parameters.AddWithValue("?", typeCode);
-                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            countSql = "SELECT COUNT(n.acct_number) FROM netmtcons n, areas a " +
+                                       "WHERE n.net_type='1' AND n.calc_cycle=? " +
+                                       "AND a.area_code=n.area_code AND a.region=? AND n.tariff_code=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(units_out),0), COALESCE(SUM(units_in),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE tariff_code=? AND n.calc_cycle=? AND n.net_type='1' " +
+                                       "AND a.area_code=n.area_code AND a.region=?";
                             break;
 
                         default: // EntireCEB
-                            sql = "SELECT COUNT(acct_number), COALESCE(SUM(units_out),0), COALESCE(SUM(units_in),0) " +
-                                  "FROM netmtcons " +
-                                  "WHERE net_type='1' AND calc_cycle =? AND tariff_code=?";
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("?", calcCycle);
-                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            countSql = "SELECT COUNT(acct_number) FROM netmtcons " +
+                                       "WHERE net_type='1' AND calc_cycle=? AND tariff_code=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(units_out),0), COALESCE(SUM(units_in),0) " +
+                                       "FROM netmtcons " +
+                                       "WHERE tariff_code=? AND calc_cycle=? AND net_type='1'";
                             break;
                     }
 
-                    using (cmd)
-                    using (var reader = cmd.ExecuteReader())
+                    // 1) Execute Count Query
+                    using (var cmd = new OleDbCommand(countSql, conn))
                     {
-                        if (reader.Read())
+                        if (rt == SolarReportType.Province || rt == SolarReportType.Region)
                         {
-                            customers = reader[0] == DBNull.Value ? 0 : Convert.ToInt32(reader[0]);
-                            unitsExp = reader[1] == DBNull.Value ? 0 : Convert.ToDecimal(reader[1]); // units_out
-                            unitsImp = reader[2] == DBNull.Value ? 0 : Convert.ToDecimal(reader[2]); // units_in
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                customers = reader[0] == DBNull.Value ? 0 : Convert.ToInt32(reader[0]);
+                            }
+                        }
+                    }
+
+                    // 2) Execute Units Query
+                    using (var cmd = new OleDbCommand(unitsSql, conn))
+                    {
+                        if (rt == SolarReportType.Province || rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                unitsExp = reader[0] == DBNull.Value ? 0 : Convert.ToDecimal(reader[0]); // units_out
+                                unitsImp = reader[1] == DBNull.Value ? 0 : Convert.ToDecimal(reader[1]); // units_in
+                            }
                         }
                     }
                 }
@@ -401,54 +498,102 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 using (var conn = _dbConnection.GetConnection(true))
                 {
                     conn.Open();
-                    string sql;
-                    OleDbCommand cmd = new OleDbCommand { Connection = conn };
+                    string countSql = "";
+                    string unitsSql = "";
 
                     switch (rt)
                     {
                         case SolarReportType.Province:
-                            sql = "SELECT COUNT(n.acc_nbr), COALESCE(SUM(n.exp_kwd_units),0), COALESCE(SUM(n.imp_kwd_units),0), " +
-                                  "COALESCE(SUM(n.imp_kwp_units),0), COALESCE(SUM(n.imp_kwo_units),0) " +
-                                  "FROM netmtcons n, areas a " +
-                                  "WHERE bill_cycle=? AND n.net_type='1' AND a.area_code=n.area_cd AND a.prov_code=? AND tariff=?";
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("?", billCycle);
-                            cmd.Parameters.AddWithValue("?", bulkTypeCode);
-                            cmd.Parameters.AddWithValue("?", tariff);
+                            countSql = "SELECT COUNT(n.acc_nbr) FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND n.net_type='1' AND a.area_code=n.area_cd AND a.prov_code=? AND tariff=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(n.exp_kwd_units),0), COALESCE(SUM(n.imp_kwd_units),0), " +
+                                       "COALESCE(SUM(n.imp_kwp_units),0), COALESCE(SUM(n.imp_kwo_units),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND tariff=? AND n.net_type='1' AND a.area_code=n.area_cd AND a.prov_code=?";
                             break;
 
                         case SolarReportType.Region:
-                            sql = "SELECT COUNT(n.acc_nbr), COALESCE(SUM(n.exp_kwd_units),0), COALESCE(SUM(n.imp_kwd_units),0), " +
-                                  "COALESCE(SUM(n.imp_kwp_units),0), COALESCE(SUM(n.imp_kwo_units),0) " +
-                                  "FROM netmtcons n, areas a " +
-                                  "WHERE bill_cycle=? AND n.net_type='1' AND a.area_code=n.area_cd AND a.region=? AND tariff=?";
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("?", billCycle);
-                            cmd.Parameters.AddWithValue("?", typeCode);
-                            cmd.Parameters.AddWithValue("?", tariff);
+                            countSql = "SELECT COUNT(n.acc_nbr) FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND n.net_type='1' AND a.area_code=n.area_cd AND a.region=? AND tariff=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(n.exp_kwd_units),0), COALESCE(SUM(n.imp_kwd_units),0), " +
+                                       "COALESCE(SUM(n.imp_kwp_units),0), COALESCE(SUM(n.imp_kwo_units),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND tariff=? AND n.net_type='1' AND a.area_code=n.area_cd AND a.region=?";
                             break;
 
                         default: // EntireCEB
-                            sql = "SELECT COUNT(acc_nbr), COALESCE(SUM(exp_kwd_units),0), COALESCE(SUM(imp_kwd_units),0), " +
-                                  "COALESCE(SUM(imp_kwp_units),0), COALESCE(SUM(imp_kwo_units),0) " +
-                                  "FROM netmtcons " +
-                                  "WHERE bill_cycle=? AND net_type='1' AND tariff=?";
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("?", billCycle);
-                            cmd.Parameters.AddWithValue("?", tariff);
+                            countSql = "SELECT COUNT(acc_nbr) FROM netmtcons " +
+                                       "WHERE bill_cycle=? AND net_type='1' AND tariff=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(exp_kwd_units),0), COALESCE(SUM(imp_kwd_units),0), " +
+                                       "COALESCE(SUM(imp_kwp_units),0), COALESCE(SUM(imp_kwo_units),0) " +
+                                       "FROM netmtcons " +
+                                       "WHERE bill_cycle=? AND tariff=? AND net_type='1'";
                             break;
                     }
 
-                    using (cmd)
-                    using (var reader = cmd.ExecuteReader())
+                    // 1) Execute Count Query
+                    using (var cmd = new OleDbCommand(countSql, conn))
                     {
-                        if (reader.Read())
+                        if (rt == SolarReportType.Province)
                         {
-                            customers = reader[0] == DBNull.Value ? 0 : Convert.ToInt32(reader[0]);
-                            unitsExp = reader[1] == DBNull.Value ? 0 : Convert.ToDecimal(reader[1]);        // exp_kwd_units
-                            unitsImp = reader[2] == DBNull.Value ? 0 : Convert.ToDecimal(reader[2]);        // imp_kwd_units
-                            unitsImpPeak = reader[3] == DBNull.Value ? 0 : Convert.ToDecimal(reader[3]);    // imp_kwp_units
-                            unitsImpOffPeak = reader[4] == DBNull.Value ? 0 : Convert.ToDecimal(reader[4]); // imp_kwo_units
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", bulkTypeCode);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+                        else if (rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                customers = reader[0] == DBNull.Value ? 0 : Convert.ToInt32(reader[0]);
+                            }
+                        }
+                    }
+
+                    // 2) Execute Units Query
+                    using (var cmd = new OleDbCommand(unitsSql, conn))
+                    {
+                        if (rt == SolarReportType.Province)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                            cmd.Parameters.AddWithValue("?", bulkTypeCode);
+                        }
+                        else if (rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                unitsExp = reader[0] == DBNull.Value ? 0 : Convert.ToDecimal(reader[0]);        // exp_kwd_units
+                                unitsImp = reader[1] == DBNull.Value ? 0 : Convert.ToDecimal(reader[1]);        // imp_kwd_units
+                                unitsImpPeak = reader[2] == DBNull.Value ? 0 : Convert.ToDecimal(reader[2]);    // imp_kwp_units
+                                unitsImpOffPeak = reader[3] == DBNull.Value ? 0 : Convert.ToDecimal(reader[3]); // imp_kwo_units
+                            }
                         }
                     }
                 }
@@ -939,6 +1084,242 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
             }
 
             return (customers, impUnits, kWhpurchased, pdAmt, solarImp);
+        }
+
+        // ================================================================
+        //  GET ORDINARY NET PLUS PLUS DATA
+        // ================================================================
+        private (int customers, decimal kWhpurchased, decimal pdAmt, decimal kWhimp) GetOrdinaryNetPlusPlusData(
+            SolarReportType rt, string typeCode, string calcCycle, string tariffCode)
+        {
+            int customers = 0;
+            decimal kWhpurchased = 0;
+            decimal pdAmt = 0;
+            decimal kWhimp = 0;
+
+            try
+            {
+                using (var conn = _dbConnection.GetConnection(false))
+                {
+                    conn.Open();
+                    string countSql = "";
+                    string unitsSql = "";
+
+                    switch (rt)
+                    {
+                        case SolarReportType.Province:
+                            countSql = "SELECT COUNT(n.acct_number) FROM netmtcons n, areas a " +
+                                       "WHERE n.net_type='4' AND n.calc_cycle=? " +
+                                       "AND a.area_code=n.area_code AND a.prov_code=? AND n.tariff_code=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(unitsale),0), COALESCE(SUM(kwh_sales),0), COALESCE(SUM(units_in),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE tariff_code=? AND n.calc_cycle=? AND n.net_type='4' " +
+                                       "AND a.area_code=n.area_code AND a.prov_code=?";
+                            break;
+
+                        case SolarReportType.Region:
+                            countSql = "SELECT COUNT(n.acct_number) FROM netmtcons n, areas a " +
+                                       "WHERE n.net_type='4' AND n.calc_cycle=? " +
+                                       "AND a.area_code=n.area_code AND a.region=? AND n.tariff_code=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(unitsale),0), COALESCE(SUM(kwh_sales),0), COALESCE(SUM(units_in),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE tariff_code=? AND n.calc_cycle=? AND n.net_type='4' " +
+                                       "AND a.area_code=n.area_code AND a.region=?";
+                            break;
+
+                        default: // EntireCEB
+                            countSql = "SELECT COUNT(acct_number) FROM netmtcons " +
+                                       "WHERE net_type='4' AND calc_cycle=? AND tariff_code=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(unitsale),0), COALESCE(SUM(kwh_sales),0), COALESCE(SUM(units_in),0) " +
+                                       "FROM netmtcons " +
+                                       "WHERE tariff_code=? AND calc_cycle=? AND net_type='4'";
+                            break;
+                    }
+
+                    // 1) Execute Count Query
+                    using (var cmd = new OleDbCommand(countSql, conn))
+                    {
+                        if (rt == SolarReportType.Province || rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                customers = reader[0] == DBNull.Value ? 0 : Convert.ToInt32(reader[0]);
+                            }
+                        }
+                    }
+
+                    // 2) Execute Units Query
+                    using (var cmd = new OleDbCommand(unitsSql, conn))
+                    {
+                        if (rt == SolarReportType.Province || rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", tariffCode);
+                            cmd.Parameters.AddWithValue("?", calcCycle);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                kWhpurchased = reader[0] == DBNull.Value ? 0 : Convert.ToDecimal(reader[0]);
+                                pdAmt = reader[1] == DBNull.Value ? 0 : Convert.ToDecimal(reader[1]);
+                                kWhimp = reader[2] == DBNull.Value ? 0 : Convert.ToDecimal(reader[2]);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"GetOrdinaryNetPlusPlusData tariffCode={tariffCode}");
+            }
+
+            return (customers, kWhpurchased, pdAmt, kWhimp);
+        }
+
+        // ================================================================
+        //  GET BULK NET PLUS PLUS DATA
+        // ================================================================
+        private (int customers, decimal kWhpurchased, decimal pdAmt, decimal kWhimp) GetBulkNetPlusPlusData(
+            SolarReportType rt, string typeCode, string billCycle, string tariff)
+        {
+            int customers = 0;
+            decimal kWhpurchased = 0;
+            decimal pdAmt = 0;
+            decimal kWhimp = 0;
+
+            try
+            {
+                string bulkTypeCode = (rt == SolarReportType.Province)
+                    ? typeCode.PadLeft(2, '0')  // "3" → "03"
+                    : typeCode;
+
+                using (var conn = _dbConnection.GetConnection(true))
+                {
+                    conn.Open();
+                    string countSql = "";
+                    string unitsSql = "";
+
+                    switch (rt)
+                    {
+                        case SolarReportType.Province:
+                            countSql = "SELECT COUNT(n.acc_nbr) FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND n.net_type='4' AND a.area_code=n.area_cd AND a.prov_code=? AND tariff=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(unitsale),0), COALESCE(SUM(kwh_sales),0), COALESCE(SUM(imp_kwo_units+imp_kwd_units+imp_kwp_units),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND tariff=? AND n.net_type='4' AND a.area_code=n.area_cd AND a.prov_code=?";
+                            break;
+
+                        case SolarReportType.Region:
+                            countSql = "SELECT COUNT(n.acc_nbr) FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND n.net_type='4' AND a.area_code=n.area_cd AND a.region=? AND tariff=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(unitsale),0), COALESCE(SUM(kwh_sales),0), COALESCE(SUM(imp_kwo_units+imp_kwd_units+imp_kwp_units),0) " +
+                                       "FROM netmtcons n, areas a " +
+                                       "WHERE bill_cycle=? AND tariff=? AND n.net_type='4' AND a.area_code=n.area_cd AND a.region=?";
+                            break;
+
+                        default: // EntireCEB
+                            countSql = "SELECT COUNT(acc_nbr) FROM netmtcons " +
+                                       "WHERE bill_cycle=? AND net_type='4' AND tariff=?";
+
+                            unitsSql = "SELECT COALESCE(SUM(unitsale),0), COALESCE(SUM(kwh_sales),0), COALESCE(SUM(imp_kwo_units+imp_kwd_units+imp_kwp_units),0) " +
+                                       "FROM netmtcons " +
+                                       "WHERE bill_cycle=? AND tariff=? AND net_type='4'";
+                            break;
+                    }
+
+                    // 1) Execute Count Query
+                    using (var cmd = new OleDbCommand(countSql, conn))
+                    {
+                        if (rt == SolarReportType.Province)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", bulkTypeCode);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+                        else if (rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                customers = reader[0] == DBNull.Value ? 0 : Convert.ToInt32(reader[0]);
+                            }
+                        }
+                    }
+
+                    // 2) Execute Units Query
+                    using (var cmd = new OleDbCommand(unitsSql, conn))
+                    {
+                        if (rt == SolarReportType.Province)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                            cmd.Parameters.AddWithValue("?", bulkTypeCode);
+                        }
+                        else if (rt == SolarReportType.Region)
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                            cmd.Parameters.AddWithValue("?", typeCode);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("?", billCycle);
+                            cmd.Parameters.AddWithValue("?", tariff);
+                        }
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                kWhpurchased = reader[0] == DBNull.Value ? 0 : Convert.ToDecimal(reader[0]);
+                                pdAmt = reader[1] == DBNull.Value ? 0 : Convert.ToDecimal(reader[1]);
+                                kWhimp = reader[2] == DBNull.Value ? 0 : Convert.ToDecimal(reader[2]);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"GetBulkNetPlusPlusData tariff={tariff}");
+            }
+
+            return (customers, kWhpurchased, pdAmt, kWhimp);
         }
 
         // ================================================================
