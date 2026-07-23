@@ -375,6 +375,7 @@
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
     <Compile Include="Controllers\FIFO\PHVDamageBOSController.cs" />
+    <Compile Include="Controllers\FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\FIFO\PHVNonMovingWHController.cs" />
     <Compile Include="Controllers\FIFO\PHVObsoleteBOSController.cs" />
     <Compile Include="Controllers\FIFO\PHVSlowMovingWHController.cs" />
@@ -521,6 +522,7 @@
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\FIFO\PHVDamageBOSDAL.cs" />
+    <Compile Include="DAL\FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
     <Compile Include="DAL\FIFO\PHVObsoleteBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVSlowMovingWHDAL.cs" />
@@ -604,6 +606,7 @@
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\FIFO\PHVDamageBOSModel.cs" />
+    <Compile Include="Models\FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\FIFO\PHVNonMovingWHModel.cs" />
     <Compile Include="Models\FIFO\PHVObsoleteBOSModel.cs" />
     <Compile Include="Models\FIFO\PHVSlowMovingWHModel.cs" />
@@ -967,6 +970,7 @@
     <Folder Include="Views\MaterialMaster\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
+    <Folder Include="Views\PHVNonMovingBOS\" />
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVObsoleteIdleBOS\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
