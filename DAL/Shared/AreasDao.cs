@@ -15,7 +15,11 @@ namespace MISReports_Api.DAL.Shared
             return _dbConnection.TestConnection(out errorMessage);
         }
 
-        public List<AreaBulkModel> GetAreas()
+        // regionCode / provCode are optional. When provided, results are scoped
+        // to that region or province (used for level-based access restriction).
+        // Leaving both null preserves the original unrestricted behaviour used
+        // by every other report calling this method.
+        public List<AreaBulkModel> GetAreas(string regionCode = null, string provCode = null)
         {
             var areasList = new List<AreaBulkModel>();
 
@@ -25,20 +29,36 @@ namespace MISReports_Api.DAL.Shared
                 {
                     conn.Open();
 
-                    string sql = "SELECT area_code, area_name FROM areas ORDER BY area_name";
+                    string sql = "SELECT area_code, area_name, prov_code, region FROM areas";
+
+                    if (!string.IsNullOrWhiteSpace(regionCode))
+                        sql += " WHERE region = ?";
+                    else if (!string.IsNullOrWhiteSpace(provCode))
+                        sql += " WHERE prov_code = ?";
+
+                    sql += " ORDER BY area_name";
 
                     using (var cmd = new OleDbCommand(sql, conn))
-                    using (var reader = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
-                        {
-                            var area = new AreaBulkModel
-                            {
-                                AreaCode = reader[0]?.ToString().Trim(),
-                                AreaName = reader[1]?.ToString().Trim()
-                            };
+                        if (!string.IsNullOrWhiteSpace(regionCode))
+                            cmd.Parameters.AddWithValue("?", regionCode);
+                        else if (!string.IsNullOrWhiteSpace(provCode))
+                            cmd.Parameters.AddWithValue("?", provCode);
 
-                            areasList.Add(area);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var area = new AreaBulkModel
+                                {
+                                    AreaCode = reader[0]?.ToString().Trim(),
+                                    AreaName = reader[1]?.ToString().Trim(),
+                                    ProvCode = reader[2]?.ToString().Trim(),
+                                    Region = reader[3]?.ToString().Trim()
+                                };
+
+                                areasList.Add(area);
+                            }
                         }
                     }
                 }

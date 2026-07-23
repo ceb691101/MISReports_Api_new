@@ -72,7 +72,7 @@ namespace MISReports_Api.Controllers
 
         [HttpGet]
         [Route("bulk/areas")]
-        public IHttpActionResult GetBulkAreas()
+        public IHttpActionResult GetBulkAreas([FromUri] string regionCode = null, [FromUri] string provCode = null)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace MISReports_Api.Controllers
                     }));
                 }
 
-                var areas = _areasDao.GetAreas();
+                var areas = _areasDao.GetAreas(regionCode, provCode);
 
                 return Ok(JObject.FromObject(new
                 {
@@ -107,7 +107,7 @@ namespace MISReports_Api.Controllers
 
         [HttpGet]
         [Route("bulk/province")]
-        public IHttpActionResult GetProvince()
+        public IHttpActionResult GetProvince([FromUri] string regionCode = null)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace MISReports_Api.Controllers
                     }));
                 }
 
-                var province = _provinceDao.GetProvince();
+                var province = _provinceDao.GetProvince(regionCode);
 
                 return Ok(JObject.FromObject(new
                 {
