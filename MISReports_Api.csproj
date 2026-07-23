@@ -206,6 +206,9 @@
     <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>packages\SixLabors.Fonts.1.0.0\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
+    <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
+      <HintPath>packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
@@ -305,6 +308,9 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
     </Reference>
+    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+      <HintPath>packages\WebActivatorEx.2.0\lib\net40\WebActivatorEx.dll</HintPath>
+    </Reference>
     <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
     </Reference>
@@ -314,6 +320,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
     <Compile Include="Areas\HelpPage\App_Start\HelpPageConfig.cs" />
@@ -368,6 +375,7 @@
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
     <Compile Include="Controllers\FIFO\PHVDamageBOSController.cs" />
+    <Compile Include="Controllers\FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\FIFO\PHVNonMovingWHController.cs" />
     <Compile Include="Controllers\FIFO\PHVObsoleteBOSController.cs" />
     <Compile Include="Controllers\FIFO\PHVSlowMovingWHController.cs" />
@@ -514,6 +522,7 @@
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\FIFO\PHVDamageBOSDAL.cs" />
+    <Compile Include="DAL\FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
     <Compile Include="DAL\FIFO\PHVObsoleteBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVSlowMovingWHDAL.cs" />
@@ -597,6 +606,7 @@
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\FIFO\PHVDamageBOSModel.cs" />
+    <Compile Include="Models\FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\FIFO\PHVNonMovingWHModel.cs" />
     <Compile Include="Models\FIFO\PHVObsoleteBOSModel.cs" />
     <Compile Include="Models\FIFO\PHVSlowMovingWHModel.cs" />
@@ -960,6 +970,7 @@
     <Folder Include="Views\MaterialMaster\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
+    <Folder Include="Views\PHVNonMovingBOS\" />
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVObsoleteIdleBOS\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
