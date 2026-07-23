@@ -206,6 +206,9 @@
     <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>packages\SixLabors.Fonts.1.0.0\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
+    <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
+      <HintPath>packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
@@ -305,6 +308,9 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
     </Reference>
+    <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
+      <HintPath>packages\WebActivatorEx.2.0\lib\net40\WebActivatorEx.dll</HintPath>
+    </Reference>
     <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
     </Reference>
@@ -314,6 +320,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
     <Compile Include="Areas\HelpPage\App_Start\HelpPageConfig.cs" />
@@ -362,6 +369,7 @@
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
+    <Compile Include="Controllers\Cash Book\ProvinceWisePeriodStatusController.cs" />
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
@@ -489,12 +497,13 @@
     <Compile Include="DAL\Cash Book\ChequeDetailsExpRegionDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailWPDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeSummaryDAL.cs" />
+    <Compile Include="DAL\Cash Book\CurrentAcctBalCCDAL.cs" />
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
     <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
     <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
+    <Compile Include="DAL\Cash Book\ProvinceWisePeriodStatusDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Cash Book\RegionPeriodStatusDAL.cs" />
-    <Compile Include="DAL\Collection\ReceivePosition\ReceivePositionDao.cs" />
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
@@ -581,8 +590,10 @@
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
+    <Compile Include="Models\Cash Book\CurrentAcctBalCCModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
+    <Compile Include="Models\Cash Book\ProvinceWisePeriodStatusModel.cs" />
     <Compile Include="Models\Cash Book\RegionPeriodStatusModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
@@ -956,8 +967,6 @@
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
     <Folder Include="Views\RegionPeriodStatus\" />
-    <Folder Include="Views\PHVNonMovingWH\" />
-    <Folder Include="Views\PHVSlowMovingWH\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
