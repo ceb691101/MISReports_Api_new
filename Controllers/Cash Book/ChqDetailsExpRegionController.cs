@@ -30,7 +30,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(fromDate, toDate, compId, glCode);
         }
 
-        // QUERY: /api/chqdetailsexpregion/report?fromDate=2026-01-01&toDate=2026-01-31&compId=100&glCode=6001
+        // QUERY: /api/chqdetailsexpregion/report?fromDate=2026-01-01&toDate=2026-01-31&compId=DISCO1&glCode=
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string compId, [FromUri] string glCode = "")
