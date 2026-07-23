@@ -366,6 +366,7 @@
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeSummaryController.cs" />
     <Compile Include="Controllers\Cash Book\ChqDetailsExpRegionController.cs" />
+    <Compile Include="Controllers\Cash Book\CurrentAcctBalCCController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
