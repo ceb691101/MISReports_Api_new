@@ -22,7 +22,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(repYear, repMonth, costCtr);
         }
 
-        // QUERY: /api/currentacctbalcc/report?repYear=...&repMonth=...&costCtr=...
+        // QUERY: /api/currentacctbalcc/report?repYear=2022&repMonth=6&costCtr=910.00
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string costCtr)
