@@ -15,7 +15,13 @@ namespace MISReports_Api.DAL.Shared
             return _dbConnection.TestConnection(out errorMessage);
         }
 
-        public List<ProvinceModel> GetProvince()
+        // regionCode is optional. When provided, only provinces that have at
+        // least one area within that region are returned (used for level-based
+        // access restriction). provinces has no region column itself, so we
+        // join through areas (which carries both prov_code and region) to
+        // find the matching provinces. Leaving regionCode null preserves the
+        // original unrestricted behaviour used by every other report.
+        public List<ProvinceModel> GetProvince(string regionCode = null)
         {
             var provinceList = new List<ProvinceModel>();
 
@@ -25,20 +31,37 @@ namespace MISReports_Api.DAL.Shared
                 {
                     conn.Open();
 
-                    string sql = "SELECT prov_code,prov_name FROM provinces ORDER BY prov_name";
+                    string sql;
+                    if (!string.IsNullOrWhiteSpace(regionCode))
+                    {
+                        sql = "SELECT DISTINCT p.prov_code, p.prov_name " +
+                              "FROM provinces p, areas a " +
+                              "WHERE p.prov_code = a.prov_code " +
+                              "AND a.region = ? " +
+                              "ORDER BY p.prov_name";
+                    }
+                    else
+                    {
+                        sql = "SELECT prov_code,prov_name FROM provinces ORDER BY prov_name";
+                    }
 
                     using (var cmd = new OleDbCommand(sql, conn))
-                    using (var reader = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
-                        {
-                            var province = new ProvinceModel
-                            {
-                                ProvinceCode = reader[0]?.ToString().Trim(),
-                                ProvinceName = reader[1]?.ToString().Trim()
-                            };
+                        if (!string.IsNullOrWhiteSpace(regionCode))
+                            cmd.Parameters.AddWithValue("?", regionCode);
 
-                            provinceList.Add(province);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var province = new ProvinceModel
+                                {
+                                    ProvinceCode = reader[0]?.ToString().Trim(),
+                                    ProvinceName = reader[1]?.ToString().Trim()
+                                };
+
+                                provinceList.Add(province);
+                            }
                         }
                     }
                 }
