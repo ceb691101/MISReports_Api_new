@@ -372,6 +372,7 @@
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
     <Compile Include="Controllers\Cash Book\ProvinceWisePeriodStatusController.cs" />
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
+    <Compile Include="Controllers\Catalog\ReportCatalogController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
@@ -505,6 +506,7 @@
     <Compile Include="DAL\Cash Book\DocumentInquiryRepository.cs" />
     <Compile Include="DAL\Cash Book\PriceVaDAL.cs" />
     <Compile Include="DAL\Cash Book\PriceVaWHDAL.cs" />
+    <Compile Include="DAL\Catalog\ReportCatalogRepository.cs" />
     <Compile Include="DAL\Cash Book\ProvinceWisePeriodStatusDAL.cs" />
     <Compile Include="DAL\Collection\ReceivePositionDao.cs" />
     <Compile Include="DAL\Cash Book\RegionPeriodStatusDAL.cs" />
@@ -602,6 +604,7 @@
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
     <Compile Include="Models\Cash Book\ProvinceWisePeriodStatusModel.cs" />
     <Compile Include="Models\Cash Book\RegionPeriodStatusModel.cs" />
+    <Compile Include="Models\Catalog\ReportCatalogModel.cs" />
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
