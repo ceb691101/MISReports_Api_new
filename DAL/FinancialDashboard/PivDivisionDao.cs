@@ -61,7 +61,7 @@ namespace MISReports_Api.DAL.FinancialDashboard
                     while (reader.Read())
                     {
                         result.Add(new PivDivisionModel
-                        {
+                        {   
                             date = reader.IsDBNull(0) ? string.Empty : reader.GetDateTime(0).ToString("yyyy-MM-dd"),
                             company = reader.IsDBNull(1) ? "Other" : reader.GetString(1),
                             amount = reader.IsDBNull(2) ? 0 : Convert.ToDouble(reader.GetValue(2))

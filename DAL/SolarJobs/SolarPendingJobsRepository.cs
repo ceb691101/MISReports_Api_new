@@ -16,71 +16,84 @@ namespace MISReports_Api.DAL.SolarJobs
             var results = new List<SolarPendingJobsModel>();
 
             const string sql = @"
-select distinct 
-    a.application_id, 
-    a.application_no, 
-    a.submit_date,  
-    e.projectno, 
-    c.piv_date,
-    (case when a.application_sub_type in ('NA' ) then 'Net Accounting'
-          when a.application_sub_type in ('NM' ) then 'Net Metering'
-          when a.application_sub_type in ('NP' ) then 'Net Plus'
-          when a.application_sub_type in ('BA' ) then 'Bulk Net Accounting'
-          when a.application_sub_type in ('BM' ) then 'Bulk Net Metering'
-          when a.application_sub_type in ('BP' ) then 'Bulk Net Plus'
-          when a.application_sub_type in ('AC' ) then 'Net Accounting Conversion'
-          when a.application_sub_type in ('PC' ) then 'Net Plus Conversion'
-          when a.application_sub_type in ('NT' ) then 'Net Metering TOU'
-          when a.application_sub_type in ('AT' ) then 'Net Accounting TOU'
-          when a.application_sub_type in ('PP' ) then 'Net Plus Plus (With Acoount No.)'
-          when a.application_sub_type in ('PB' ) then 'Bulk Net Plus Plus'
-          when a.application_sub_type in ('PN' ) then 'Net Plus Plus (Without Acoount No.)'
-          else null end) as application_sub_type,
-    c.paid_date,  
-    (select min(c2.paid_date) 
-     from piv_detail c2 
-     where c2.reference_type='EST' 
-       and trim(c2.reference_no)=trim(a.application_no)
-       and c2.status in ('C', 'P','T','M','Y')
-       and c2.dept_id = a.dept_id) as piv2_paid_date,
-    (select existing_acc_no 
-     from WIRING_LAND_DETAIL 
-     where application_id=a.application_id) as existing_acc_no,
-    (case when c1.status=33 then 'Job No to be created'
-          when c1.status=22 then 'Contractor to be Allocated'
-          else 'Not Energized' end) as status,
-    a.dept_id,
-    (select dept_nm from gldeptm where dept_id = a.dept_id) AS CCT_NAME,
-    (select comp_nm from glcompm where trim(comp_id) = :provinceId) AS PROVINCE_NAME
-from applications a, piv_detail c, pcesthtt c1, application_reference e
-where trim(a.application_no)=trim(c.reference_no)
-  and a.dept_id = c.dept_id
-  and a.application_id = e.application_id
-  and a.dept_id=e.dept_id
-  and c.reference_type='APP'
-  and a.application_type in ('CR')
-  and c1.status in (33,22)
-  and trim(e.application_no)=trim(c1.estimate_no)
-  and a.application_sub_type in ('NM','NP','NA','BM','BP','BA','NT','AC','PC','PP','PN','PB')
-  and c.status in ('C', 'P','T','M','Y')
-  and a.dept_id in (
-      select dept_id 
-      from gldeptm 
-      where comp_id in (
-          select comp_id 
-          from glcompm 
-          where trim(comp_id) = :provinceId 
-             or trim(parent_id) = :provinceId
-      )
-  )
-  and a.submit_date >= :fromDate
-  and a.submit_date <= :toDate
-  and not exists (
-      select 1 
-      from spodrcrd s 
-      where trim(s.PROJECT_NO) = trim(c1.PROJECT_NO)
-  )
-order by e.projectno, a.application_no";
+WITH province_depts AS (
+    SELECT dept_id
+      FROM gldeptm
+     WHERE comp_id IN (
+         SELECT comp_id
+           FROM glcompm
+          WHERE TRIM(comp_id) = :provinceId
+             OR TRIM(parent_id) = :provinceId
+     )
+)
+SELECT DISTINCT
+       a.application_id,
+       a.application_no,
+       a.submit_date,
+       e.projectno,
+       c.piv_date,
+       CASE
+           WHEN a.application_sub_type = 'NA' THEN 'Net Accounting'
+           WHEN a.application_sub_type = 'NM' THEN 'Net Metering'
+           WHEN a.application_sub_type = 'NP' THEN 'Net Plus'
+           WHEN a.application_sub_type = 'BA' THEN 'Bulk Net Accounting'
+           WHEN a.application_sub_type = 'BM' THEN 'Bulk Net Metering'
+           WHEN a.application_sub_type = 'BP' THEN 'Bulk Net Plus'
+           WHEN a.application_sub_type = 'AC' THEN 'Net Accounting Conversion'
+           WHEN a.application_sub_type = 'PC' THEN 'Net Plus Conversion'
+           WHEN a.application_sub_type = 'NT' THEN 'Net Metering TOU'
+           WHEN a.application_sub_type = 'AT' THEN 'Net Accounting TOU'
+           WHEN a.application_sub_type = 'PP' THEN 'Net Plus Plus (With Acoount No.)'
+           WHEN a.application_sub_type = 'PB' THEN 'Bulk Net Plus Plus'
+           WHEN a.application_sub_type = 'PN' THEN 'Net Plus Plus (Without Acoount No.)'
+           ELSE NULL
+       END AS application_sub_type,
+       c.paid_date,
+       (SELECT MIN(c2.paid_date)
+          FROM piv_detail c2
+         WHERE c2.dept_id = a.dept_id
+           AND c2.reference_type = 'EST'
+           AND TRIM(c2.reference_no) = TRIM(a.application_no)
+           AND c2.status IN ('C', 'P', 'T', 'M', 'Y')) AS piv2_paid_date,
+       (SELECT MAX(wld.existing_acc_no)
+          FROM WIRING_LAND_DETAIL wld
+         WHERE wld.application_id = a.application_id) AS existing_acc_no,
+       CASE
+           WHEN c1.status = 33 THEN 'Job No to be created'
+           WHEN c1.status = 22 THEN 'Contractor to be Allocated'
+           ELSE 'Not Energized'
+       END AS status,
+       a.dept_id,
+       d.dept_nm AS CCT_NAME,
+       p.comp_nm AS PROVINCE_NAME
+  FROM applications a
+  JOIN piv_detail c
+      ON TRIM(a.application_no) = TRIM(c.reference_no)
+     AND c.dept_id = a.dept_id
+     AND c.reference_type = 'APP'
+  JOIN application_reference e
+      ON a.application_id = e.application_id
+     AND a.dept_id = e.dept_id
+  JOIN pcesthtt c1
+      ON TRIM(e.application_no) = TRIM(c1.estimate_no)
+     AND c1.status IN (33, 22)
+  JOIN province_depts pd
+      ON a.dept_id = pd.dept_id
+  LEFT JOIN gldeptm d
+      ON d.dept_id = a.dept_id
+  LEFT JOIN glcompm p
+      ON TRIM(p.comp_id) = :provinceId
+ WHERE a.application_type = 'CR'
+   AND a.application_sub_type IN ('NM', 'NP', 'NA', 'BM', 'BP', 'BA', 'NT', 'AC', 'PC', 'PP', 'PN', 'PB')
+   AND c.status IN ('C', 'P', 'T', 'M', 'Y')
+   AND a.submit_date >= :fromDate
+   AND a.submit_date <= :toDate
+   AND NOT EXISTS (
+       SELECT 1
+         FROM spodrcrd s
+        WHERE TRIM(s.PROJECT_NO) = TRIM(c1.PROJECT_NO)
+   )
+ ORDER BY e.projectno, a.application_no";
 
             using (var conn = new OracleConnection(connectionString))
             {
