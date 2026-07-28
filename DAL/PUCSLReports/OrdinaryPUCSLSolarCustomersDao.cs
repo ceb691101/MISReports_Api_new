@@ -50,7 +50,7 @@ namespace MISReports_Api.DAL.PUCSLReports
                            COUNT(n.acct_number) AS No_Of_Accounts,
                            SUM(n.units_in) AS import,
                            SUM(n.units_out) AS export,
-                           SUM(n.units_in - n.units_out) AS net_value
+                           0 AS net_value
                     FROM netmtcons n, areas a
                     WHERE n.net_type IN ('1')
                       AND TO_NUMBER(n.calc_cycle) >= ?
@@ -65,7 +65,7 @@ namespace MISReports_Api.DAL.PUCSLReports
                            COUNT(n.acct_number) AS No_Of_Accounts,
                            SUM(n.units_in) AS import,
                            SUM(n.units_out) AS export,
-                           SUM(n.units_in - n.units_out) AS net_value
+                           SUM(n.units_out - n.units_in) AS net_value
                     FROM netmtcons n, areas a
                     WHERE n.net_type IN ('2', '5')
                       AND TO_NUMBER(n.calc_cycle) >= ?
@@ -80,7 +80,7 @@ namespace MISReports_Api.DAL.PUCSLReports
                            COUNT(n.acct_number) AS No_Of_Accounts,
                            SUM(n.units_in) AS import,
                            SUM(n.unitsale) AS export,
-                           SUM(n.units_in - n.units_out) AS net_value
+                           SUM(n.units_out - n.units_in) AS net_value
                     FROM netmtcons n, areas a
                     WHERE n.net_type IN ('3')
                       AND TO_NUMBER(n.calc_cycle) >= ?
@@ -95,7 +95,7 @@ namespace MISReports_Api.DAL.PUCSLReports
                            COUNT(n.acct_number) AS No_Of_Accounts,
                            SUM(n.units_in) AS import,
                            SUM(n.unitsale) AS export,
-                           SUM(n.units_in - n.units_out) AS net_value
+                           SUM(n.units_out - n.units_in) AS net_value
                     FROM netmtcons n, areas a
                     WHERE n.net_type IN ('4')
                       AND TO_NUMBER(n.calc_cycle) >= ?
