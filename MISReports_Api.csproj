@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -527,6 +527,7 @@
     <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmPendingAppDao.cs" />
     <Compile Include="DAL\FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
@@ -613,6 +614,7 @@
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmPendingAppModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\FIFO\PHVNonMovingBOSModel.cs" />
