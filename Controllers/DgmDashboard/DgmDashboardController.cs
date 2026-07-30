@@ -18,6 +18,7 @@ namespace MISReports_Api.Controllers.DgmDashboard
         private static readonly DgmStockValueDao DgmStockValueDao = new DgmStockValueDao();
         private static readonly DgmAppCountDao DgmAppCountDao = new DgmAppCountDao();
         private static readonly DgmConnectionGivenDao DgmConnectionGivenDao = new DgmConnectionGivenDao();
+        private static readonly DgmPendingAppDao DgmPendingAppDao = new DgmPendingAppDao();
         private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
         private const double CacheMinutes = 5;
 
@@ -157,18 +158,33 @@ namespace MISReports_Api.Controllers.DgmDashboard
 
         [HttpGet]
         [Route("connections-given")]
-        public IHttpActionResult GetConnectionsGiven(string companyId = "WPN", int? year = null, bool refresh = false)
+        public IHttpActionResult GetConnectionsGiven(string companyId = "WPN", int year = 2024, bool refresh = false)
         {
-            int targetYear = year ?? DateTime.Today.Year;
             string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
-            string cacheKey = $"dgm-connections-given-{targetCompany}-{targetYear}";
+            string cacheKey = $"dgm-connections-given-{targetCompany}-{year}";
             if (refresh)
             {
                 Cache.TryRemove(cacheKey, out _);
             }
 
             var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
-                ExecuteWithTiming(cacheKey, () => DgmConnectionGivenDao.Fetch(targetYear, targetCompany)));
+                ExecuteWithTiming(cacheKey, () => DgmConnectionGivenDao.Fetch(year, targetCompany)));
+            return Ok(meta);
+        }
+
+        [HttpGet]
+        [Route("pending-applications")]
+        public IHttpActionResult GetPendingApplications(string companyId = "WPN", int year = 2026, string deptId = null, bool refresh = false)
+        {
+            string targetCompany = string.IsNullOrWhiteSpace(companyId) ? "WPN" : companyId.Trim().ToUpper();
+            string cacheKey = $"dgm-pending-apps-{targetCompany}-{year}-{deptId ?? ""}";
+            if (refresh)
+            {
+                Cache.TryRemove(cacheKey, out _);
+            }
+
+            var meta = GetOrReturnStaleAndRefreshWithMetadata(cacheKey, () =>
+                ExecuteWithTiming(cacheKey, () => DgmPendingAppDao.Fetch(year, targetCompany, deptId)));
             return Ok(meta);
         }
     }
