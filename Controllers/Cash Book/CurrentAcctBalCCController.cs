@@ -36,20 +36,15 @@ namespace MISReports_Api.Controllers
             {
                 if (string.IsNullOrWhiteSpace(repYear) || repYear.Length != 4 || !int.TryParse(repYear, out _))
                     return BadRequest("repYear must be a 4-digit year (e.g., 2022).");
-
                 if (string.IsNullOrWhiteSpace(repMonth) || !int.TryParse(repMonth, out int m) || m < 1 || m > 12)
                     return BadRequest("repMonth must be a valid month number (1-12).");
-
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                // yr_ind / mth_ind are stored as 2-digit padded strings in glsubbal, so pad here.
                 string repMonthPadded = m.ToString("00");
-
                 var data = _dal.GetCurrentAcctBalCC(repYear.Trim(), repMonthPadded, costCtr.Trim());
                 var totalAmt = data.Sum(x => x.ClBal ?? 0m);
                 const int MAX_RECORDS = 5000;
-
                 var summary = new
                 {
                     repYear = repYear.Trim(),
@@ -70,10 +65,25 @@ namespace MISReports_Api.Controllers
                     });
                 }
 
+                if (!data.Any())
+                {
+                    // TEMP DIAGNOSTIC: read back exactly what Oracle received for the
+                    // bind variables this call used, plus a build marker. Remove once resolved.
+                    var debug = _dal.GetBoundParamDebug(repYear.Trim(), repMonthPadded, costCtr.Trim());
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "No records found — BUILD-TEST-001",
+                        data = new object[0],
+                        summary,
+                        debug
+                    });
+                }
+
                 return Ok(new
                 {
                     success = true,
-                    message = data.Any() ? "Data retrieved successfully" : "No records found",
+                    message = "Data retrieved successfully",
                     data,
                     summary
                 });

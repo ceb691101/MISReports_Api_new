@@ -78,5 +78,69 @@ namespace MISReports_Api.DAL
 
             return result;
         }
+
+        // TEMP DIAGNOSTIC: echoes back exactly what Oracle received for each bind
+        // variable in this same connection/session, plus row counts for the two
+        // underlying WHERE conditions independently, so we can see which one is
+        // failing to match. Remove once the root cause is confirmed.
+        public object GetBoundParamDebug(string repYear, string repMonth, string costCtr)
+        {
+            string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
+            string glCd = costCtrTrimmed + "-L9100";
+            int repYearNum = int.Parse((repYear ?? string.Empty).Trim());
+            int repMonthNum = int.Parse((repMonth ?? string.Empty).Trim());
+
+            const string diagQuery = @"
+        SELECT
+            :costctr        AS bound_costctr,
+            :glcd           AS bound_glcd,
+            :repyear        AS bound_repyear,
+            :repmonth       AS bound_repmonth,
+            SYS_CONTEXT('USERENV','DB_NAME') AS db_name,
+            SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS schema_name,
+            (SELECT COUNT(*) FROM glsubbal WHERE TRIM(gl_cd) = TRIM(:glcd2)) AS matches_glcd_only,
+            (SELECT COUNT(*) FROM glsubbal WHERE yr_ind = :repyear2 AND mth_ind = :repmonth2) AS matches_year_month_only,
+            (SELECT COUNT(*) FROM glsubbal 
+              WHERE TRIM(gl_cd) = TRIM(:glcd3) AND yr_ind = :repyear3 AND mth_ind = :repmonth3) AS matches_all_three
+        FROM DUAL";
+
+            using (var conn = new OracleConnection(_connectionString))
+            using (var cmd = new OracleCommand(diagQuery, conn))
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.BindByName = true;
+                cmd.Parameters.Add(new OracleParameter("costctr", OracleDbType.Varchar2) { Value = costCtrTrimmed });
+                cmd.Parameters.Add(new OracleParameter("glcd", OracleDbType.Varchar2) { Value = glCd });
+                cmd.Parameters.Add(new OracleParameter("repyear", OracleDbType.Int32) { Value = repYearNum });
+                cmd.Parameters.Add(new OracleParameter("repmonth", OracleDbType.Int32) { Value = repMonthNum });
+                cmd.Parameters.Add(new OracleParameter("glcd2", OracleDbType.Varchar2) { Value = glCd });
+                cmd.Parameters.Add(new OracleParameter("repyear2", OracleDbType.Int32) { Value = repYearNum });
+                cmd.Parameters.Add(new OracleParameter("repmonth2", OracleDbType.Int32) { Value = repMonthNum });
+                cmd.Parameters.Add(new OracleParameter("glcd3", OracleDbType.Varchar2) { Value = glCd });
+                cmd.Parameters.Add(new OracleParameter("repyear3", OracleDbType.Int32) { Value = repYearNum });
+                cmd.Parameters.Add(new OracleParameter("repmonth3", OracleDbType.Int32) { Value = repMonthNum });
+
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new
+                        {
+                            boundCostCtr = reader["bound_costctr"]?.ToString(),
+                            boundGlCd = reader["bound_glcd"]?.ToString(),
+                            boundRepYear = reader["bound_repyear"]?.ToString(),
+                            boundRepMonth = reader["bound_repmonth"]?.ToString(),
+                            dbName = reader["db_name"]?.ToString(),
+                            schemaName = reader["schema_name"]?.ToString(),
+                            matchesGlCdOnly = reader["matches_glcd_only"]?.ToString(),
+                            matchesYearMonthOnly = reader["matches_year_month_only"]?.ToString(),
+                            matchesAllThree = reader["matches_all_three"]?.ToString()
+                        };
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

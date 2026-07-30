@@ -65,7 +65,7 @@ namespace MISReports_Api.Controllers
                 // total is a straight sum, not an absolute-value sum.
                 var totalDrAmt = data.Sum(x => x.DrAmt ?? 0m);
 
-                const int MAX_RECORDS = 5000;
+                const int MAX_RECORDS = 50000;
                 var summary = new
                 {
                     fromDate = fromDt.ToString("yyyy-MM-dd"),
