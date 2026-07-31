@@ -129,6 +129,35 @@ namespace MISReports_Api.DAL.Catalog
                         }
                     }
 
+                    // Step 2.5: Fetch parameter definitions dictionary from rep_report_params_new
+                    var paramDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    try
+                    {
+                        const string paramSql = @"
+                            SELECT UPPER(TRIM(paraname)) AS PARANAME, TRIM(description) AS DESCRIPTION
+                            FROM rep_report_params_new";
+
+                        using (var cmdParam = new OracleCommand(paramSql, conn))
+                        {
+                            using (var readerParam = await cmdParam.ExecuteReaderAsync())
+                            {
+                                while (await readerParam.ReadAsync())
+                                {
+                                    var pName = SafeString(readerParam["PARANAME"]);
+                                    var pDesc = SafeString(readerParam["DESCRIPTION"]);
+                                    if (!string.IsNullOrWhiteSpace(pName))
+                                    {
+                                        paramDictionary[pName] = string.IsNullOrWhiteSpace(pDesc) ? pName : pDesc;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception exParam)
+                    {
+                        Debug.WriteLine("Warning: Failed to fetch param descriptions: " + exParam.Message);
+                    }
+
                     // Step 3: Fetch all reports from REP_REPORTS_NEW joined with REP_CATS_NEW
                     const string sql = @"
                         SELECT 
@@ -185,6 +214,8 @@ namespace MISReports_Api.DAL.Catalog
                                 bool hasAccess = accessibleReportKeys.Contains(string.Format("{0}::{1}", catCode, repId)) ||
                                                  accessibleReportKeys.Contains(repIdNo);
 
+                                var paramDescriptions = ParseActiveParameterDescriptions(paramList, paramDictionary);
+
                                 var item = new ReportCatalogItemModel
                                 {
                                     RepIdNo = repIdNo,
@@ -194,6 +225,7 @@ namespace MISReports_Api.DAL.Catalog
                                     CategoryName = catName,
                                     Description = description,
                                     ParamList = paramList,
+                                    ParameterDescriptions = paramDescriptions,
                                     Path = samplePath,
                                     Favorite = favorite,
                                     Active = active,
@@ -230,6 +262,49 @@ namespace MISReports_Api.DAL.Catalog
             }
 
             return response;
+        }
+
+        private static List<string> ParseActiveParameterDescriptions(string paramList, Dictionary<string, string> paramDictionary)
+        {
+            var results = new List<string>();
+            if (string.IsNullOrWhiteSpace(paramList))
+            {
+                return results;
+            }
+
+            string raw = paramList.Trim();
+            if (raw.StartsWith("<"))
+            {
+                raw = System.Text.RegularExpressions.Regex.Replace(raw, @"^<[^>]*>&?", "");
+            }
+
+            var tokens = raw.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var token in tokens)
+            {
+                var parts = token.Split('=');
+                if (parts.Length == 2)
+                {
+                    string pName = parts[0].Trim();
+                    string val = parts[1].Trim().ToLowerInvariant();
+
+                    if (val == "1" || val == "true" || val == "yes")
+                    {
+                        if (!string.IsNullOrEmpty(pName))
+                        {
+                            if (paramDictionary != null && paramDictionary.TryGetValue(pName, out var desc) && !string.IsNullOrWhiteSpace(desc))
+                            {
+                                results.Add(desc);
+                            }
+                            else
+                            {
+                                results.Add(pName);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return results;
         }
     }
 }
