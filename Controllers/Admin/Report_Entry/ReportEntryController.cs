@@ -3,6 +3,11 @@ using MISReports_Api.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 
 namespace MISReports_Api.Controllers
@@ -234,6 +239,139 @@ namespace MISReports_Api.Controllers
                     errorMessage = "Cannot delete report entry.",
                     errorDetails = ex.Message
                 }));
+            }
+        }
+
+        [HttpPost]
+        [Route("upload")]
+        public async Task<IHttpActionResult> UploadSampleImage()
+        {
+            try
+            {
+                if (!Request.Content.IsMimeMultipartContent())
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Unsupported media type. Expected multipart/form-data."
+                    }));
+                }
+
+                var provider = new MultipartMemoryStreamProvider();
+                await Request.Content.ReadAsMultipartAsync(provider);
+
+                var fileContent = provider.Contents.FirstOrDefault(c => !string.IsNullOrEmpty(c.Headers?.ContentDisposition?.FileName));
+                if (fileContent == null)
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "No file uploaded."
+                    }));
+                }
+
+                string rawFileName = fileContent.Headers.ContentDisposition.FileName.Trim('\"');
+                string extension = Path.GetExtension(rawFileName)?.ToLowerInvariant();
+
+                if (string.IsNullOrEmpty(extension) || (extension != ".png" && extension != ".jpg" && extension != ".jpeg"))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Only PNG, JPG, and JPEG image files are allowed."
+                    }));
+                }
+
+                string repId = HttpContext.Current?.Request?.Form["repId"] ?? HttpContext.Current?.Request?.QueryString["repId"];
+                if (string.IsNullOrWhiteSpace(repId))
+                {
+                    return Ok(JObject.FromObject(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Report ID (repId) is required."
+                    }));
+                }
+
+                repId = NormalizeRepId(repId);
+                string newFileName = $"{repId}{extension}";
+
+                string sampleReportsDir = ResolveSampleReportsDirectory();
+                if (!Directory.Exists(sampleReportsDir))
+                {
+                    Directory.CreateDirectory(sampleReportsDir);
+                }
+
+                foreach (var ext in new[] { ".png", ".jpg", ".jpeg" })
+                {
+                    string existingFile = Path.Combine(sampleReportsDir, $"{repId}{ext}");
+                    if (File.Exists(existingFile))
+                    {
+                        try { File.Delete(existingFile); } catch { }
+                    }
+                }
+
+                string destinationPath = Path.Combine(sampleReportsDir, newFileName);
+                byte[] fileBytes = await fileContent.ReadAsByteArrayAsync();
+                File.WriteAllBytes(destinationPath, fileBytes);
+
+                string generatedPath = $"src/assets/SampleReports/{newFileName}";
+
+                return Ok(JObject.FromObject(new
+                {
+                    data = new
+                    {
+                        success = true,
+                        path = generatedPath,
+                        message = "Image uploaded successfully."
+                    },
+                    errorMessage = (string)null
+                }));
+            }
+            catch (Exception ex)
+            {
+                return Ok(JObject.FromObject(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot upload sample image.",
+                    errorDetails = ex.Message
+                }));
+            }
+        }
+
+        private static string ResolveSampleReportsDirectory()
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                string frontendSampleDir = Path.GetFullPath(Path.Combine(baseDir, "..", "CEBReport-Frontend-main", "src", "assets", "SampleReports"));
+                string frontendAssetsDir = Path.GetFullPath(Path.Combine(baseDir, "..", "CEBReport-Frontend-main", "src", "assets"));
+
+                if (Directory.Exists(frontendAssetsDir) || Directory.Exists(frontendSampleDir))
+                {
+                    if (!Directory.Exists(frontendSampleDir))
+                    {
+                        Directory.CreateDirectory(frontendSampleDir);
+                    }
+                    return frontendSampleDir;
+                }
+
+                string appSampleDir = Path.GetFullPath(Path.Combine(baseDir, "src", "assets", "SampleReports"));
+                if (!Directory.Exists(appSampleDir))
+                {
+                    Directory.CreateDirectory(appSampleDir);
+                }
+                return appSampleDir;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error resolving sample reports directory: {ex.Message}");
+                string fallback = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SampleReports");
+                if (!Directory.Exists(fallback))
+                {
+                    Directory.CreateDirectory(fallback);
+                }
+                return fallback;
             }
         }
     }
