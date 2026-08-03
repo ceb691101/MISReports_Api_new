@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -401,6 +401,7 @@
     <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\SolarPendingJobsController.cs" />
     <Compile Include="Controllers\LedgerCard\DivisionalLedgerCardController.cs" />
@@ -570,6 +571,7 @@
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
+    <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\SolarPendingJobsRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
@@ -631,6 +633,7 @@
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
+    <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
