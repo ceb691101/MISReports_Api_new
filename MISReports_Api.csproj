@@ -527,7 +527,7 @@
     <Compile Include="DAL\DgmDashboard\DgmStockValueDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
-    <Compile Include="DAL\DgmDashboard\DgmPendingAppDao.cs" />
+    <Compile Include="DAL\DgmDashboard\DgmPendingApplicationsDao.cs" />
     <Compile Include="DAL\FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
@@ -614,7 +614,7 @@
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
-    <Compile Include="Models\DgmDashboard\DgmPendingAppModel.cs" />
+    <Compile Include="Models\DgmDashboard\DgmPendingApplicationModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\FIFO\PHVNonMovingBOSModel.cs" />
