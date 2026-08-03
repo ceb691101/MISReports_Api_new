@@ -12,10 +12,16 @@ namespace MISReports_Api.Models.Catalog
         public string CategoryName { get; set; }
         public string Description { get; set; }
         public string ParamList { get; set; }
+        public List<string> ParameterDescriptions { get; set; }
         public string Path { get; set; }
         public int Favorite { get; set; }
         public int Active { get; set; }
         public bool HasAccess { get; set; }
+
+        public ReportCatalogItemModel()
+        {
+            ParameterDescriptions = new List<string>();
+        }
     }
 
     public class ReportCategorySummaryModel

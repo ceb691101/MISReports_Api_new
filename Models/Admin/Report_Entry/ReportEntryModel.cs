@@ -11,6 +11,8 @@ namespace MISReports_Api.Models
         public string ParamList { get; set; }
         public int Favorite { get; set; }
         public int Active { get; set; }
+        public string Description { get; set; }
+        public string Path { get; set; }
     }
 }
 
