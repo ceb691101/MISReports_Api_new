@@ -66,6 +66,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
                     if (areaInfo != null)
                     {
                         response.CustomerInfo.AreaName = areaInfo.AreaName;
+                        response.CustomerInfo.ProvinceCode = areaInfo.ProvinceCode;
                         response.CustomerInfo.ProvinceName = areaInfo.ProvinceName;
                         response.CustomerInfo.Region = areaInfo.Region;
                     }
@@ -303,7 +304,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
                 {
                     conn.Open();
 
-                    string query = @"SELECT a.area_name, p.prov_name, a.region 
+                    string query = @"SELECT a.area_name, p.prov_name, p.prov_code, a.region 
                                    FROM areas a, provinces p 
                                    WHERE a.prov_code = p.prov_code 
                                    AND a.area_code = ?";
@@ -319,6 +320,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
                                 areaInfo = new AreaInformation
                                 {
                                     AreaName = reader["area_name"]?.ToString()?.Trim() ?? "",
+                                    ProvinceCode = reader["prov_code"]?.ToString()?.Trim() ?? "",
                                     ProvinceName = reader["prov_name"]?.ToString()?.Trim() ?? "",
                                     Region = reader["region"]?.ToString()?.Trim() ?? ""
                                 };
@@ -477,6 +479,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
         private class AreaInformation
         {
             public string AreaName { get; set; }
+            public string ProvinceCode { get; set; }
             public string ProvinceName { get; set; }
             public string Region { get; set; }
         }
