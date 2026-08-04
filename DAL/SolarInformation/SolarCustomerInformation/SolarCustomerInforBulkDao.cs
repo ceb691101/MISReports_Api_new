@@ -176,7 +176,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
                     {
                         System.Diagnostics.Trace.WriteLine($"=== Attempting to fetch area info for AreaCode: '{customerInfo.AreaCode}' ===");
 
-                        string areaQuery = @"SELECT a.area_name, p.prov_name, a.region 
+                        string areaQuery = @"SELECT a.area_name, p.prov_name, p.prov_code, a.region 
                             FROM areas a, provinces p 
                             WHERE a.prov_code = p.prov_code 
                             AND a.area_code = ?";
@@ -190,6 +190,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
                                 if (reader.Read())
                                 {
                                     customerInfo.AreaName = reader["area_name"]?.ToString()?.Trim() ?? "";
+                                    customerInfo.ProvinceCode = reader["prov_code"]?.ToString()?.Trim() ?? "";
                                     customerInfo.ProvinceName = reader["prov_name"]?.ToString()?.Trim() ?? "";
                                     customerInfo.Region = reader["region"]?.ToString()?.Trim() ?? "";
 
@@ -199,6 +200,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
                                 {
                                     System.Diagnostics.Trace.WriteLine($"No area information found for area_cd: '{customerInfo.AreaCode}'");
                                     customerInfo.AreaName = customerInfo.AreaCode; // Fallback to area code
+                                    customerInfo.ProvinceCode = "";
                                     customerInfo.ProvinceName = " ";
                                     customerInfo.Region = " ";
                                 }
