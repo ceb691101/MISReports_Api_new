@@ -533,6 +533,7 @@
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmPendingApplicationsDao.cs" />
+    <Compile Include="DAL\FIFO\QuantityMatFIFODAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingWHDAL.cs" />
@@ -646,6 +647,7 @@
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
+    <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnagizeModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
@@ -987,8 +989,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="DAL\FIFO\" />
-    <Folder Include="Models\FIFO\" />
     <Folder Include="Views\Branchgrnnotgen\" />
     <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
