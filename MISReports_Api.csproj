@@ -376,6 +376,7 @@
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
+    <Compile Include="Controllers\FIFO\IssueReceiptSummaryController.cs" />
     <Compile Include="Controllers\FIFO\QuantityMatFIFOController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
@@ -533,6 +534,7 @@
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmPendingApplicationsDao.cs" />
+    <Compile Include="DAL\FIFO\IssueReceiptSummaryDAL.cs" />
     <Compile Include="DAL\FIFO\QuantityMatFIFODAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
@@ -628,6 +630,7 @@
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPendingApplicationModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
+    <Compile Include="Models\FIFO\IssueReceiptSummaryModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingWHModel.cs" />
@@ -994,6 +997,7 @@
     <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeDetailWP\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
+    <Folder Include="Views\IssueReceiptSummary\" />
     <Folder Include="Views\IssueReceiptWP\" />
     <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialFlow\" />
