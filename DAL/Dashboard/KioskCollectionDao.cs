@@ -58,7 +58,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public List<KioskCollectionModel> GetKioskCollection(string userId, string region = null)
+        public List<KioskCollectionModel> GetKioskCollection(string userId, string region = null, string province = null)
         {
             var rows = new List<KioskCollectionModel>();
 
@@ -69,7 +69,7 @@ namespace MISReports_Api.DAL.Dashboard
                 // logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
                 logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yy} to {toDate:dd-MM-yy} ===");
 
-                rows = QueryKioskCollection(userId: userId, region: region);
+                rows = QueryKioskCollection(userId: userId, region: region, province: province);
 
                 logger.Info($"=== END GetKioskCollection (Success) - {rows.Count} records ===");
                 return rows;
@@ -81,13 +81,23 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region)
+        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region, string province)
         {
             var rows = new List<KioskCollectionModel>();
 
+            bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            string sql = hasRegionFilter
-                    ? @"
+            bool hasFilter = hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasProvinceFilter ? "prov_code" : "region";
+            string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
+            if (hasProvinceFilter && resolvedProv.StartsWith("0") && resolvedProv.Length > 1 && char.IsDigit(resolvedProv[1]))
+            {
+                resolvedProv = resolvedProv.Substring(1);
+            }
+            string filterValue = hasProvinceFilter ? resolvedProv : (hasRegionFilter ? region.Trim().ToUpperInvariant() : null);
+
+            string sql = hasFilter
+                    ? $@"
                                                                 SELECT DATE(c.trans_date) AS trans_date,
                                              SUM(c.trans_amt) AS collection
                                 FROM   cus_tran c, areas a
@@ -96,7 +106,7 @@ namespace MISReports_Api.DAL.Dashboard
                                                                         AND  c.trans_date <  TODAY
                                     AND  c.bill_type = 'O'
                                     AND  c.area_code = a.area_code
-                                    AND  a.region = ?
+                                    AND  a.{filterColumn} = ?
                                 GROUP BY 1
                                 ORDER BY 1"
                     : @"
@@ -117,9 +127,9 @@ namespace MISReports_Api.DAL.Dashboard
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("?", userId);
-                    if (hasRegionFilter)
+                    if (hasFilter)
                     {
-                        cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                        cmd.Parameters.AddWithValue("?", filterValue);
                     }
 
                     using (var reader = cmd.ExecuteReader())

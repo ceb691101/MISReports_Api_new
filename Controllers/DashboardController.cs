@@ -28,14 +28,14 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/customers/active-count</summary>
         [HttpGet]
         [Route("customers/active-count")]
-        public IHttpActionResult GetActiveCustomerCount([FromUri] string region = null)
+        public IHttpActionResult GetActiveCustomerCount([FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_bulkCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                int count = _bulkCustomersDao.GetActiveCustomerCount(NormalizeRegion(region));
+                int count = _bulkCustomersDao.GetActiveCustomerCount(NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -52,14 +52,14 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/ordinary-customers-summary?region={region}</summary>
         [HttpGet]
         [Route("ordinary-customers-summary")]
-        public IHttpActionResult GetOrdinaryCustomersSummary([FromUri] string region = null)
+        public IHttpActionResult GetOrdinaryCustomersSummary([FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_ordinaryCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _ordinaryCustomersDao.GetOrdinaryCustomersCount(NormalizeRegion(region));
+                var data = _ordinaryCustomersDao.GetOrdinaryCustomersCount(NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new { data, errorMessage = (string)null });
             }
@@ -72,14 +72,14 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/salesCollection/range/ordinary</summary>
         [HttpGet]
         [Route("salesCollection/range/ordinary")]
-        public IHttpActionResult GetOrdinarySalesAndCollection([FromUri] string region = null)
+        public IHttpActionResult GetOrdinarySalesAndCollection([FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_salesAndCollectionRangeDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                SalesAndCollectionRangeResult result = _salesAndCollectionRangeDao.GetSalesAndCollectionRange(NormalizeRegion(region));
+                SalesAndCollectionRangeResult result = _salesAndCollectionRangeDao.GetSalesAndCollectionRange(NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -104,14 +104,14 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/salesCollection/range/bulk</summary>
         [HttpGet]
         [Route("salesCollection/range/bulk")]
-        public IHttpActionResult GetBulkSalesAndCollection([FromUri] string region = null)
+        public IHttpActionResult GetBulkSalesAndCollection([FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_salesAndCollectionRangeDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                SalesAndCollectionRangeResult result = _salesAndCollectionRangeDao.GetSalesAndCollectionRange(NormalizeRegion(region));
+                SalesAndCollectionRangeResult result = _salesAndCollectionRangeDao.GetSalesAndCollectionRange(NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -136,7 +136,7 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/kiosk-collection?userId=KIOS00</summary>
         [HttpGet]
         [Route("kiosk-collection")]
-        public IHttpActionResult GetKioskCollection([FromUri] string userId = null, [FromUri] string region = null)
+        public IHttpActionResult GetKioskCollection([FromUri] string userId = null, [FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
@@ -152,7 +152,7 @@ namespace MISReports_Api.Controllers.Dashboard
                 DateTime resolvedToDate = DateTime.Today.AddDays(-1);
                 DateTime resolvedFromDate = resolvedToDate.AddDays(-6);
 
-                var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId, NormalizeRegion(region));
+                var records = _kioskCollectionDao.GetKioskCollection(resolvedUserId, NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -201,7 +201,7 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/top-customers/list (fetches latest bill cycle and top customers with optional region filter)</summary>
         [HttpGet]
         [Route("top-customers/list")]
-        public IHttpActionResult GetTopCustomers([FromUri] string region = null, [FromUri] int take = 10)
+        public IHttpActionResult GetTopCustomers([FromUri] string region = null, [FromUri] string province = null, [FromUri] int take = 10)
         {
             try
             {
@@ -209,7 +209,7 @@ namespace MISReports_Api.Controllers.Dashboard
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
                 // Fetch the max bill cycle and return top customers with region filter
-                var data = _topCustomersDao.GetTopCustomers(null, NormalizeRegion(region), take);
+                var data = _topCustomersDao.GetTopCustomers(null, NormalizeRegion(region), NormalizeProvince(province), take);
 
                 return Ok(new
                 {
@@ -250,6 +250,15 @@ namespace MISReports_Api.Controllers.Dashboard
             return normalized;
         }
 
+        private static string NormalizeProvince(string province)
+        {
+            if (string.IsNullOrWhiteSpace(province))
+                return null;
+
+            var normalized = province.Trim().ToUpperInvariant();
+            return normalized == "ALL" ? null : normalized;
+        }
+
     }
 
 
@@ -288,54 +297,54 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/solar-ordinary-customers/count</summary>
         [HttpGet]
         [Route("count")]
-        public IHttpActionResult GetTotalCustomersCount([FromUri] string billCycle = null, [FromUri] string region = null)
+        public IHttpActionResult GetTotalCustomersCount([FromUri] string billCycle = null, [FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCustomersCountResponse(billCycle, region, _solarOrdinaryCustomersDao.GetTotalCustomersCount, "Error retrieving total customers count.");
+            return GetCustomersCountResponse(billCycle, region, province, _solarOrdinaryCustomersDao.GetTotalCustomersCount, "Error retrieving total customers count.");
         }
 
         /// <summary>GET api/dashboard/solar-ordinary-customers/count/net-type-1</summary>
         [HttpGet]
         [Route("count/net-type-1")]
-        public IHttpActionResult GetNetType1CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null)
+        public IHttpActionResult GetNetType1CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCustomersCountResponse(billCycle, region, _solarOrdinaryCustomersDao.GetNetMeteringCustomersCount, "Error retrieving net type 1 customers count.");
+            return GetCustomersCountResponse(billCycle, region, province, _solarOrdinaryCustomersDao.GetNetMeteringCustomersCount, "Error retrieving net type 1 customers count.");
         }
 
         /// <summary>GET api/dashboard/solar-ordinary-customers/count/net-type-2</summary>
         [HttpGet]
         [Route("count/net-type-2")]
-        public IHttpActionResult GetNetType2CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null)
+        public IHttpActionResult GetNetType2CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCustomersCountResponse(billCycle, region, _solarOrdinaryCustomersDao.GetNetAccountingCustomersCount, "Error retrieving net type 2 customers count.");
+            return GetCustomersCountResponse(billCycle, region, province, _solarOrdinaryCustomersDao.GetNetAccountingCustomersCount, "Error retrieving net type 2 customers count.");
         }
 
         /// <summary>GET api/dashboard/solar-ordinary-customers/count/net-type-3</summary>
         [HttpGet]
         [Route("count/net-type-3")]
-        public IHttpActionResult GetNetType3CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null)
+        public IHttpActionResult GetNetType3CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCustomersCountResponse(billCycle, region, _solarOrdinaryCustomersDao.GetNetPlusCustomersCount, "Error retrieving net type 3 customers count.");
+            return GetCustomersCountResponse(billCycle, region, province, _solarOrdinaryCustomersDao.GetNetPlusCustomersCount, "Error retrieving net type 3 customers count.");
         }
 
         /// <summary>GET api/dashboard/solar-ordinary-customers/count/net-type-4</summary>
         [HttpGet]
         [Route("count/net-type-4")]
-        public IHttpActionResult GetNetType4CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null)
+        public IHttpActionResult GetNetType4CustomersCount([FromUri] string billCycle = null, [FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCustomersCountResponse(billCycle, region, _solarOrdinaryCustomersDao.GetNetPlusPlusCustomersCount, "Error retrieving net type 4 customers count.");
+            return GetCustomersCountResponse(billCycle, region, province, _solarOrdinaryCustomersDao.GetNetPlusPlusCustomersCount, "Error retrieving net type 4 customers count.");
         }
 
         /// <summary>GET api/dashboard/solar-ordinary-customers/generation-capacity?billCycle=401&cycles=12</summary>
         [HttpGet]
         [Route("generation-capacity")]
-        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12, [FromUri] string region = null)
+        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12, [FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_solarOrdinaryCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _solarOrdinaryCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles, NormalizeRegion(region));
+                var data = _solarOrdinaryCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles, NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -353,7 +362,8 @@ namespace MISReports_Api.Controllers.Dashboard
         private IHttpActionResult GetCustomersCountResponse(
             string billCycle,
             string region,
-            Func<string, string, SolarOrdinaryCustomersCount> countGetter,
+            string province,
+            Func<string, string, string, SolarOrdinaryCustomersCount> countGetter,
             string fallbackErrorMessage)
         {
             try
@@ -361,7 +371,7 @@ namespace MISReports_Api.Controllers.Dashboard
                 if (!_solarOrdinaryCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = countGetter(NormalizeBillCycle(billCycle), NormalizeRegion(region));
+                var data = countGetter(NormalizeBillCycle(billCycle), NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -398,6 +408,15 @@ namespace MISReports_Api.Controllers.Dashboard
             var normalized = region.Trim().ToUpperInvariant();
             return normalized == "ALL" ? null : normalized;
         }
+
+        private static string NormalizeProvince(string province)
+        {
+            if (string.IsNullOrWhiteSpace(province))
+                return null;
+
+            var normalized = province.Trim().ToUpperInvariant();
+            return normalized == "ALL" ? null : normalized;
+        }
     }
 
 
@@ -413,14 +432,14 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/solar-bulk-customers/summary</summary>
         [HttpGet]
         [Route("summary")]
-        public IHttpActionResult GetSummary()
+        public IHttpActionResult GetSummary([FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_solarBulkCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _solarBulkCustomersDao.GetSummary();
+                var data = _solarBulkCustomersDao.GetSummary(NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -437,54 +456,54 @@ namespace MISReports_Api.Controllers.Dashboard
         /// <summary>GET api/dashboard/solar-bulk-customers/count</summary>
         [HttpGet]
         [Route("count")]
-        public IHttpActionResult GetTotalCustomersCount([FromUri] string region = null)
+        public IHttpActionResult GetTotalCustomersCount([FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCountResponse(_solarBulkCustomersDao.GetTotalCustomersCount, "Error retrieving total solar bulk customers count.", region);
+            return GetCountResponse(_solarBulkCustomersDao.GetTotalCustomersCount, "Error retrieving total solar bulk customers count.", region, province);
         }
 
         /// <summary>GET api/dashboard/solar-bulk-customers/count/net-type-1</summary>
         [HttpGet]
         [Route("count/net-type-1")]
-        public IHttpActionResult GetNetType1CustomersCount([FromUri] string region = null)
+        public IHttpActionResult GetNetType1CustomersCount([FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCountResponse(_solarBulkCustomersDao.GetNetType1CustomersCount, "Error retrieving net type 1 solar bulk customers count.", region);
+            return GetCountResponse(_solarBulkCustomersDao.GetNetType1CustomersCount, "Error retrieving net type 1 solar bulk customers count.", region, province);
         }
 
         /// <summary>GET api/dashboard/solar-bulk-customers/count/net-type-2</summary>
         [HttpGet]
         [Route("count/net-type-2")]
-        public IHttpActionResult GetNetType2CustomersCount([FromUri] string region = null)
+        public IHttpActionResult GetNetType2CustomersCount([FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCountResponse(_solarBulkCustomersDao.GetNetType2CustomersCount, "Error retrieving net type 2 solar bulk customers count.", region);
+            return GetCountResponse(_solarBulkCustomersDao.GetNetType2CustomersCount, "Error retrieving net type 2 solar bulk customers count.", region, province);
         }
 
         /// <summary>GET api/dashboard/solar-bulk-customers/count/net-type-3</summary>
         [HttpGet]
         [Route("count/net-type-3")]
-        public IHttpActionResult GetNetType3CustomersCount([FromUri] string region = null)
+        public IHttpActionResult GetNetType3CustomersCount([FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCountResponse(_solarBulkCustomersDao.GetNetType3CustomersCount, "Error retrieving net type 3 solar bulk customers count.", region);
+            return GetCountResponse(_solarBulkCustomersDao.GetNetType3CustomersCount, "Error retrieving net type 3 solar bulk customers count.", region, province);
         }
 
         /// <summary>GET api/dashboard/solar-bulk-customers/count/net-type-4</summary>
         [HttpGet]
         [Route("count/net-type-4")]
-        public IHttpActionResult GetNetType4CustomersCount([FromUri] string region = null)
+        public IHttpActionResult GetNetType4CustomersCount([FromUri] string region = null, [FromUri] string province = null)
         {
-            return GetCountResponse(_solarBulkCustomersDao.GetNetType4CustomersCount, "Error retrieving net type 4 solar bulk customers count.", region);
+            return GetCountResponse(_solarBulkCustomersDao.GetNetType4CustomersCount, "Error retrieving net type 4 solar bulk customers count.", region, province);
         }
 
         /// <summary>GET api/dashboard/solar-bulk-customers/generation-capacity?billCycle=401&cycles=12</summary>
         [HttpGet]
         [Route("generation-capacity")]
-        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12, [FromUri] string region = null)
+        public IHttpActionResult GetGenerationCapacityGraph([FromUri] string billCycle = null, [FromUri] int cycles = 12, [FromUri] string region = null, [FromUri] string province = null)
         {
             try
             {
                 if (!_solarBulkCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = _solarBulkCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles, NormalizeRegion(region));
+                var data = _solarBulkCustomersDao.GetGenerationCapacityGraph(NormalizeBillCycle(billCycle), cycles, NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -500,16 +519,17 @@ namespace MISReports_Api.Controllers.Dashboard
 
         // ── Shared helper ─────────────────────────────────────────────────────
         private IHttpActionResult GetCountResponse(
-            Func<string, SolarBulkCustomersCount> countGetter,
+            Func<string, string, SolarBulkCustomersCount> countGetter,
             string fallbackErrorMessage,
-            string region)
+            string region,
+            string province)
         {
             try
             {
                 if (!_solarBulkCustomersDao.TestConnection(out string connError))
                     return Ok(new { data = (object)null, errorMessage = "Database connection failed.", errorDetails = connError });
 
-                var data = countGetter(NormalizeRegion(region));
+                var data = countGetter(NormalizeRegion(region), NormalizeProvince(province));
 
                 return Ok(new
                 {
@@ -544,6 +564,15 @@ namespace MISReports_Api.Controllers.Dashboard
                 return null;
 
             var normalized = region.Trim().ToUpperInvariant();
+            return normalized == "ALL" ? null : normalized;
+        }
+
+        private static string NormalizeProvince(string province)
+        {
+            if (string.IsNullOrWhiteSpace(province))
+                return null;
+
+            var normalized = province.Trim().ToUpperInvariant();
             return normalized == "ALL" ? null : normalized;
         }
     }

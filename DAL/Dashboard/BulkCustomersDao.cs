@@ -23,7 +23,7 @@ namespace MISReports_Api.DAL.Dashboard
         /// <summary>
         /// Get active customer count (cst_st='0')
         /// </summary>
-        public int GetActiveCustomerCount(string region = null)
+        public int GetActiveCustomerCount(string region = null, string province = null)
         {
             try
             {
@@ -34,9 +34,14 @@ namespace MISReports_Api.DAL.Dashboard
                     conn.Open();
 
                     string sql;
+                    bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
                     bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
 
-                    if (hasRegionFilter)
+                    if (hasProvinceFilter)
+                    {
+                        sql = "SELECT COUNT(*) FROM customer c, areas a WHERE c.cst_st='0' AND c.area_cd = a.area_code AND a.prov_code = ?";
+                    }
+                    else if (hasRegionFilter)
                     {
                         sql = "SELECT COUNT(*) FROM customer c, areas a WHERE c.cst_st='0' AND c.area_cd = a.area_code AND a.region = ?";
                     }
@@ -47,7 +52,16 @@ namespace MISReports_Api.DAL.Dashboard
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        if (hasRegionFilter)
+                        if (hasProvinceFilter)
+                        {
+                            string resolvedProv = province.Trim().ToUpperInvariant();
+                            if (resolvedProv.Length == 1 && char.IsDigit(resolvedProv[0]))
+                            {
+                                resolvedProv = "0" + resolvedProv;
+                            }
+                            cmd.Parameters.AddWithValue("?", resolvedProv);
+                        }
+                        else if (hasRegionFilter)
                         {
                             cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
                         }
