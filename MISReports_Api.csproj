@@ -392,6 +392,7 @@
     <Compile Include="Controllers\Inventory\InventoryOnHandController.cs" />
     <Compile Include="Controllers\Inventory\IssueReceiptWPController.cs" />
     <Compile Include="Controllers\Inventory\IssuesRaisedForJobsController.cs" />
+    <Compile Include="Controllers\Inventory\MaterialFlowController.cs" />
     <Compile Include="Controllers\Inventory\IssueSummaryProvinceController.cs" />
     <Compile Include="Controllers\Inventory\MaterialMasterController.cs" />
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
@@ -403,6 +404,7 @@
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnagizedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\CCSolarPendingController.cs" />
@@ -559,6 +561,7 @@
     <Compile Include="DAL\Inventory\InventoryOnHandRepository.cs" />
     <Compile Include="DAL\Inventory\IssueReceiptWPDAL.cs" />
     <Compile Include="DAL\Inventory\IssuesRaisedForJobsDAL.cs" />
+    <Compile Include="DAL\Inventory\MaterialFlowDAL.cs" />
     <Compile Include="DAL\Inventory\IssueSummaryProvinceDAL.cs" />
     <Compile Include="DAL\Inventory\MaterialMasterDAL.cs" />
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
@@ -576,6 +579,7 @@
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnagizedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\CCSolarPendingDAL.cs" />
@@ -635,12 +639,14 @@
     <Compile Include="Models\Inventory\GrnPeriodSummaryModel.cs" />
     <Compile Include="Models\Inventory\GrnRaisedForPurchasingModels.cs" />
     <Compile Include="Models\Inventory\IssuesRaisedForJobsModel.cs" />
+    <Compile Include="Models\Inventory\MaterialFlowModel.cs" />
     <Compile Include="Models\Inventory\IssueSummaryProvinceModel.cs" />
     <Compile Include="Models\Inventory\MaterialMasterModel.cs" />
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnagizeModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
@@ -987,6 +993,7 @@
     <Folder Include="Views\GrnRaisedForPurchasing\" />
     <Folder Include="Views\IssueReceiptWP\" />
     <Folder Include="Views\IssuesRaisedForJobs\" />
+    <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
@@ -994,6 +1001,7 @@
     <Folder Include="Views\PHVNonMovingWH\" />
     <Folder Include="Views\PHVObsoleteIdleBOS\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
+    <Folder Include="Views\PivIIPaidNotEnagized\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
   </ItemGroup>
