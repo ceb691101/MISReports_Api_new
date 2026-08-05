@@ -58,7 +58,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public List<KioskCollectionModel> GetKioskCollection(string userId, string region = null, string province = null)
+        public List<KioskCollectionModel> GetKioskCollection(string userId, string region = null, string province = null, string area = null)
         {
             var rows = new List<KioskCollectionModel>();
 
@@ -69,7 +69,7 @@ namespace MISReports_Api.DAL.Dashboard
                 // logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
                 logger.Info($"=== START GetKioskCollection userId={userId}, from {fromDate:dd-MM-yy} to {toDate:dd-MM-yy} ===");
 
-                rows = QueryKioskCollection(userId: userId, region: region, province: province);
+                rows = QueryKioskCollection(userId: userId, region: region, province: province, area: area);
 
                 logger.Info($"=== END GetKioskCollection (Success) - {rows.Count} records ===");
                 return rows;
@@ -81,20 +81,23 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region, string province)
+        private List<KioskCollectionModel> QueryKioskCollection(string userId, string region, string province, string area)
         {
             var rows = new List<KioskCollectionModel>();
 
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
             bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            bool hasFilter = hasProvinceFilter || hasRegionFilter;
-            string filterColumn = hasProvinceFilter ? "prov_code" : "region";
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
             string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
             if (hasProvinceFilter && resolvedProv.StartsWith("0") && resolvedProv.Length > 1 && char.IsDigit(resolvedProv[1]))
             {
                 resolvedProv = resolvedProv.Substring(1);
             }
-            string filterValue = hasProvinceFilter ? resolvedProv : (hasRegionFilter ? region.Trim().ToUpperInvariant() : null);
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() : 
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string sql = hasFilter
                     ? $@"

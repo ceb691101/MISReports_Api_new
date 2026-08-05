@@ -40,7 +40,7 @@ namespace MISReports_Api.DAL.Dashboard
         /// (from day-before-today back to 6 days earlier).
         /// Ordinary (bill_type='O') and bulk (bill_type='B') are queried separately.
         /// </summary>
-        public SalesAndCollectionRangeResult GetSalesAndCollectionRange(string region = null, string province = null)
+        public SalesAndCollectionRangeResult GetSalesAndCollectionRange(string region = null, string province = null, string area = null)
         {
             var result = new SalesAndCollectionRangeResult();
 
@@ -52,10 +52,10 @@ namespace MISReports_Api.DAL.Dashboard
                 DateTime fromDate = DateTime.Today.AddDays(-7);
                 DateTime toDate = DateTime.Today.AddDays(-1);
 
-                result.OrdinaryData = GetOrdinarySalesAndCollectionByDateRange(fromDate, toDate, region, province);
+                result.OrdinaryData = GetOrdinarySalesAndCollectionByDateRange(fromDate, toDate, region, province, area);
                 logger.Info($"Ordinary records fetched: {result.OrdinaryData.Count}");
 
-                result.BulkData = GetBulkSalesAndCollectionByDateRange(fromDate, toDate, region, province);
+                result.BulkData = GetBulkSalesAndCollectionByDateRange(fromDate, toDate, region, province, area);
                 logger.Info($"Bulk records fetched: {result.BulkData.Count}");
 
                 logger.Info("=== END GetSalesAndCollectionRange (Success) ===");
@@ -72,30 +72,33 @@ namespace MISReports_Api.DAL.Dashboard
         // Private helpers
         // ------------------------------------------------------------------ //
 
-        private List<SalesAndCollectionModel> GetOrdinarySalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region, string province)
+        private List<SalesAndCollectionModel> GetOrdinarySalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region, string province, string area)
         {
-            return GetSalesAndCollectionByDateRange(fromDate, toDate, "O", region, province);
+            return GetSalesAndCollectionByDateRange(fromDate, toDate, "O", region, province, area);
         }
 
-        private List<SalesAndCollectionModel> GetBulkSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region, string province)
+        private List<SalesAndCollectionModel> GetBulkSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region, string province, string area)
         {
-            return GetSalesAndCollectionByDateRange(fromDate, toDate, "B", region, province);
+            return GetSalesAndCollectionByDateRange(fromDate, toDate, "B", region, province, area);
         }
 
-        private List<SalesAndCollectionModel> GetSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string billType, string region, string province)
+        private List<SalesAndCollectionModel> GetSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string billType, string region, string province, string area)
         {
             var dailyCollection = new Dictionary<DateTime, decimal>();
 
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
             bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            bool hasFilter = hasProvinceFilter || hasRegionFilter;
-            string filterColumn = hasProvinceFilter ? "prov_code" : "region";
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
             string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
             if (hasProvinceFilter && resolvedProv.StartsWith("0") && resolvedProv.Length > 1 && char.IsDigit(resolvedProv[1]))
             {
                 resolvedProv = resolvedProv.Substring(1);
             }
-            string filterValue = hasProvinceFilter ? resolvedProv : (hasRegionFilter ? region.Trim().ToUpperInvariant() : null);
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() : 
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string posCollectionSql = @"
                 SELECT c.trans_date,

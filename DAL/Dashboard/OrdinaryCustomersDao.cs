@@ -16,7 +16,7 @@ namespace MISReports_Api.DAL.Dashboard
             return _dbConnection.TestConnection(out errorMessage, false); // Use ordinary connection
         }
 
-        public OrdinaryCustomers GetOrdinaryCustomersCount(string region = null, string province = null)
+        public OrdinaryCustomers GetOrdinaryCustomersCount(string region = null, string province = null, string area = null)
         {
             var result = new OrdinaryCustomers { TotalCount = 0, BillCycle = "" };
 
@@ -61,10 +61,15 @@ namespace MISReports_Api.DAL.Dashboard
      and c.bill_cycle = (select max(bill_cycle) from areas) - 1
      and c.cust_type in ('A','G')";
 
+                    bool hasArea = !string.IsNullOrWhiteSpace(area);
                     bool hasProvince = !string.IsNullOrWhiteSpace(province);
                     bool hasRegion = !string.IsNullOrWhiteSpace(region);
 
-                    if (hasProvince)
+                    if (hasArea)
+                    {
+                        sql += " and a.area_code = ?";
+                    }
+                    else if (hasProvince)
                     {
                         sql += " and a.prov_code = ?";
                     }
@@ -75,7 +80,11 @@ namespace MISReports_Api.DAL.Dashboard
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        if (hasProvince)
+                        if (hasArea)
+                        {
+                            cmd.Parameters.AddWithValue("?", area.Trim().ToUpperInvariant());
+                        }
+                        else if (hasProvince)
                         {
                             string resolvedProv = province.Trim().ToUpperInvariant();
                             if (resolvedProv.StartsWith("0") && resolvedProv.Length > 1 && char.IsDigit(resolvedProv[1]))

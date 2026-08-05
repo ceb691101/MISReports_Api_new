@@ -18,7 +18,7 @@ namespace MISReports_Api.DAL.Dashboard
             return _dbConnection.TestConnection(out errorMessage, true);
         }
 
-        public SolarBulkCustomersSummary GetSummary(string region = null, string province = null)
+        public SolarBulkCustomersSummary GetSummary(string region = null, string province = null, string area = null)
         {
             var summary = new SolarBulkCustomersSummary
             {
@@ -43,7 +43,7 @@ namespace MISReports_Api.DAL.Dashboard
                         return summary;
                     }
 
-                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle, region, province);
+                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle, region, province, area);
 
                     summary.NetType1Customers = GetCountByNetType(groupedCounts, "1");
                     summary.NetType2Customers = GetCountByNetType(groupedCounts, "2") + GetCountByNetType(groupedCounts, "5");
@@ -65,32 +65,32 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public SolarBulkCustomersCount GetTotalCustomersCount(string region = null, string province = null)
+        public SolarBulkCustomersCount GetTotalCustomersCount(string region = null, string province = null, string area = null)
         {
-            return GetCountResult("ALL", region, province);
+            return GetCountResult("ALL", region, province, area);
         }
 
-        public SolarBulkCustomersCount GetNetType1CustomersCount(string region = null, string province = null)
+        public SolarBulkCustomersCount GetNetType1CustomersCount(string region = null, string province = null, string area = null)
         {
-            return GetCountResult("1", region, province);
+            return GetCountResult("1", region, province, area);
         }
 
-        public SolarBulkCustomersCount GetNetType2CustomersCount(string region = null, string province = null)
+        public SolarBulkCustomersCount GetNetType2CustomersCount(string region = null, string province = null, string area = null)
         {
-            return GetCountResult("2", region, province);
+            return GetCountResult("2", region, province, area);
         }
 
-        public SolarBulkCustomersCount GetNetType3CustomersCount(string region = null, string province = null)
+        public SolarBulkCustomersCount GetNetType3CustomersCount(string region = null, string province = null, string area = null)
         {
-            return GetCountResult("3", region, province);
+            return GetCountResult("3", region, province, area);
         }
 
-        public SolarBulkCustomersCount GetNetType4CustomersCount(string region = null, string province = null)
+        public SolarBulkCustomersCount GetNetType4CustomersCount(string region = null, string province = null, string area = null)
         {
-            return GetCountResult("4", region, province);
+            return GetCountResult("4", region, province, area);
         }
 
-        public SolarBulkGenerationCapacityGraph GetGenerationCapacityGraph(string billCycle = null, int cycles = 12, string region = null, string province = null)
+        public SolarBulkGenerationCapacityGraph GetGenerationCapacityGraph(string billCycle = null, int cycles = 12, string region = null, string province = null, string area = null)
         {
             var graph = new SolarBulkGenerationCapacityGraph
             {
@@ -123,7 +123,7 @@ namespace MISReports_Api.DAL.Dashboard
 
                     int safeCycles = cycles <= 0 ? 12 : cycles;
                     int selectedBillCycle = ResolveRequestedBillCycle(billCycle, latestCompletedBillCycle);
-                    var availableBillCycles = GetAvailableBillCyclesFromNetmtcons(conn, latestCompletedBillCycle, safeCycles, region, province);
+                    var availableBillCycles = GetAvailableBillCyclesFromNetmtcons(conn, latestCompletedBillCycle, safeCycles, region, province, area);
 
                     if (!availableBillCycles.Contains(selectedBillCycle) && availableBillCycles.Count > 0)
                     {
@@ -133,7 +133,7 @@ namespace MISReports_Api.DAL.Dashboard
                     graph.MaxBillCycle = latestCompletedBillCycle.ToString();
                     graph.SelectedBillCycle = selectedBillCycle.ToString();
                     graph.AvailableBillCycles = availableBillCycles.Select(cycle => cycle.ToString()).ToList();
-                    graph.Records = GetGenerationCapacityByCycleFromNetmtcons(conn, graph.SelectedBillCycle, region, province);
+                    graph.Records = GetGenerationCapacityByCycleFromNetmtcons(conn, graph.SelectedBillCycle, region, province, area);
                 }
 
                 return graph;
@@ -146,7 +146,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private SolarBulkCustomersCount GetCountResult(string netType, string region, string province)
+        private SolarBulkCustomersCount GetCountResult(string netType, string region, string province, string area)
         {
             var result = new SolarBulkCustomersCount
             {
@@ -167,7 +167,7 @@ namespace MISReports_Api.DAL.Dashboard
                         return result;
                     }
 
-                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle, region, province);
+                    var groupedCounts = GetGroupedCountsFromNetmtcons(conn, targetCycle, region, province, area);
 
                     if (netType == "ALL")
                     {
@@ -208,20 +208,23 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        private Dictionary<string, int> GetGroupedCountsFromNetmtcons(OleDbConnection conn, string billCycle, string region, string province)
+        private Dictionary<string, int> GetGroupedCountsFromNetmtcons(OleDbConnection conn, string billCycle, string region, string province, string area)
         {
             var groupedCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
             bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            bool hasFilter = hasProvinceFilter || hasRegionFilter;
-            string filterColumn = hasProvinceFilter ? "prov_code" : "region";
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
             string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
             if (hasProvinceFilter && resolvedProv.Length == 1 && char.IsDigit(resolvedProv[0]))
             {
                 resolvedProv = "0" + resolvedProv;
             }
-            string filterValue = hasProvinceFilter ? resolvedProv : (hasRegionFilter ? region.Trim().ToUpperInvariant() : null);
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() : 
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string groupedSql = hasFilter
                 ? $"SELECT n.bill_cycle, n.net_type, COUNT(*), SUM(n.gen_cap) FROM netmtcons n, areas a WHERE n.bill_cycle = ? AND n.area_cd = a.area_code AND a.{filterColumn} = ? GROUP BY 1,2 ORDER BY 2,1"
@@ -259,20 +262,23 @@ namespace MISReports_Api.DAL.Dashboard
             return groupedCounts.TryGetValue(netType, out int count) ? count : 0;
         }
 
-        private List<int> GetAvailableBillCyclesFromNetmtcons(OleDbConnection conn, int maxAllowedCycle, int takeCount, string region, string province)
+        private List<int> GetAvailableBillCyclesFromNetmtcons(OleDbConnection conn, int maxAllowedCycle, int takeCount, string region, string province, string area)
         {
             var billCycles = new List<int>();
 
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
             bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            bool hasFilter = hasProvinceFilter || hasRegionFilter;
-            string filterColumn = hasProvinceFilter ? "prov_code" : "region";
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
             string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
             if (hasProvinceFilter && resolvedProv.Length == 1 && char.IsDigit(resolvedProv[0]))
             {
                 resolvedProv = "0" + resolvedProv;
             }
-            string filterValue = hasProvinceFilter ? resolvedProv : (hasRegionFilter ? region.Trim().ToUpperInvariant() : null);
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() : 
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string sql = hasFilter
                 ? $"SELECT DISTINCT n.bill_cycle FROM netmtcons n, areas a WHERE n.bill_cycle <= ? AND n.area_cd = a.area_code AND a.{filterColumn} = ? ORDER BY n.bill_cycle DESC"
@@ -307,20 +313,23 @@ namespace MISReports_Api.DAL.Dashboard
             return billCycles;
         }
 
-        private List<SolarBulkGenerationCapacityPoint> GetGenerationCapacityByCycleFromNetmtcons(OleDbConnection conn, string billCycle, string region, string province)
+        private List<SolarBulkGenerationCapacityPoint> GetGenerationCapacityByCycleFromNetmtcons(OleDbConnection conn, string billCycle, string region, string province, string area)
         {
             var groupedByDisplayType = new Dictionary<string, SolarBulkGenerationCapacityPoint>(StringComparer.OrdinalIgnoreCase);
 
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
             bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            bool hasFilter = hasProvinceFilter || hasRegionFilter;
-            string filterColumn = hasProvinceFilter ? "prov_code" : "region";
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
             string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
             if (hasProvinceFilter && resolvedProv.Length == 1 && char.IsDigit(resolvedProv[0]))
             {
                 resolvedProv = "0" + resolvedProv;
             }
-            string filterValue = hasProvinceFilter ? resolvedProv : (hasRegionFilter ? region.Trim().ToUpperInvariant() : null);
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() : 
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string sql = hasFilter
                 ? $"SELECT n.bill_cycle, n.net_type, COUNT(*), SUM(n.gen_cap) FROM netmtcons n, areas a WHERE n.bill_cycle = ? AND n.area_cd = a.area_code AND a.{filterColumn} = ? GROUP BY 1,2 ORDER BY 2,1"
