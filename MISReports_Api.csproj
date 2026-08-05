@@ -376,11 +376,12 @@
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
-    <Compile Include="Controllers\FIFO\PHVDamageBOSController.cs" />
-    <Compile Include="Controllers\FIFO\PHVNonMovingBOSController.cs" />
-    <Compile Include="Controllers\FIFO\PHVNonMovingWHController.cs" />
-    <Compile Include="Controllers\FIFO\PHVObsoleteBOSController.cs" />
-    <Compile Include="Controllers\FIFO\PHVSlowMovingWHController.cs" />
+    <Compile Include="Controllers\FIFO\QuantityMatFIFOController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVNonMovingWHController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVObsoleteBOSController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVSlowMovingWHController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
@@ -418,8 +419,8 @@
     <Compile Include="Controllers\PhysicalVerification\PHVNonMovingWHwiseBOSController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleBOSController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVObsoleteIdleController.cs" />
-    <Compile Include="Controllers\FIFO\PHVObsoleteIdleFIFOController.cs" />
-    <Compile Include="Controllers\FIFO\PHVDamageFIFOController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVObsoleteIdleFIFOController.cs" />
+    <Compile Include="Controllers\PHV - FIFO\PHVDamageFIFOController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVShoratgeSurplusWHwiseController.cs" />
     <Compile Include="Controllers\PhysicalVerification\PHVSlowNonMovingWHwiseController.cs" />
     <Compile Include="Controllers\PIV\AccCodeWisePivNotAfmhqController.cs" />
@@ -530,11 +531,11 @@
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmPendingApplicationsDao.cs" />
-    <Compile Include="DAL\FIFO\PHVDamageBOSDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVNonMovingBOSDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVObsoleteBOSDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVSlowMovingWHDAL.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVNonMovingWHDAL.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVObsoleteBOSDAL.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVSlowMovingWHDAL.cs" />
     <Compile Include="DAL\FinancialDashboard\PivDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
@@ -590,8 +591,8 @@
     <Compile Include="DAL\PhysicalVerification\PHVNonMovingWHwiseBOSRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleBOSRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVObsoleteIdleRepository.cs" />
-    <Compile Include="DAL\FIFO\PHVObsoleteIdleFIFORepository.cs" />
-    <Compile Include="DAL\FIFO\PHVDamageFIFORepository.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVObsoleteIdleFIFORepository.cs" />
+    <Compile Include="DAL\PHV - FIFO\PHVDamageFIFORepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVShoratgeSurplusWHwiseRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVSlowNonMovingWHwiseRepository.cs" />
     <Compile Include="DAL\PIV\AccCodeWisePivNotAfmhqRepository.cs" />
@@ -622,11 +623,11 @@
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPendingApplicationModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
-    <Compile Include="Models\FIFO\PHVDamageBOSModel.cs" />
-    <Compile Include="Models\FIFO\PHVNonMovingBOSModel.cs" />
-    <Compile Include="Models\FIFO\PHVNonMovingWHModel.cs" />
-    <Compile Include="Models\FIFO\PHVObsoleteBOSModel.cs" />
-    <Compile Include="Models\FIFO\PHVSlowMovingWHModel.cs" />
+    <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
+    <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
+    <Compile Include="Models\PHV - FIFO\PHVNonMovingWHModel.cs" />
+    <Compile Include="Models\PHV - FIFO\PHVObsoleteBOSModel.cs" />
+    <Compile Include="Models\PHV - FIFO\PHVSlowMovingWHModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
     <Compile Include="Models\Inventory\Branchgrnnotgenmodel.cs" />
@@ -812,7 +813,7 @@
     <Compile Include="Models\PhysicalVerification\PHVNonMovingWHwiseBOSModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVObsoleteIdleBOSModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVObsoleteIdleModel.cs" />
-    <Compile Include="Models\FIFO\PHVObsoleteIdleFIFOModel.cs" />
+    <Compile Include="Models\PHV - FIFO\PHVObsoleteIdleFIFOModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVShoratgeSurplusWHwiseModel.cs" />
     <Compile Include="Models\PhysicalVerification\PHVSlowNonMovingWHwiseModel.cs" />
     <Compile Include="Models\PIV\AccCodeWisePivNotAfmhqModel.cs" />
@@ -980,6 +981,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="DAL\FIFO\" />
+    <Folder Include="Models\FIFO\" />
     <Folder Include="Views\Branchgrnnotgen\" />
     <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
