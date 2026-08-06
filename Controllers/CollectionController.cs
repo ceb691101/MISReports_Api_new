@@ -192,67 +192,14 @@ namespace MISReports_Api.Controllers
         //  SALES & COLLECTIONS – REGION WISE (existing)                        //
         // ================================================================== //
 
-        [HttpGet]
-        [Route("sales-collection/dropdowns")]
-        public IHttpActionResult GetSalesCollectionDropdowns()
-        {
-            try
-            {
-                var billCycleModel = _salesBillCycleDao.GetLast24BillCycles("O");
-
-                List<ProvinceModel> provinces;
-                try
-                {
-                    provinces = _provinceDao.GetProvince();
-                    provinces = provinces
-                        .Where(p => !string.Equals(p.ProvinceName, "Head Office",
-                                                   StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Trace.WriteLine($"Province fetch error: {ex.Message}");
-                    provinces = new List<ProvinceModel>();
-                }
-
-                List<RegionModel> regions;
-                try { regions = _regionDao.GetRegion(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Trace.WriteLine($"Region fetch error: {ex.Message}");
-                    regions = new List<RegionModel>();
-                }
-
-                return Ok(JObject.FromObject(new
-                {
-                    billCycles = billCycleModel.BillCycles,
-                    maxBillCycle = billCycleModel.MaxBillCycle,
-                    provinces,
-                    regions,
-                    errorMessage = (string)null
-                }));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(
-                    $"ERROR GetSalesCollectionDropdowns: {ex.Message}\n{ex.StackTrace}");
-
-                return Ok(JObject.FromObject(new
-                {
-                    data = (object)null,
-                    errorMessage = "Cannot get dropdown data.",
-                    errorDetails = ex.Message
-                }));
-            }
-        }
 
         [HttpGet]
         [Route("sales-collection/report")]
         public IHttpActionResult GetSalesCollectionReport(
-            [FromUri] string billCycle = null,
-            [FromUri] string reportType = "EntireCEB",
-            [FromUri] string provinceName = null,
-            [FromUri] string regionCode = null)
+    [FromUri] string billCycle = null,
+    [FromUri] string reportType = "EntireCEB",
+    [FromUri] string provinceCode = null,
+    [FromUri] string regionCode = null)
         {
             if (string.IsNullOrWhiteSpace(billCycle))
                 return Ok(JObject.FromObject(new
@@ -260,19 +207,16 @@ namespace MISReports_Api.Controllers
                     data = (object)null,
                     errorMessage = "Bill cycle is required."
                 }));
-
             if (!Enum.TryParse(reportType?.Trim() ?? "EntireCEB", true,
                                out SalesCollectionReportType parsedType))
                 parsedType = SalesCollectionReportType.EntireCEB;
-
             if (parsedType == SalesCollectionReportType.Province &&
-                string.IsNullOrWhiteSpace(provinceName))
+                string.IsNullOrWhiteSpace(provinceCode))
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
-                    errorMessage = "Province name is required for Province report type."
+                    errorMessage = "Province code is required for Province report type."
                 }));
-
             if (parsedType == SalesCollectionReportType.Region &&
                 string.IsNullOrWhiteSpace(regionCode))
                 return Ok(JObject.FromObject(new
@@ -280,7 +224,6 @@ namespace MISReports_Api.Controllers
                     data = (object)null,
                     errorMessage = "Region code is required for Region report type."
                 }));
-
             try
             {
                 if (!_salesAndCollectionDao.TestConnection(out string connError))
@@ -290,31 +233,26 @@ namespace MISReports_Api.Controllers
                         errorMessage = "Database connection failed.",
                         errorDetails = connError
                     }));
-
                 var request = new SalesAndCollectionRequest
                 {
                     BillCycle = billCycle,
                     ReportType = parsedType,
-                    ProvinceName = provinceName,
+                    ProvinceCode = provinceCode,
                     RegionCode = regionCode
                 };
-
                 var data = _salesAndCollectionDao.GetSalesAndCollectionReport(request);
-
                 if (data == null || data.Count == 0)
                     return Ok(JObject.FromObject(new
                     {
                         data = (object)null,
                         errorMessage = "No data found for the selected criteria."
                     }));
-
                 return Ok(JObject.FromObject(new { data, errorMessage = (string)null }));
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetSalesCollectionReport: {ex.Message}\n{ex.StackTrace}");
-
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

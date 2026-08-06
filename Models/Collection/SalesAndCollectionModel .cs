@@ -16,7 +16,7 @@ namespace MISReports_Api.Models.Collection
     {
         public string BillCycle { get; set; }
         public SalesCollectionReportType ReportType { get; set; }
-        public string ProvinceName { get; set; }   // used when ReportType == Province
+        public string ProvinceCode { get; set; }   // used when ReportType == Province
         public string RegionCode { get; set; }     // used when ReportType == Region
     }
 

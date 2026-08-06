@@ -35,7 +35,7 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
         public List<SalesAndCollectionModel> GetSalesAndCollectionReport(SalesAndCollectionRequest request)
         {
             logger.Info($"=== START GetSalesAndCollectionReport === BillCycle={request.BillCycle} " +
-                        $"ReportType={request.ReportType} Province={request.ProvinceName} Region={request.RegionCode}");
+            $"ReportType={request.ReportType} Province={request.ProvinceCode} Region={request.RegionCode}");
             try
             {
                 // Pass 1: fetch ordinary rows
@@ -81,7 +81,7 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
                         if (request.ReportType == SalesCollectionReportType.Region)
                             cmd.Parameters.AddWithValue("?", request.RegionCode.Trim());
                         else if (request.ReportType == SalesCollectionReportType.Province)
-                            cmd.Parameters.AddWithValue("?", request.ProvinceName.Trim());
+                            cmd.Parameters.AddWithValue("?", request.ProvinceCode.Trim());
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -207,7 +207,7 @@ namespace MISReports_Api.DAL.Collection.SalesAndCollection
                         "WHERE r.bill_cycle = ? AND r.bill_type = 'O' " +
                         "AND r.area_code = a.area_code AND a.area_code = r.area_code " +
                         "AND a.prov_code = p.prov_code " +
-                        "AND p.prov_name = ? " +
+                        "AND p.prov_code = ? " +
                         "AND a.bill_cycle IS NOT NULL " +
                         "ORDER BY a.area_name";
 
