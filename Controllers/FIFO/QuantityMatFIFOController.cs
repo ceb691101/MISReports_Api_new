@@ -14,40 +14,55 @@ namespace MISReports_Api.Controllers
     {
         private readonly QuantityMatFIFODAL _dal = new QuantityMatFIFODAL();
 
-        // PATH: /api/quantitymatfifo/report/matcode/whcode
+        // PATH: /api/quantitymatfifo/report/510.00/WH01/RM
+        // matCode is optional in the path - if omitted, all material codes are returned.
         [HttpGet]
-        [Route("report/{matCode}/{whCode}")]
-        public IHttpActionResult GetReport(string matCode, string whCode)
+        [Route("report/{costCtr}/{whCode}")]
+        public IHttpActionResult GetReport(string costCtr, string whCode)
         {
-            return ExecuteQuery(matCode, whCode);
+            return ExecuteQuery(costCtr, whCode, null);
         }
 
-        // QUERY: /api/quantitymatfifo/report?matCode=...&whCode=...
+        // PATH: /api/quantitymatfifo/report/510.00/WH01/RM
+        [HttpGet]
+        [Route("report/{costCtr}/{whCode}/{matCode}")]
+        public IHttpActionResult GetReport(string costCtr, string whCode, string matCode)
+        {
+            return ExecuteQuery(costCtr, whCode, matCode);
+        }
+
+        // QUERY: /api/quantitymatfifo/report?costCtr=510.00&whCode=WH01&matCode=RM
+        // matCode is optional - leave it blank (or omit it) to get all material codes.
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery([FromUri] string matCode, [FromUri] string whCode)
+        public IHttpActionResult GetQuery([FromUri] string costCtr, [FromUri] string whCode, [FromUri] string matCode = null)
         {
-            return ExecuteQuery(matCode, whCode);
+            return ExecuteQuery(costCtr, whCode, matCode);
         }
 
-        private IHttpActionResult ExecuteQuery(string matCode, string whCode)
+        private IHttpActionResult ExecuteQuery(string costCtr, string whCode, string matCode)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(costCtr))
+                    return BadRequest("costCtr is required.");
                 if (string.IsNullOrWhiteSpace(whCode))
                     return BadRequest("whCode is required.");
 
-                // matCode is a LIKE prefix filter; an empty value matches all material codes.
-                string matCodeTrimmed = (matCode ?? string.Empty).Trim();
+                string costCtrTrimmed = costCtr.Trim();
                 string whCodeTrimmed = whCode.Trim();
 
-                var data = _dal.GetQuantityMatFIFO(matCodeTrimmed, whCodeTrimmed);
+                // matCode is a LIKE prefix filter; a blank/omitted value matches all material codes.
+                string matCodeTrimmed = (matCode ?? string.Empty).Trim();
+
+                var data = _dal.GetQuantityMatFIFO(costCtrTrimmed, whCodeTrimmed, matCodeTrimmed);
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
                 {
-                    matCode = matCodeTrimmed,
+                    costCtr = costCtrTrimmed,
                     whCode = whCodeTrimmed,
+                    matCode = matCodeTrimmed,
                     totalRecords = data.Count,
                     totalQtyOnHand = data.Sum(x => x.QtyOnHand ?? 0m),
                     totalValue = data.Sum(x => x.Value ?? 0m)

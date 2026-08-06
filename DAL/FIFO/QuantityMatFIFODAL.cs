@@ -14,7 +14,7 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        public List<QuantityMatFIFOModel> GetQuantityMatFIFO(string matCode, string whCode)
+        public List<QuantityMatFIFOModel> GetQuantityMatFIFO(string costCtr, string whCode, string matCode)
         {
             var result = new List<QuantityMatFIFOModel>();
 
@@ -39,17 +39,25 @@ namespace MISReports_Api.DAL
                   AND     A.mat_cd = B.mat_cd
                   AND     TRIM(A.wrh_cd) = TRIM(B.wrh_cd)
                   AND     B.QTY > 0
-                  AND     TRIM(B.wrh_cd) = TRIM(:whcode)
+                  AND     UPPER(TRIM(B.wrh_cd)) = UPPER(:whcode)
+                  AND     TRIM(B.dept_id) = :costctr
                 GROUP BY B.dept_id, B.mat_cd, D.mat_nm, A.grade_cd, D.maj_uom, B.unit_price, B.wrh_cd
                 ORDER BY B.wrh_cd, B.mat_cd";
 
-            // wrh_cd is compared with TRIM() on both the column and the bind variable to
-            // guard against the same CHAR blank-padding issue found in earlier reports
-            // (fixed-length CHAR columns get non-padded comparison semantics against a
-            // Varchar2 bind variable). mat_cd is matched via LIKE with a trailing '%',
-            // which already tolerates any blank padding, so no TRIM is needed there.
-            string matCodeTrimmed = (matCode ?? string.Empty).Trim();
+            // wrh_cd is compared with UPPER(TRIM()) on both the column and the bind variable
+            // (same pattern used in PriceVaWHDAL) to guard against the fixed-length CHAR
+            // blank-padding issue and case differences.
+            //
+            // costctr (dept_id) is matched with TRIM() on the column, same as PriceVaWHDAL,
+            // since dept_id may be stored as a padded CHAR column.
+            //
+            // matcode is matched via LIKE with a trailing '%'. When matCode is blank, the
+            // bind value becomes '%' which matches every material code, giving the "all
+            // materials" behaviour requested. No TRIM is needed here since LIKE already
+            // tolerates the padding.
+            string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
             string whCodeTrimmed = (whCode ?? string.Empty).Trim();
+            string matCodeTrimmed = (matCode ?? string.Empty).Trim();
 
             using (var conn = new OracleConnection(_connectionString))
             using (var cmd = new OracleCommand(query, conn))
@@ -59,6 +67,7 @@ namespace MISReports_Api.DAL
 
                 cmd.Parameters.Add(new OracleParameter("matcode", OracleDbType.Varchar2) { Value = matCodeTrimmed });
                 cmd.Parameters.Add(new OracleParameter("whcode", OracleDbType.Varchar2) { Value = whCodeTrimmed });
+                cmd.Parameters.Add(new OracleParameter("costctr", OracleDbType.Varchar2) { Value = costCtrTrimmed });
 
                 conn.Open();
 

@@ -22,7 +22,7 @@ namespace MISReports_Api.DAL
             const string query = @"
                 SELECT  T1.mat_cd,
                         T2.mat_nm,
-                        (SELECT comp_nm FROM glcompm WHERE TRIM(comp_id) = TRIM(:compid)) AS c8,
+                        (SELECT comp_nm FROM glcompm WHERE comp_id = d.comp_id) AS c8,
                         T1.dept_id AS dept_id,
                         (SUM(CASE WHEN T1.add_deduct = 'F' THEN T1.trx_qty
                                   WHEN T1.add_deduct = 'T' THEN -T1.trx_qty
@@ -44,6 +44,7 @@ namespace MISReports_Api.DAL
                   AND     T1.trx_dt <  :todateexcl
                   AND     (T1.trx_type IN ('ISSUE', 'IS_CAN')
                            OR (T1.trx_type IN ('RECEIPT') AND T1.doc_pf IN ('RTV', 'RTV-CL')))
+                  AND     T1.mat_cd LIKE '%' || :matcode || '%'
                 GROUP BY T1.mat_cd, T2.mat_nm, d.comp_id, T1.dept_id
 
                 UNION ALL
@@ -77,28 +78,15 @@ namespace MISReports_Api.DAL
 
                 ORDER BY 1, 2, 3, 4";
 
-            // comp_id / parent_id on GLCOMPM are fixed-length CHAR columns (blank-padded
-            // in storage). A Varchar2 bind variable forces non-padded comparison
-            // semantics, so both sides are wrapped in TRIM() -- same fix already applied
-            // to the CurrentAcctBal / CCT1T2T3 / CCSolarPending reports. Comparisons
-            // against T1.mat_cd via LIKE don't need TRIM since a trailing '%' wildcard
-            // already tolerates any blank padding.
             string compIdTrimmed = (compId ?? string.Empty).Trim();
             string matCodeTrimmed = (matCode ?? string.Empty).Trim();
-
-            // The original report had the first UNION branch hard-coded to literal test
-            // dates ('2026/01/01' / '2026/08/01') instead of the @fromDate/@toDate
-            // parameters used in the second branch. That looks like a leftover from
-            // testing, so both branches are bound to the same :fromdate/:todateexcl
-            // parameters here. toDate is treated as inclusive of the whole day, so the
-            // upper bound used is the start of the following day.
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 
             using (var conn = new OracleConnection(_connectionString))
             using (var cmd = new OracleCommand(query, conn))
             {
                 cmd.CommandType = CommandType.Text;
-                cmd.BindByName = true; // required so :compid / :fromdate / :todateexcl (used multiple times) bind correctly by name
+                cmd.BindByName = true; // required so :compid / :fromdate / :todateexcl / :matcode (each used multiple times) bind correctly by name
 
                 cmd.Parameters.Add(new OracleParameter("compid", OracleDbType.Varchar2) { Value = compIdTrimmed });
                 cmd.Parameters.Add(new OracleParameter("fromdate", OracleDbType.Date) { Value = fromDate.Date });
