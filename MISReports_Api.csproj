@@ -356,6 +356,7 @@
     <Compile Include="Controllers\Admin\Report_Parameters\ReportParametersV2Controller.cs" />
     <Compile Include="Controllers\Admin\Report_Role\RoleCrudController.cs" />
     <Compile Include="Controllers\Admin\RepRoles\RoleInfoController.cs" />
+    <Compile Include="Controllers\AreaEngineerDashboard\AreaEngineerDashboardController.cs" />
     <Compile Include="Controllers\BillCalculationController.cs" />
     <Compile Include="Controllers\BillMapController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
@@ -374,6 +375,7 @@
     <Compile Include="Controllers\Catalog\ReportCatalogController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
+    <Compile Include="Controllers\Construction\ConstructionAllController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
@@ -498,6 +500,13 @@
     <Compile Include="DAL\Admin\Report_Parameters\ReportParameterRepository.cs" />
     <Compile Include="DAL\Admin\Report_Role\RoleCrudRepository.cs" />
     <Compile Include="DAL\Admin\RepRoles\RoleInfoRepository.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerAppCountDAL.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerConnectionGivenDAL.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerMaterialMasterDAL.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerPendingApplicationsDAL.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerPivPeriodSummaryDAL.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerPivTotalDAL.cs" />
+    <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerStockValueDAL.cs" />
     <Compile Include="DAL\BillMapRepository.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
@@ -518,6 +527,7 @@
     <Compile Include="DAL\Collection\SalesAndCollectionDao.cs" />
     <Compile Include="DAL\Collection\CustomersHighestOutstandingDao.cs" />
     <Compile Include="DAL\Collection\SuspensePaymentDetailsDao.cs" />
+    <Compile Include="DAL\Construction\ConstructionAllDAL.cs" />
     <Compile Include="DAL\Dashboard\BulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\KioskCollectionDao.cs" />
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
@@ -605,6 +615,7 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="Models\AreaEngineerDashboard\AreaEngineerDashboardModel.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
@@ -620,6 +631,7 @@
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
+    <Compile Include="Models\Construction\ConstructionAllModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />
