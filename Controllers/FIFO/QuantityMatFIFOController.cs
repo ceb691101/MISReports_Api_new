@@ -31,7 +31,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(costCtr, whCode, matCode);
         }
 
-        // QUERY: /api/quantitymatfifo/report?costCtr=510.00&whCode=WH01&matCode=RM
+        // QUERY: /api/quantitymatfifo/report?costCtr=980.90&whCode=WRH_TCP_MAIN&matCode=
         // matCode is optional - leave it blank (or omit it) to get all material codes.
         [HttpGet]
         [Route("report")]

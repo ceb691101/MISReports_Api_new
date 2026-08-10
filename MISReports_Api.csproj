@@ -373,6 +373,7 @@
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
     <Compile Include="Controllers\Catalog\ReportCatalogController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
+    <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
@@ -501,6 +502,7 @@
     <Compile Include="DAL\Admin\Report_Role\RoleCrudRepository.cs" />
     <Compile Include="DAL\Admin\RepRoles\RoleInfoRepository.cs" />
     <Compile Include="DAL\BillMapRepository.cs" />
+    <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDateRangePayeeDAL.cs" />
@@ -623,6 +625,7 @@
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
+    <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivTotalModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPivPeriodSummaryModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmStockValueModel.cs" />

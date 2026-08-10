@@ -17,7 +17,7 @@ namespace MISReports_Api.Controllers
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/issuesummaryprovince/report?fromDate=2026/01/01&toDate=2026/01/31&compId=CC&matCode=
+        // QUERY: /api/issuesummaryprovince/report?fromDate=2022/01/01&toDate=2022/01/31&compId=CC&matCode=
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery(
