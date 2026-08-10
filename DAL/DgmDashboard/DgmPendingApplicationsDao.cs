@@ -25,7 +25,10 @@ namespace MISReports_Api.DAL.DgmDashboard
                         app.application_no
                     FROM applications app
                     INNER JOIN applicationtypes appty ON app.application_type = appty.apptype
+                    INNER JOIN pcesthmt T1 ON TRIM(T1.estimate_no) = TRIM(app.application_no)
+                    INNER JOIN spodrcrd L ON TRIM(T1.project_no) = TRIM(L.project_no)
                     WHERE app.status NOT IN ('D')
+                    AND T1.status = 1
                     AND TO_CHAR(app.submit_date, 'YYYY') = :year
                     AND app.dept_id IN (
                         SELECT dept_id 
@@ -36,26 +39,7 @@ namespace MISReports_Api.DAL.DgmDashboard
                             WHERE TRIM(comp_id) = :companyId1 OR TRIM(parent_id) = :companyId2
                         )
                     )
-                    AND app.application_no NOT IN (
-                        SELECT app.application_no
-                        FROM applications app
-                        INNER JOIN applicationtypes appty ON app.application_type = appty.apptype
-                        INNER JOIN pcesthmt T1 ON TRIM(T1.estimate_no) = TRIM(app.application_no)
-                        INNER JOIN spodrcrd L ON TRIM(T1.project_no) = TRIM(L.project_no)
-                        WHERE app.status NOT IN ('D')
-                        AND T1.status = 1
-                        AND TO_CHAR(app.submit_date, 'YYYY') = :yearSub
-                        AND app.dept_id IN (
-                            SELECT dept_id 
-                            FROM gldeptm 
-                            WHERE comp_id IN (
-                                SELECT comp_id 
-                                FROM glcompm 
-                                WHERE TRIM(comp_id) = :companyId3 OR TRIM(parent_id) = :companyId4
-                            )
-                        )
-                    )
-                    ORDER BY app.dept_id, appty.description, app.application_type, app.application_no";
+                    ORDER BY app.dept_id, app.application_no";
 
                 using (OracleCommand cmd = new OracleCommand(query, conn))
                 {
@@ -63,9 +47,6 @@ namespace MISReports_Api.DAL.DgmDashboard
                     cmd.Parameters.Add(new OracleParameter("year", year.ToString()));
                     cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
                     cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
-                    cmd.Parameters.Add(new OracleParameter("yearSub", year.ToString()));
-                    cmd.Parameters.Add(new OracleParameter("companyId3", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId4", companyId));
 
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {
