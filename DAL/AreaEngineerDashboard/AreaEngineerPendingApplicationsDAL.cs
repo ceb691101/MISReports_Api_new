@@ -33,7 +33,7 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                         WHERE comp_id IN (
                             SELECT comp_id 
                             FROM glcompm 
-                            WHERE TRIM(comp_id) = :companyId1 OR TRIM(parent_id) = :companyId2
+                            WHERE TRIM(comp_id) = :companyId
                         )
                     )
                     AND app.application_no NOT IN (
@@ -44,14 +44,14 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                         INNER JOIN spodrcrd L ON TRIM(T1.project_no) = TRIM(L.project_no)
                         WHERE app.status NOT IN ('D')
                         AND T1.status = 1
-                        AND TO_CHAR(app.submit_date, 'YYYY') = :yearSub
+                        AND TO_CHAR(app.submit_date, 'YYYY') = :year
                         AND app.dept_id IN (
                             SELECT dept_id 
                             FROM gldeptm 
                             WHERE comp_id IN (
                                 SELECT comp_id 
                                 FROM glcompm 
-                                WHERE TRIM(comp_id) = :companyId3 OR TRIM(parent_id) = :companyId4
+                                WHERE TRIM(comp_id) = :companyId
                             )
                         )
                     )
@@ -61,11 +61,7 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                 {
                     cmd.BindByName = true;
                     cmd.Parameters.Add(new OracleParameter("year", year.ToString()));
-                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
-                    cmd.Parameters.Add(new OracleParameter("yearSub", year.ToString()));
-                    cmd.Parameters.Add(new OracleParameter("companyId3", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId4", companyId));
+                    cmd.Parameters.Add(new OracleParameter("companyId", companyId));
 
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {

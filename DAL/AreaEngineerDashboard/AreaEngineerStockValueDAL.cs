@@ -28,15 +28,15 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                             select comp_id 
                             from glcompm
                             where status = 2 
-                            and (TRIM(comp_id) = :companyId1 or TRIM(parent_id) = :companyId2)
+                            and TRIM(comp_id) = :companyId
                         )
                     )";
 
                 using (OracleCommand cmd = new OracleCommand(query, conn))
                 {
                     cmd.BindByName = true;
-                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
+                    cmd.Parameters.Add(new OracleParameter("companyId", companyId));
+
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read() && !reader.IsDBNull(0))

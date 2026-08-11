@@ -33,7 +33,7 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                         WHERE comp_id IN (
                             SELECT comp_id 
                             FROM glcompm 
-                            WHERE TRIM(comp_id) = :companyId1 OR TRIM(parent_id) = :companyId2
+                            WHERE TRIM(comp_id) = :companyId
                         )
                     )
                     GROUP BY app.dept_id, appty.description, app.application_type
@@ -43,8 +43,8 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                 {
                     cmd.BindByName = true;
                     cmd.Parameters.Add(new OracleParameter("year", year.ToString()));
-                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
+                    cmd.Parameters.Add(new OracleParameter("companyId", companyId));
+
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
