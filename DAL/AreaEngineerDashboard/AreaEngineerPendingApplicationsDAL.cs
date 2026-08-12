@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Oracle.ManagedDataAccess.Client;
 using MISReports_Api.Models.DgmDashboard;
 
-namespace MISReports_Api.DAL.DgmDashboard
+namespace MISReports_Api.DAL.AreaEngineerDashboard
 {
-    public class DgmPendingApplicationsDao
+    public class AreaEngineerPendingApplicationsDAL
     {
         private static readonly string ConnectionString = System.Configuration.ConfigurationManager
             .ConnectionStrings["HQOracle"].ConnectionString;
@@ -25,10 +25,7 @@ namespace MISReports_Api.DAL.DgmDashboard
                         app.application_no
                     FROM applications app
                     INNER JOIN applicationtypes appty ON app.application_type = appty.apptype
-                    INNER JOIN pcesthmt T1 ON TRIM(T1.estimate_no) = TRIM(app.application_no)
-                    INNER JOIN spodrcrd L ON TRIM(T1.project_no) = TRIM(L.project_no)
                     WHERE app.status NOT IN ('D')
-                    AND T1.status = 1
                     AND TO_CHAR(app.submit_date, 'YYYY') = :year
                     AND app.dept_id IN (
                         SELECT dept_id 
@@ -36,17 +33,31 @@ namespace MISReports_Api.DAL.DgmDashboard
                         WHERE comp_id IN (
                             SELECT comp_id 
                             FROM glcompm 
-                            WHERE TRIM(comp_id) = :companyId1 OR TRIM(parent_id) = :companyId2
+                            WHERE TRIM(comp_id) = :companyId
                         )
                     )
-                    ORDER BY app.dept_id, app.application_no";
+                    AND app.application_no NOT IN (
+                        SELECT app.application_no
+                        FROM applications app
+                        INNER JOIN applicationtypes appty ON app.application_type = appty.apptype
+                        INNER JOIN pcesthmt T1 ON TRIM(T1.estimate_no) = TRIM(app.application_no)
+                        INNER JOIN spodrcrd L ON TRIM(T1.project_no) = TRIM(L.project_no)
+                        WHERE app.status NOT IN ('D')
+                        AND T1.status = 1
+                        AND TO_CHAR(app.submit_date, 'YYYY') = :year
+                        AND app.dept_id IN (
+                            SELECT dept_id 
+                            FROM gldeptm 
+                            WHERE comp_id = :companyId
+                        )
+                    )
+                    ORDER BY app.dept_id, appty.description, app.application_type, app.application_no";
 
                 using (OracleCommand cmd = new OracleCommand(query, conn))
                 {
                     cmd.BindByName = true;
                     cmd.Parameters.Add(new OracleParameter("year", year.ToString()));
-                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
+                    cmd.Parameters.Add(new OracleParameter("companyId", companyId));
 
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {

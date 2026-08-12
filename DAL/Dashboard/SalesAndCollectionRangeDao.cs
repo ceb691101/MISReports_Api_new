@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DBAccess;
+using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
@@ -40,7 +40,7 @@ namespace MISReports_Api.DAL.Dashboard
         /// (from day-before-today back to 6 days earlier).
         /// Ordinary (bill_type='O') and bulk (bill_type='B') are queried separately.
         /// </summary>
-        public SalesAndCollectionRangeResult GetSalesAndCollectionRange(string region = null)
+        public SalesAndCollectionRangeResult GetSalesAndCollectionRange(string region = null, string province = null, string area = null)
         {
             var result = new SalesAndCollectionRangeResult();
 
@@ -52,10 +52,10 @@ namespace MISReports_Api.DAL.Dashboard
                 DateTime fromDate = DateTime.Today.AddDays(-7);
                 DateTime toDate = DateTime.Today.AddDays(-1);
 
-                result.OrdinaryData = GetOrdinarySalesAndCollectionByDateRange(fromDate, toDate, region);
+                result.OrdinaryData = GetOrdinarySalesAndCollectionByDateRange(fromDate, toDate, region, province, area);
                 logger.Info($"Ordinary records fetched: {result.OrdinaryData.Count}");
 
-                result.BulkData = GetBulkSalesAndCollectionByDateRange(fromDate, toDate, region);
+                result.BulkData = GetBulkSalesAndCollectionByDateRange(fromDate, toDate, region, province, area);
                 logger.Info($"Bulk records fetched: {result.BulkData.Count}");
 
                 logger.Info("=== END GetSalesAndCollectionRange (Success) ===");
@@ -72,64 +72,74 @@ namespace MISReports_Api.DAL.Dashboard
         // Private helpers
         // ------------------------------------------------------------------ //
 
-        private List<SalesAndCollectionModel> GetOrdinarySalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region)
+        private List<SalesAndCollectionModel> GetOrdinarySalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region, string province, string area)
         {
-            return GetSalesAndCollectionByDateRange(fromDate, toDate, "O", region);
+            return GetSalesAndCollectionByDateRange(fromDate, toDate, "O", region, province, area);
         }
 
-        private List<SalesAndCollectionModel> GetBulkSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region)
+        private List<SalesAndCollectionModel> GetBulkSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string region, string province, string area)
         {
-            return GetSalesAndCollectionByDateRange(fromDate, toDate, "B", region);
+            return GetSalesAndCollectionByDateRange(fromDate, toDate, "B", region, province, area);
         }
 
-        private List<SalesAndCollectionModel> GetSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string billType, string region)
+        private List<SalesAndCollectionModel> GetSalesAndCollectionByDateRange(DateTime fromDate, DateTime toDate, string billType, string region, string province, string area)
         {
             var dailyCollection = new Dictionary<DateTime, decimal>();
 
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
+            bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
-            string normalizedRegion = hasRegionFilter ? region.Trim().ToUpperInvariant() : null;
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
+            string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
+            if (hasProvinceFilter && resolvedProv.StartsWith("0") && resolvedProv.Length > 1 && char.IsDigit(resolvedProv[1]))
+            {
+                resolvedProv = resolvedProv.Substring(1);
+            }
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() : 
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string posCollectionSql = @"
                 SELECT c.trans_date,
                        SUM(c.trans_amt) AS amount
-                FROM cus_tran c, areas a
-                WHERE c.area_code = a.area_code
-                  AND c.bill_type = ?
-                  AND c.trans_type = 0
-                  AND c.trans_date >= ?
-                                    AND c.trans_date <= ?
-                  " + (hasRegionFilter ? "AND a.region = ?\n" : string.Empty) + @"
+                FROM   cus_tran c, areas a
+                WHERE  c.area_code = a.area_code
+                  AND  c.bill_type = ?
+                  AND  c.trans_type = 0
+                  AND  c.trans_date >= ?
+                  AND  c.trans_date <= ?
+                  " + (hasFilter ? $"AND a.{filterColumn} = ?\n" : string.Empty) + @"
                 GROUP BY 1
                 ORDER BY 1";
 
             string bankCashSql = @"
                 SELECT b.cash_date,
                        SUM(b.paid_amount) AS amount
-                FROM bank_paymast b, bankname c, areas p
-                WHERE b.area_code = p.area_code
-                  AND b.bank_code = c.bank_code
-                  AND b.cash_date >= ?
-                                    AND b.cash_date <= ?
-                  AND b.bill_type = ?
-                  " + (hasRegionFilter ? "AND p.region = ?\n" : string.Empty) + @"
+                FROM   bank_paymast b, bankname c, areas p
+                WHERE  b.area_code = p.area_code
+                  AND  b.bank_code = c.bank_code
+                  AND  b.cash_date >= ?
+                  AND  b.cash_date <= ?
+                  AND  b.bill_type = ?
+                  " + (hasFilter ? $"AND p.{filterColumn} = ?\n" : string.Empty) + @"
                 GROUP BY 1
                 ORDER BY 1";
 
             string cardCashSql = @"
-                                SELECT b.cash_date,
-                                             SUM(b.tot_amt) AS amount
-                                FROM crdtauth b, areas p
-                                WHERE b.area_code = p.area_code
-                                    AND b.cash_date >= ?
-                                                                        AND b.cash_date <= ?
-                                    AND b.bill_type = ?
-                                    " + (hasRegionFilter ? "AND p.region = ?\n" : string.Empty) + @"
-                                GROUP BY 1
-                                ORDER BY 1";
+                SELECT b.cash_date,
+                       SUM(b.tot_amt) AS amount
+                FROM   crdtauth b, areas p
+                WHERE  b.area_code = p.area_code
+                  AND  b.cash_date >= ?
+                  AND  b.cash_date <= ?
+                  AND  b.bill_type = ?
+                  " + (hasFilter ? $"AND p.{filterColumn} = ?\n" : string.Empty) + @"
+                GROUP BY 1
+                ORDER BY 1";
 
             try
             {
-                // logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd} ===");
                 logger.Info($"=== START GetSalesAndCollectionByDateRange billType={billType}: {fromDate:dd-MM-yy} to {toDate:dd-MM-yy} ===");
 
                 using (var posConn = new OleDbConnection(_posPaymentConnectionString))
@@ -142,7 +152,7 @@ namespace MISReports_Api.DAL.Dashboard
                         billType: billType,
                         fromDate: fromDate.Date,
                         toDate: toDate.Date,
-                        region: normalizedRegion);
+                        filterValue: filterValue);
                 }
 
                 using (var bankConn = new OleDbConnection(_bankPaymentConnectionString))
@@ -156,7 +166,7 @@ namespace MISReports_Api.DAL.Dashboard
                         billType: billType,
                         fromDate: fromDate.Date,
                         toDate: toDate.Date,
-                        region: normalizedRegion);
+                        filterValue: filterValue);
 
                     AddDateAmountRowsFromOleDb(
                         conn: bankConn,
@@ -165,7 +175,7 @@ namespace MISReports_Api.DAL.Dashboard
                         billType: billType,
                         fromDate: fromDate.Date,
                         toDate: toDate.Date,
-                        region: normalizedRegion);
+                        filterValue: filterValue);
                 }
 
                 var rows = new List<SalesAndCollectionModel>();
@@ -176,7 +186,6 @@ namespace MISReports_Api.DAL.Dashboard
 
                     rows.Add(new SalesAndCollectionModel
                     {
-                        // Date = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                         Date = day.ToString("dd-MM-yy", CultureInfo.InvariantCulture),
                         Collection = amount,
                         ErrorMessage = string.Empty
@@ -199,32 +208,27 @@ namespace MISReports_Api.DAL.Dashboard
             string billType,
             DateTime fromDate,
             DateTime toDate,
-            string region)
+            string filterValue)
         {
             try
             {
                 using (var cmd = new OleDbCommand(sql, conn))
                 {
-                    // Determine parameter order based on SQL query type
-                    // posCollectionSql: bill_type, trans_date >=, trans_date <=, [region]
-                    // bankCashSql/cardCashSql: cash_date >=, cash_date <=, bill_type, [region]
                     if (sql.Contains("trans_type"))
                     {
-                        // This is posCollectionSql: billType first, then dates
                         cmd.Parameters.AddWithValue("?", billType);
                         cmd.Parameters.AddWithValue("?", fromDate);
                         cmd.Parameters.AddWithValue("?", toDate);
-                        if (!string.IsNullOrWhiteSpace(region))
-                            cmd.Parameters.AddWithValue("?", region);
+                        if (!string.IsNullOrWhiteSpace(filterValue))
+                            cmd.Parameters.AddWithValue("?", filterValue);
                     }
                     else
                     {
-                        // This is bankCashSql or cardCashSql: dates first, then billType
                         cmd.Parameters.AddWithValue("?", fromDate);
                         cmd.Parameters.AddWithValue("?", toDate);
                         cmd.Parameters.AddWithValue("?", billType);
-                        if (!string.IsNullOrWhiteSpace(region))
-                            cmd.Parameters.AddWithValue("?", region);
+                        if (!string.IsNullOrWhiteSpace(filterValue))
+                            cmd.Parameters.AddWithValue("?", filterValue);
                     }
 
                     using (var reader = cmd.ExecuteReader())

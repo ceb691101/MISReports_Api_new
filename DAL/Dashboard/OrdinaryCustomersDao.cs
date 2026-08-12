@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DBAccess;
+using MISReports_Api.DBAccess;
 using MISReports_Api.Models.Dashboard;
 using NLog;
 using System;
@@ -16,7 +16,7 @@ namespace MISReports_Api.DAL.Dashboard
             return _dbConnection.TestConnection(out errorMessage, false); // Use ordinary connection
         }
 
-        public OrdinaryCustomers GetOrdinaryCustomersCount(string region = null)
+        public OrdinaryCustomers GetOrdinaryCustomersCount(string region = null, string province = null, string area = null)
         {
             var result = new OrdinaryCustomers { TotalCount = 0, BillCycle = "" };
 
@@ -61,14 +61,39 @@ namespace MISReports_Api.DAL.Dashboard
      and c.bill_cycle = (select max(bill_cycle) from areas) - 1
      and c.cust_type in ('A','G')";
 
-                    if (!string.IsNullOrWhiteSpace(region))
+                    bool hasArea = !string.IsNullOrWhiteSpace(area);
+                    bool hasProvince = !string.IsNullOrWhiteSpace(province);
+                    bool hasRegion = !string.IsNullOrWhiteSpace(region);
+
+                    if (hasArea)
+                    {
+                        sql += " and a.area_code = ?";
+                    }
+                    else if (hasProvince)
+                    {
+                        sql += " and a.prov_code = ?";
+                    }
+                    else if (hasRegion)
                     {
                         sql += " and a.region = ?";
                     }
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        if (!string.IsNullOrWhiteSpace(region))
+                        if (hasArea)
+                        {
+                            cmd.Parameters.AddWithValue("?", area.Trim().ToUpperInvariant());
+                        }
+                        else if (hasProvince)
+                        {
+                            string resolvedProv = province.Trim().ToUpperInvariant();
+                            if (resolvedProv.StartsWith("0") && resolvedProv.Length > 1 && char.IsDigit(resolvedProv[1]))
+                            {
+                                resolvedProv = resolvedProv.Substring(1);
+                            }
+                            cmd.Parameters.AddWithValue("?", resolvedProv);
+                        }
+                        else if (hasRegion)
                         {
                             cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
                         }

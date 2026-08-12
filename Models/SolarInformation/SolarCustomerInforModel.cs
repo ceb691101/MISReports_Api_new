@@ -46,6 +46,7 @@ namespace MISReports_Api.Models.SolarInformation
         public string MeterNumber3 { get; set; }
         public string AreaCode { get; set; }
         public string AreaName { get; set; }
+        public string ProvinceCode { get; set; }
         public string ProvinceName { get; set; }
         public string Region { get; set; }
         public string TariffCode { get; set; }

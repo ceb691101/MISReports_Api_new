@@ -35,7 +35,7 @@ namespace MISReports_Api.DAL.Dashboard
             }
         }
 
-        public TopCustomersResponse GetTopCustomers(string billCycle = null, string region = null, int take = 0)
+        public TopCustomersResponse GetTopCustomers(string billCycle = null, string region = null, string province = null, string area = null, int take = 0)
         {
             var response = new TopCustomersResponse
             {
@@ -60,7 +60,7 @@ namespace MISReports_Api.DAL.Dashboard
                         return response;
                     }
 
-                    var records = GetTopCustomersFromMonTot(conn, targetBillCycle, region);
+                    var records = GetTopCustomersFromMonTot(conn, targetBillCycle, region, province, area);
                     records = records.Take(safeTake).ToList();
 
                     response.Records = records;
@@ -97,15 +97,27 @@ namespace MISReports_Api.DAL.Dashboard
             return GetMaxBillCycle(conn);
         }
 
-        private List<TopCustomerRecord> GetTopCustomersFromMonTot(OleDbConnection conn, string billCycle, string region)
+        private List<TopCustomerRecord> GetTopCustomersFromMonTot(OleDbConnection conn, string billCycle, string region, string province, string area)
         {
             var records = new List<TopCustomerRecord>();
+            bool hasAreaFilter = !string.IsNullOrWhiteSpace(area);
+            bool hasProvinceFilter = !string.IsNullOrWhiteSpace(province);
             bool hasRegionFilter = !string.IsNullOrWhiteSpace(region);
+            bool hasFilter = hasAreaFilter || hasProvinceFilter || hasRegionFilter;
+            string filterColumn = hasAreaFilter ? "area_code" : (hasProvinceFilter ? "prov_code" : "region");
+            string resolvedProv = hasProvinceFilter ? province.Trim().ToUpperInvariant() : null;
+            if (hasProvinceFilter && resolvedProv.Length == 1 && char.IsDigit(resolvedProv[0]))
+            {
+                resolvedProv = "0" + resolvedProv;
+            }
+            string filterValue = hasAreaFilter ? area.Trim().ToUpperInvariant() :
+                                 (hasProvinceFilter ? resolvedProv : 
+                                 (hasRegionFilter ? region.Trim().ToUpperInvariant() : null));
 
             string sql;
-            if (hasRegionFilter)
+            if (hasFilter)
             {
-                sql = @"
+                sql = $@"
                     SELECT m.acc_nbr,
                            c.name,
                            c.address_l1,
@@ -117,7 +129,7 @@ namespace MISReports_Api.DAL.Dashboard
                     WHERE m.acc_nbr = c.acc_nbr
                     AND c.area_cd = a.area_code
                     AND m.bill_cycle = ?
-                    AND a.region = ?
+                    AND a.{filterColumn} = ?
                     GROUP BY m.acc_nbr, c.name, c.address_l1, c.address_l2, c.city, m.tot_amt
                     ORDER BY kwh DESC, m.acc_nbr";
             }
@@ -141,9 +153,9 @@ namespace MISReports_Api.DAL.Dashboard
             using (var cmd = new OleDbCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("?", billCycle);
-                if (hasRegionFilter)
+                if (hasFilter)
                 {
-                    cmd.Parameters.AddWithValue("?", region.Trim().ToUpperInvariant());
+                    cmd.Parameters.AddWithValue("?", filterValue);
                 }
 
                 using (var reader = cmd.ExecuteReader())
