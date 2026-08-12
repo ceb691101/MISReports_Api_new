@@ -554,11 +554,6 @@
     <Compile Include="DAL\DgmDashboard\DgmAppCountDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmConnectionGivenDao.cs" />
     <Compile Include="DAL\DgmDashboard\DgmPendingApplicationsDao.cs" />
-    <Compile Include="DAL\FIFO\PHVDamageBOSDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVNonMovingBOSDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVNonMovingWHDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVObsoleteBOSDAL.cs" />
-    <Compile Include="DAL\FIFO\PHVSlowMovingWHDAL.cs" />
     <Compile Include="DAL\FIFO\IssueReceiptSummaryDAL.cs" />
     <Compile Include="DAL\FIFO\QuantityMatFIFODAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
