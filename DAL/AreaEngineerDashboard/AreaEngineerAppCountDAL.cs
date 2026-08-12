@@ -30,11 +30,7 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                     AND app.dept_id IN (
                         SELECT dept_id 
                         FROM gldeptm 
-                        WHERE comp_id IN (
-                            SELECT comp_id 
-                            FROM glcompm 
-                            WHERE TRIM(comp_id) = :companyId
-                        )
+                        WHERE comp_id = :companyId
                     )
                     GROUP BY app.dept_id, appty.description, app.application_type
                     ORDER BY app.dept_id";

@@ -33,11 +33,7 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                     and c.dept_id in (
                         select dept_id from gldeptm 
                         where status = 2 
-                        and comp_id in (
-                            select comp_id from glcompm
-                            where status = 2 
-                            and TRIM(comp_id) = :companyId
-                        )
+                        and comp_id = :companyId
                     )
                     group by c.paid_date 
                     order by c.paid_date desc";
