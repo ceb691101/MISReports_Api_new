@@ -33,11 +33,7 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                     and c.dept_id in (
                         select dept_id from gldeptm 
                         where status = 2 
-                        and comp_id in (
-                            select comp_id from glcompm
-                            where status = 2 
-                            and (TRIM(comp_id) = :companyId1 or TRIM(parent_id) = :companyId2)
-                        )
+                        and comp_id = :companyId
                     )
                     group by c.paid_date 
                     order by c.paid_date desc";
@@ -47,8 +43,8 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                     cmd.BindByName = true;
                     cmd.Parameters.Add(new OracleParameter("startDate", sDateStr));
                     cmd.Parameters.Add(new OracleParameter("endDate", eDateStr));
-                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
+                    cmd.Parameters.Add(new OracleParameter("companyId", companyId));
+
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())

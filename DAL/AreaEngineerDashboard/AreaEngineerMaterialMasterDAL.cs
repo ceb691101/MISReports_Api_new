@@ -60,16 +60,14 @@ namespace MISReports_Api.DAL.AreaEngineerDashboard
                       AND i.qty_on_hand > 0
                       AND d.status = 2
                       AND c.status = 2
-                      AND (TRIM(c.comp_id) = :companyId1 OR TRIM(c.parent_id) = :companyId2)
+                      AND TRIM(c.comp_id) = :companyId
                     GROUP BY i.mat_cd, m.mat_nm, m.maj_uom, m.unit_price, c.comp_id, c.comp_nm
                     ORDER BY area_val DESC, i.mat_cd ASC";
 
                 using (OracleCommand cmd = new OracleCommand(query, conn))
                 {
                     cmd.BindByName = true;
-                    cmd.Parameters.Add(new OracleParameter("companyId1", companyId));
-                    cmd.Parameters.Add(new OracleParameter("companyId2", companyId));
-
+                    cmd.Parameters.Add(new OracleParameter("companyId", companyId));
                     using (OracleDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
