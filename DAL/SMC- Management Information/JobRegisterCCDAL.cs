@@ -125,5 +125,41 @@ namespace MISReports_Api.DAL
 
             return result;
         }
+
+        // Returns all rows/columns from APPLICATIONSUBTYPES generically, since the
+        // exact column list wasn't specified. Each row is a Dictionary<string,object>
+        // keyed by column name (DBNull mapped to null). Swap this for a typed model
+        // once the real columns (e.g. code/description) are known.
+        public List<Dictionary<string, object>> GetJobTypes()
+        {
+            var result = new List<Dictionary<string, object>>();
+
+            const string query = "SELECT * FROM APPLICATIONSUBTYPES";
+
+            using (var conn = new OracleConnection(_connectionString))
+            using (var cmd = new OracleCommand(query, conn))
+            {
+                cmd.CommandType = CommandType.Text;
+
+                conn.Open();
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var row = new Dictionary<string, object>();
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            string colName = reader.GetName(i);
+                            object val = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            row[colName] = val;
+                        }
+                        result.Add(row);
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }
