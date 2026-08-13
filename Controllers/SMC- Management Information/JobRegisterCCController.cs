@@ -17,7 +17,7 @@ namespace MISReports_Api.Controllers
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/jobregistercc/report?fromDate=2026/01/01&toDate=2026/08/01&costCtr=510.00&jobType=BS
+        // QUERY: /api/jobregistercc/report?fromDate=2026/01/01&toDate=2026/03/01&costCtr=511.200&jobType=CR
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery(
@@ -27,6 +27,29 @@ namespace MISReports_Api.Controllers
             [FromUri] string jobType)
         {
             return ExecuteQuery(fromDate, toDate, costCtr, jobType);
+        }
+
+        // QUERY: /api/jobregistercc/jobtypes
+        [HttpGet]
+        [Route("jobtypes")]
+        public IHttpActionResult GetJobTypes()
+        {
+            try
+            {
+                var data = _dal.GetJobTypes();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = data.Any() ? "Data retrieved successfully" : "No records found",
+                    data
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
+                return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
+            }
         }
 
         private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string jobType)
