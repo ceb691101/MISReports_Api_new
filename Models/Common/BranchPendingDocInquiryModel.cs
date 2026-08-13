@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+namespace MISReports_Api.Models.Accounts
+{
+    public class BranchPendingDocInquiryModel
+    {
+        public string Category { get; set; }
+        public string DeptId { get; set; }
+        public string DocPf { get; set; }
+        public string DocNo { get; set; }
+        public DateTime? DocDt { get; set; }
+        public string TranStatus { get; set; }
+        public string CompNm { get; set; }
+    }
+}
