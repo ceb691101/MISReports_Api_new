@@ -359,7 +359,7 @@
     <Compile Include="Controllers\AreaEngineerDashboard\AreaEngineerDashboardController.cs" />
     <Compile Include="Controllers\BillCalculationController.cs" />
     <Compile Include="Controllers\BillMapController.cs" />
-	<Compile Include="Controllers\Cash Book\AreaWiseCashBookInquiryController.cs" />
+    <Compile Include="Controllers\Cash Book\AreaWiseCashBookInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
@@ -378,6 +378,7 @@
     <Compile Include="Controllers\Common\BranchPendingDocInquiryController.cs" />
     <Compile Include="Controllers\Common\CostcenterwisegldocumentController.cs" />
     <Compile Include="Controllers\Common\InventoryDocInquiryController.cs" />
+    <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
     <Compile Include="Controllers\Construction\ConstructionAllController.cs" />
     <Compile Include="Controllers\Construction\ConstructionCompletedController.cs" />
@@ -522,8 +523,9 @@
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CostcenterwisegldocumentDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
+    <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
-	<Compile Include="DAL\Cash Book\AreaWiseCashBookInquiryDAL.cs" />
+    <Compile Include="DAL\Cash Book\AreaWiseCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDateRangePayeeDAL.cs" />
@@ -638,7 +640,7 @@
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="Models\AreaEngineerDashboard\AreaEngineerDashboardModel.cs" />
-	<Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
+    <Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
@@ -656,6 +658,7 @@
     <Compile Include="Models\Common\BranchPendingDocInquiryModel.cs" />
     <Compile Include="Models\Common\Costcenterwisegldocumentmodel.cs" />
     <Compile Include="Models\Common\InventoryDocInquiryModel.cs" />
+    <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
     <Compile Include="Models\Construction\ConstructionAllModel.cs" />
     <Compile Include="Models\Construction\ConstructionCompletedModel.cs" />
@@ -1046,6 +1049,7 @@
     <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
+    <Folder Include="Views\MaterialRequisitionWithIssueDetails\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
     <Folder Include="Views\PHVNonMovingBOS\" />
