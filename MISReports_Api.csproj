@@ -416,6 +416,7 @@
     <Compile Include="Controllers\SMC- Management Information\JobRegCCNCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobRegisterCCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnagizedController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\CCSolarPendingController.cs" />
@@ -608,6 +609,7 @@
     <Compile Include="DAL\SMC- Management Information\JobRegCCNCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobRegisterCCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnagizedDAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\CCSolarPendingDAL.cs" />
@@ -685,6 +687,7 @@
     <Compile Include="Models\SMC- Management Information\JobRegCCNCModel.cs" />
     <Compile Include="Models\SMC- Management Information\JobRegisterCCModel.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnagizeModel.cs" />
+    <Compile Include="Models\SMC- Management Information\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
