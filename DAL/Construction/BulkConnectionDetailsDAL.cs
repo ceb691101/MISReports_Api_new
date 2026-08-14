@@ -14,7 +14,7 @@ namespace MISReports_Api.DAL
     {
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
-.
+
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
