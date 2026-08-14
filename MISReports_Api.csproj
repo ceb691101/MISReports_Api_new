@@ -746,6 +746,9 @@
     <Compile Include="DAL\LedgerCard\CostCenterTransferVouchersRepository.cs" />
     <Compile Include="Models\LedgerCard\CostCenterTransferVouchersModel.cs" />
     <Compile Include="Controllers\LedgerCard\CostCenterTransferVouchersController.cs" />
+    <Compile Include="DAL\LedgerCard\Report71_8Repository.cs" />
+    <Compile Include="Models\LedgerCard\Report71_8Model.cs" />
+    <Compile Include="Controllers\LedgerCard\Report71_8Controller.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingUsageBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforOrdinaryDao.cs" />
