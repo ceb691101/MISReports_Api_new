@@ -33,18 +33,9 @@ namespace MISReports_Api.DAL
                   AND A.sub_ac = B.sub_ac
                   AND A.gl_cd = B.gl_cd";
 
-            // gl_cd and dept_id are fixed-length CHAR columns (CHAR(27) / CHAR(6)) that
-            // Oracle stores blank-padded to their full declared length. A bind variable
-            // (OracleDbType.Varchar2) forces NON-padded comparison semantics, so it never
-            // matches the blank-padded stored value -- that's why literal SQL worked
-            // (literals are CHAR, so blank-padded comparison kicks in automatically) but
-            // the parameterized query returned 0 rows. Wrapping both sides in TRIM()
-            // removes the padding difference regardless of comparison semantics.
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
             string glCd = costCtrTrimmed + "-L9100";
 
-            // yr_ind / mth_ind are NUMBER columns, so bind them as numbers rather than
-            // strings to avoid relying on implicit conversion.
             int repYearNum = int.Parse((repYear ?? string.Empty).Trim());
             int repMonthNum = int.Parse((repMonth ?? string.Empty).Trim());
 
@@ -79,10 +70,6 @@ namespace MISReports_Api.DAL
             return result;
         }
 
-        // TEMP DIAGNOSTIC: echoes back exactly what Oracle received for each bind
-        // variable in this same connection/session, plus row counts for the two
-        // underlying WHERE conditions independently, so we can see which one is
-        // failing to match. Remove once the root cause is confirmed.
         public object GetBoundParamDebug(string repYear, string repMonth, string costCtr)
         {
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
@@ -91,18 +78,18 @@ namespace MISReports_Api.DAL
             int repMonthNum = int.Parse((repMonth ?? string.Empty).Trim());
 
             const string diagQuery = @"
-        SELECT
-            :costctr        AS bound_costctr,
-            :glcd           AS bound_glcd,
-            :repyear        AS bound_repyear,
-            :repmonth       AS bound_repmonth,
-            SYS_CONTEXT('USERENV','DB_NAME') AS db_name,
-            SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS schema_name,
-            (SELECT COUNT(*) FROM glsubbal WHERE TRIM(gl_cd) = TRIM(:glcd2)) AS matches_glcd_only,
-            (SELECT COUNT(*) FROM glsubbal WHERE yr_ind = :repyear2 AND mth_ind = :repmonth2) AS matches_year_month_only,
-            (SELECT COUNT(*) FROM glsubbal 
-              WHERE TRIM(gl_cd) = TRIM(:glcd3) AND yr_ind = :repyear3 AND mth_ind = :repmonth3) AS matches_all_three
-        FROM DUAL";
+            SELECT
+                :costctr        AS bound_costctr,
+                :glcd           AS bound_glcd,
+                :repyear        AS bound_repyear,
+                :repmonth       AS bound_repmonth,
+                SYS_CONTEXT('USERENV','DB_NAME') AS db_name,
+                SYS_CONTEXT('USERENV','CURRENT_SCHEMA') AS schema_name,
+                (SELECT COUNT(*) FROM glsubbal WHERE TRIM(gl_cd) = TRIM(:glcd2)) AS matches_glcd_only,
+                (SELECT COUNT(*) FROM glsubbal WHERE yr_ind = :repyear2 AND mth_ind = :repmonth2) AS matches_year_month_only,
+                (SELECT COUNT(*) FROM glsubbal 
+                  WHERE TRIM(gl_cd) = TRIM(:glcd3) AND yr_ind = :repyear3 AND mth_ind = :repmonth3) AS matches_all_three
+            FROM DUAL";
 
             using (var conn = new OracleConnection(_connectionString))
             using (var cmd = new OracleCommand(diagQuery, conn))

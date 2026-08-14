@@ -16,8 +16,7 @@ namespace MISReports_Api.DAL
         public List<ChequeSummaryModel> GetChequeSummary(string fromDate, string toDate, string costCtr)
         {
             var result = new List<ChequeSummaryModel>();
-            // NOTE: original SQL from senior hardcoded dept_id = '913.00' in the cct_name subquery.
-            // Replaced with :costctr so the cost center name always matches the queried cost center.
+            
             const string query = @"
                 SELECT DISTINCT A.chq_dt, A.chq_no, B.chq_amt,
                        (SELECT dept_nm FROM gldeptm WHERE dept_id = :costctr) AS CCT_NAME

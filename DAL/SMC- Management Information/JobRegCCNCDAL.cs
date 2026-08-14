@@ -15,9 +15,6 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        // Overflow-safe decimal reader, same as the other reports (unbounded NUMBER
-        // columns can exceed .NET decimal's ~28-29 digit range and make
-        // Convert.ToDecimal throw).
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -34,13 +31,6 @@ namespace MISReports_Api.DAL
                 return (decimal)(double)od;
             }
         }
-
-        // Several columns here (PIV_NO, contractor_id, account_code, account_no, etc.)
-        // are exposed as strings on the model but may actually be NUMBER columns in the
-        // database. Reading them via the plain reader["x"] indexer risks the same
-        // decimal-overflow exception seen on other reports if the underlying value has
-        // more digits than .NET decimal supports. This reads the value type-aware and
-        // always returns a safe string.
         private static string SafeGetString(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -117,21 +107,6 @@ namespace MISReports_Api.DAL
                   AND     c.confirmed_date <  :todateexcl
                 ORDER BY a.application_id";
 
-            // Notes vs. the new query you supplied:
-            // 1. SECURITY_DEPOSIT / SER_CONN_OR_ELEC_SCH (from piv_detail c) are gone;
-            //    replaced with account_code / amount from the newly joined piv_amount p
-            //    table (joined on c.piv_no = p.piv_no AND c.dept_id = p.dept_id), matching
-            //    the model's new AccountCode / Amount fields.
-            // 2. c.reference_type filter widened from ('EST') to ('EST','ELN') as supplied.
-            // 3. TRIM() kept around every dept_id comparison (a.dept_id, L1.dept_id,
-            //    gldeptm.dept_id) against the :costctr bind variable, same fix applied
-            //    across the other reports since dept_id is a fixed-length CHAR column.
-            // 4. dept_id and dates are still bound as real OracleDbType parameters instead
-            //    of inline literals. toDate is treated as inclusive of the whole day
-            //    (confirmed_date < toDate + 1 day) rather than a literal "<=" bound on a
-            //    date-only value, since confirmed_date may carry a time component and a
-            //    literal <= could drop same-day afternoon rows. Let me know if you want a
-            //    literal <= :todate instead.
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 
