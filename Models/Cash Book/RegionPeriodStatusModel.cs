@@ -12,7 +12,7 @@ namespace MISReports_Api.Models.Accounts
         public string CompId { get; set; }     // Branch
         public string FinYear { get; set; }
         public string FinPrd { get; set; }
-        public string Status { get; set; }     // Period Status (already text from CASE)
+        public string Status { get; set; }     // Period Status 
         public string CompNm { get; set; }     // Region/Division name
     }
 }

@@ -15,9 +15,6 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        // Overflow-safe decimal reader, same as the other reports (unbounded NUMBER
-        // columns can exceed .NET decimal's ~28-29 digit range and make
-        // Convert.ToDecimal throw).
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -34,12 +31,6 @@ namespace MISReports_Api.DAL
                 return (decimal)(double)od;
             }
         }
-
-        // Several columns exposed as strings here (Id_no, Piv_no, account_no, etc.) may
-        // actually be NUMBER columns in the database. Reading them via the plain
-        // reader["x"] indexer risks the same decimal-overflow exception seen on other
-        // reports if the underlying value has more digits than .NET decimal supports.
-        // This reads the value type-aware and always returns a safe string.
         private static string SafeGetString(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -99,18 +90,6 @@ namespace MISReports_Api.DAL
                   AND     j.prj_ass_dt <  :todateexcl
                 ORDER BY 1";
 
-            // Notes vs. the original query:
-            // 1. TRIM() added around every comparison of a comp_id column against the
-            //    :compid bind variable (glcompm.comp_id in the COMP_NM subquery, and
-            //    gldeptm.comp_id in the A.DEPT_ID IN (...) subquery) -- same fix applied
-            //    across the other reports, since comp_id is a fixed-length CHAR column
-            //    elsewhere in this schema (confirmed earlier on GLCOMPM.COMP_ID).
-            //    The three correlated subqueries that reference a.dept_id directly
-            //    (Area, province, CCT_NAME) are column-to-column comparisons, not bind
-            //    variables, so they're unaffected by that padding issue and were left as-is.
-            // 2. Dates are bound as real OracleDbType.Date parameters instead of
-            //    TO_DATE(:param,'yyyy/mm/dd') string parsing, and toDate is treated as
-            //    inclusive of the whole day (prj_ass_dt < toDate + 1 day).
             string compIdTrimmed = (compId ?? string.Empty).Trim();
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 

@@ -22,7 +22,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(repYear, repMonth, costCtr);
         }
 
-        // QUERY: /api/currentacctbalcc/report?repYear=2022&repMonth=6&costCtr=910.00
+        // QUERY: /api/currentacctbalcc/report?repYear=2026&repMonth=7&costCtr=910.00
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string costCtr)
@@ -67,8 +67,6 @@ namespace MISReports_Api.Controllers
 
                 if (!data.Any())
                 {
-                    // TEMP DIAGNOSTIC: read back exactly what Oracle received for the
-                    // bind variables this call used, plus a build marker. Remove once resolved.
                     var debug = _dal.GetBoundParamDebug(repYear.Trim(), repMonthPadded, costCtr.Trim());
                     return Ok(new
                     {

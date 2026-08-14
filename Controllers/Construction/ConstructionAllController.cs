@@ -14,7 +14,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly ConstructionAllDAL _dal = new ConstructionAllDAL();
 
-        // PATH: /api/constructionall/report/510.00
+        // PATH: /api/constructionall/report/430.20
         [HttpGet]
         [Route("report/{costCtr}")]
         public IHttpActionResult GetReport(string costCtr)

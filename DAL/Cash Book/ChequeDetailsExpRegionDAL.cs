@@ -25,9 +25,6 @@ namespace MISReports_Api.DAL
             string fromDateStr = fromDate.ToString("yyyy/MM/dd");
             string toDateStr = toDate.ToString("yyyy/MM/dd");
 
-            // If glCode is blank, match every account (wildcard).
-            // If glCode is provided, match that account exactly (no wildcards),
-            // so a code like "6001" doesn't also match "26001" or "60019".
             string glCodePattern = string.IsNullOrWhiteSpace(glCode) ? "%" : glCode.Trim();
 
             const string query = @"
