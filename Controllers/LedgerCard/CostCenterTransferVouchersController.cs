@@ -21,7 +21,8 @@ namespace MISReports_Api.Controllers
             [FromUri] int repyear, 
             [FromUri] int startmonth, 
             [FromUri] int endmonth, 
-            [FromUri] string subac)
+            [FromUri] string subac,
+            [FromUri] string docpf = null)
         {
             try
             {
@@ -30,7 +31,27 @@ namespace MISReports_Api.Controllers
                     return BadRequest("Parameters 'costctr' and 'subac' are required.");
                 }
 
-                var data = _repository.GetCostCenterTransferVouchersData(costctr, repyear, startmonth, endmonth, subac);
+                var data = _repository.GetCostCenterTransferVouchersData(costctr, repyear, startmonth, endmonth, subac, docpf);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
+        [HttpGet]
+        [Route("doc-profiles")]
+        public IHttpActionResult GetDocProfiles([FromUri] string costctr)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(costctr))
+                {
+                    return BadRequest("Parameter 'costctr' is required.");
+                }
+
+                var data = _repository.GetDocProfiles(costctr);
                 return Ok(data);
             }
             catch (Exception ex)

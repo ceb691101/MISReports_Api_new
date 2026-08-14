@@ -18,4 +18,10 @@ namespace MISReports_Api.Models
         public string DesgDept { get; set; }
         public string CctName { get; set; }
     }
+
+    public class DocProfileModel
+    {
+        public string doc_pf { get; set; }
+        public string doc_desc { get; set; }
+    }
 }
