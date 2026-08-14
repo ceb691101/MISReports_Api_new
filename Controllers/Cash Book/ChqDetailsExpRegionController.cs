@@ -21,8 +21,8 @@ namespace MISReports_Api.Controllers
             _dal = new ChequeDetailsExpRegionDAL(GetConnectionString());
         }
 
-        // PATH: /api/chqdetailsexpregion/report/2026-01-01/2026-01-31/100?glCode=6001
-        // glCode is optional - omit or leave blank to match all account codes.
+        // PATH: /api/chqdetailsexpregion/report/2026-01-01/2026-01-31/DISCO1?glCode=
+        // glCode is optional
         [HttpGet]
         [Route("report/{fromDate}/{toDate}/{compId}")]
         public IHttpActionResult GetReport(string fromDate, string toDate, string compId, [FromUri] string glCode = "")
@@ -42,9 +42,6 @@ namespace MISReports_Api.Controllers
         {
             try
             {
-                // Parsed with an explicit format + InvariantCulture so behavior doesn't
-                // change depending on the server's regional settings (e.g. 01/02/2026
-                // being read as Jan 2 on one machine and Feb 1 on another).
                 if (string.IsNullOrWhiteSpace(fromDate) ||
                     !DateTime.TryParseExact(fromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fromDt))
                     return BadRequest("fromDate must be a valid date in yyyy-MM-dd format (e.g., 2026-01-01).");
@@ -61,8 +58,6 @@ namespace MISReports_Api.Controllers
                 string glCodeValue = glCode?.Trim() ?? "";
                 var data = _dal.GetChequeDetailsExpRegionModel(compId.Trim(), glCodeValue, fromDt, toDt);
 
-                // Amount column has both positive and negative values (Dr/Cr), so the grand
-                // total is a straight sum, not an absolute-value sum.
                 var totalDrAmt = data.Sum(x => x.DrAmt ?? 0m);
 
                 const int MAX_RECORDS = 50000;

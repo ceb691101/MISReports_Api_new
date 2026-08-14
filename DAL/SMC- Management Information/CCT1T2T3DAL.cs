@@ -73,14 +73,8 @@ namespace MISReports_Api.DAL
                   AND     b.application_no LIKE '%ENC%'
                 ORDER BY a.project_no";
 
-            // a.dept_id / gldeptm.dept_id are fixed-length CHAR columns (blank-padded in
-            // storage). A Varchar2 bind variable forces non-padded comparison semantics,
-            // so both sides are wrapped in TRIM() to guarantee a match regardless of
-            // padding -- same pattern applied to the CurrentAcctBal report.
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
 
-            // toDate is treated as inclusive of the whole day, so the upper bound used in
-            // the query is the start of the following day.
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 
             using (var conn = new OracleConnection(_connectionString))

@@ -15,9 +15,6 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        // Same overflow-safe decimal reader used on the other reports (unbounded NUMBER
-        // columns can exceed .NET decimal's ~28-29 digit range and make
-        // Convert.ToDecimal throw).
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -66,19 +63,6 @@ namespace MISReports_Api.DAL
                   AND     APPLICATIONS.APPLICATION_TYPE = :jobtype
                 ORDER BY PCESTHMT.PROJECT_NO";
 
-            // Fixes/notes vs. the original query:
-            // 1. "AND APPLICATIONS.APPLICATION_TYPE=@JobType" used SQL Server-style '@'
-            //    parameter syntax instead of the Oracle $P!{...} style used everywhere
-            //    else in this query. Treated as the intended report parameter and bound
-            //    as a normal Oracle bind variable (:jobtype) here.
-            // 2. APPLICATIONS.DEPT_ID / gldeptm.dept_id are wrapped in TRIM() on both
-            //    sides -- same fix applied to the other reports, since dept_id is a
-            //    fixed-length CHAR column elsewhere in this schema and a Varchar2 bind
-            //    variable otherwise gets non-padded comparison semantics against the
-            //    blank-padded stored value.
-            // 3. Dates are bound as real OracleDbType.Date parameters instead of
-            //    TO_DATE(:param,'yyyy/mm/dd') string parsing, and toDate is treated as
-            //    inclusive of the whole day (PRJ_ASS_DT < toDate + 1 day).
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
             string jobTypeTrimmed = (jobType ?? string.Empty).Trim();
             DateTime toDateExclusive = toDate.Date.AddDays(1);
@@ -125,11 +109,6 @@ namespace MISReports_Api.DAL
 
             return result;
         }
-
-        // Returns all rows/columns from APPLICATIONSUBTYPES generically, since the
-        // exact column list wasn't specified. Each row is a Dictionary<string,object>
-        // keyed by column name (DBNull mapped to null). Swap this for a typed model
-        // once the real columns (e.g. code/description) are known.
         public List<Dictionary<string, object>> GetJobTypes()
         {
             var result = new List<Dictionary<string, object>>();

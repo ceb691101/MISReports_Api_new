@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using MISReports_Api.DAL;
 using MISReports_Api.Models.Accounts;
+
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/chequesummary")]
-    public class ChequeSummaryController : ApiController
+    [RoutePrefix("api/costcenterwisegldocument")]
+    public class CostCenterWiseGLDocumentController : ApiController
     {
-        private readonly ChequeSummaryDAL _dal = new ChequeSummaryDAL();
+        private readonly CostCenterWiseGLDocumentDAL _dal = new CostCenterWiseGLDocumentDAL();
 
-        // PATH: /api/chequesummary/report/2026-01-01/2026-01-31/510.00
+        private const string DateFormat = "yyyy-MM-dd"; // e.g. 2026-08-01 (dashes so it's URL/route safe)
+
+        // PATH: /api/costcenterwisegldocument/report/2026-08-01/2026-08-13/510.00
         [HttpGet]
         [Route("report/{fromDate}/{toDate}/{costCtr}")]
         public IHttpActionResult GetReport(string fromDate, string toDate, string costCtr)
@@ -21,7 +25,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(fromDate, toDate, costCtr);
         }
 
-        // QUERY: /api/chequesummary/report?fromDate=2026-01-01&toDate=2026-01-31&costCtr=510.00
+        // QUERY: /api/costcenterwisegldocument/report?fromDate=2026-08-01&toDate=2026-08-13&costCtr=510.00
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
@@ -33,29 +37,32 @@ namespace MISReports_Api.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(fromDate) || !DateTime.TryParse(fromDate, out DateTime fromDt))
-                    return BadRequest("fromDate must be a valid date (e.g., 2026-01-01).");
-                if (string.IsNullOrWhiteSpace(toDate) || !DateTime.TryParse(toDate, out DateTime toDt))
-                    return BadRequest("toDate must be a valid date (e.g., 2026-01-31).");
-                if (toDt < fromDt)
-                    return BadRequest("toDate cannot be earlier than fromDate.");
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                string fromDateFormatted = fromDt.ToString("yyyy/MM/dd");
-                string toDateFormatted = toDt.ToString("yyyy/MM/dd");
+                if (!DateTime.TryParseExact(fromDate, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedFromDate))
+                    return BadRequest($"fromDate must be a valid date in {DateFormat} format (e.g., 2026-08-01).");
 
-                var data = _dal.GetChequeSummary(fromDateFormatted, toDateFormatted, costCtr.Trim());
-                var totalChqAmt = data.Sum(x => x.ChqAmt ?? 0m);
+                if (!DateTime.TryParseExact(toDate, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedToDate))
+                    return BadRequest($"toDate must be a valid date in {DateFormat} format (e.g., 2026-08-13).");
+
+                if (parsedFromDate > parsedToDate)
+                    return BadRequest("fromDate cannot be later than toDate.");
+
+                // SQL expects TO_DATE(:param,'yyyy/mm/dd'), so convert here.
+                string oracleFromDate = parsedFromDate.ToString("yyyy/MM/dd");
+                string oracleToDate = parsedToDate.ToString("yyyy/MM/dd");
+
+                var data = _dal.GetCostCenterWiseGLDocuments(oracleFromDate, oracleToDate, costCtr.Trim());
 
                 const int MAX_RECORDS = 5000;
+
                 var summary = new
                 {
-                    fromDate = fromDt.ToString("yyyy-MM-dd"),
-                    toDate = toDt.ToString("yyyy-MM-dd"),
+                    fromDate = parsedFromDate.ToString(DateFormat),
+                    toDate = parsedToDate.ToString(DateFormat),
                     costCtr = costCtr.Trim(),
-                    totalRecords = data.Count,
-                    totalChqAmt
+                    totalRecords = data.Count
                 };
 
                 if (data.Count >= MAX_RECORDS)

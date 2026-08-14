@@ -11,7 +11,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly ProvinceWisePeriodStatusDAL _dal = new ProvinceWisePeriodStatusDAL();
 
-        // PATH: /api/provincewiseperiodstatus/report/2026/7/510.00
+        // PATH: /api/provincewiseperiodstatus/report/2026/7/CC
         [HttpGet]
         [Route("report/{repYear:int}/{repMonth:int}/{compId}")]
         public IHttpActionResult GetReport(int repYear, int repMonth, string compId)

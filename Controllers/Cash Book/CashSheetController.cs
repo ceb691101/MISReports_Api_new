@@ -22,7 +22,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(repYear, repMonth, costCtr);
         }
 
-        // QUERY: /api/cashsheet/report?repYear=...&repMonth=...&costCtr=...
+        // QUERY: /api/cashsheet/report?repYear=2022&repMonth=5&costCtr=510.00
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string costCtr)

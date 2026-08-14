@@ -17,7 +17,7 @@ namespace MISReports_Api.Controllers
 
         private const string DATE_FORMAT = "yyyy/MM/dd";
 
-        // QUERY: /api/chequedetailsexp/report?costCtr=...&acctCode=...&fromDate=yyyy/mm/dd&toDate=yyyy/mm/dd
+        // QUERY: /api/chequedetailsexp/report?costCtr=A3900&acctCode=510.00&fromDate=2026/01/01&toDate=2026/04/30
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string costCtr, [FromUri] string acctCode, [FromUri] string fromDate, [FromUri] string toDate)

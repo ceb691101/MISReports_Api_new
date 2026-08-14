@@ -44,17 +44,6 @@ namespace MISReports_Api.DAL
                 GROUP BY B.dept_id, B.mat_cd, D.mat_nm, A.grade_cd, D.maj_uom, B.unit_price, B.wrh_cd
                 ORDER BY B.wrh_cd, B.mat_cd";
 
-            // wrh_cd is compared with UPPER(TRIM()) on both the column and the bind variable
-            // (same pattern used in PriceVaWHDAL) to guard against the fixed-length CHAR
-            // blank-padding issue and case differences.
-            //
-            // costctr (dept_id) is matched with TRIM() on the column, same as PriceVaWHDAL,
-            // since dept_id may be stored as a padded CHAR column.
-            //
-            // matcode is matched via LIKE with a trailing '%'. When matCode is blank, the
-            // bind value becomes '%' which matches every material code, giving the "all
-            // materials" behaviour requested. No TRIM is needed here since LIKE already
-            // tolerates the padding.
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
             string whCodeTrimmed = (whCode ?? string.Empty).Trim();
             string matCodeTrimmed = (matCode ?? string.Empty).Trim();

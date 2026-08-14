@@ -14,12 +14,6 @@ namespace MISReports_Api.DAL
     {
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
-
-        // Oracle NUMBER columns with no declared precision/scale can carry more
-        // significant digits than a .NET decimal (~28-29 digits) can hold, and
-        // Convert.ToDecimal(reader[...]) throws "Arithmetic operation resulted in an
-        // overflow" in that case (seen previously on BulkConnectionDetails). Reading via
-        // OracleDecimal first and clamping precision avoids the hard failure.
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -41,12 +35,6 @@ namespace MISReports_Api.DAL
         {
             var result = new List<ConstructionAllModel>();
 
-            // NOTE on the original SQL's "c8" CASE expression: every WHEN branch mapped
-            // B.cpercentage to itself (e.g. WHEN B.cpercentage = 5 THEN 5), and the ELSE
-            // branch also just returned B.cpercentage. That makes the CASE a no-op --
-            // functionally identical to selecting B.cpercentage directly, for every
-            // possible value, matched or not. Simplified to B.cpercentage AS c8 below;
-            // this does not change the report's output.
             const string query = @"
                 SELECT DISTINCT
                         (A.file_no || '-' || C.sestimate_no) AS file_no,
@@ -106,16 +94,6 @@ namespace MISReports_Api.DAL
 
                 ORDER BY 1, 6, 7";
 
-            // A.dept_id / gldeptm.dept_id comparisons are wrapped in TRIM() on both sides,
-            // same fix applied to the other reports, since dept_id is a fixed-length CHAR
-            // column elsewhere in this schema and a Varchar2 bind variable would otherwise
-            // get non-padded comparison semantics against the blank-padded stored value.
-            //
-            // The second branch's original "D.estimate_no NOT IN (SELECT estimate_no FROM
-            // pcesthmt WHERE ...)" was rewritten as "NOT EXISTS (...)". A plain NOT IN
-            // silently returns zero rows for the WHOLE query if the subquery ever produces
-            // even a single NULL estimate_no -- NOT EXISTS doesn't have that failure mode
-            // and is the safer equivalent here.
             string costCtrTrimmed = (costCtr ?? string.Empty).Trim();
 
             using (var conn = new OracleConnection(_connectionString))

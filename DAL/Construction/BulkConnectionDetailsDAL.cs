@@ -15,13 +15,6 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        // Oracle NUMBER columns with no declared precision/scale (common on cost/quantity
-        // fields, and on SUM/multiplication results) can carry more significant digits
-        // than a .NET decimal (~28-29 digits) can hold. Convert.ToDecimal(reader[...])
-        // has no way to handle that and throws "Arithmetic operation resulted in an
-        // overflow." Reading via OracleDecimal first and clamping its precision avoids
-        // the hard failure; the double fallback only kicks in for values that still
-        // don't fit even after clamping.
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -39,13 +32,6 @@ namespace MISReports_Api.DAL
             }
         }
 
-        // The province CASE expression, reused for both the SELECT column and the ORDER BY.
-        // NOTE: your SELECT-list version used a.dept_id LIKE '43%' for 'CP' while the
-        // ORDER BY version used '430%'. That inconsistency would make the province shown in
-        // a row potentially disagree with the province group it gets sorted into (e.g. a
-        // dept_id like '435.00' would display as 'CP' but sort under its raw dept_id).
-        // Standardized to '430%' in both places to match the other 3-digit-prefix branches
-        // and the ORDER BY -- confirm this is the intended prefix.
         private const string ProvinceCase = @"
                         (CASE
                             WHEN a.dept_id LIKE '410%' THEN 'NP'
@@ -99,8 +85,6 @@ namespace MISReports_Api.DAL
                   AND     d1.dept_id = d.dept_id
                 ORDER BY {ProvinceCase}, a.dept_id, a.prj_ass_dt, a.project_no, d1.line_type";
 
-            // toDate is treated as inclusive of the whole day, so the upper bound used in
-            // the query is the start of the following day.
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 
             using (var conn = new OracleConnection(_connectionString))

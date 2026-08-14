@@ -8,54 +8,53 @@ using MISReports_Api.DAL;
 using MISReports_Api.Models.Accounts;
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/chequesummary")]
-    public class ChequeSummaryController : ApiController
+    [RoutePrefix("api/branchpendingdocinquiry")]
+    public class BranchPendingDocInquiryController : ApiController
     {
-        private readonly ChequeSummaryDAL _dal = new ChequeSummaryDAL();
+        private readonly BranchPendingDocInquiryDAL _dal = new BranchPendingDocInquiryDAL();
 
-        // PATH: /api/chequesummary/report/2026-01-01/2026-01-31/510.00
+        // PATH: /api/branchpendingdocinquiry/report/2026-08-01/2026-08-09/100
         [HttpGet]
-        [Route("report/{fromDate}/{toDate}/{costCtr}")]
-        public IHttpActionResult GetReport(string fromDate, string toDate, string costCtr)
+        [Route("report/{fromDate}/{toDate}/{compId}")]
+        public IHttpActionResult GetReport(string fromDate, string toDate, string compId)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr);
+            return ExecuteQuery(fromDate, toDate, compId);
         }
 
-        // QUERY: /api/chequesummary/report?fromDate=2026-01-01&toDate=2026-01-31&costCtr=510.00
+        // QUERY: /api/branchpendingdocinquiry/report?fromDate=2026-08-01&toDate=2026-08-09&compId=100
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
+        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string compId)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr);
+            return ExecuteQuery(fromDate, toDate, compId);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string compId)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(fromDate) || !DateTime.TryParse(fromDate, out DateTime fromDt))
-                    return BadRequest("fromDate must be a valid date (e.g., 2026-01-01).");
+                    return BadRequest("fromDate must be a valid date (e.g., 2026-08-01).");
                 if (string.IsNullOrWhiteSpace(toDate) || !DateTime.TryParse(toDate, out DateTime toDt))
-                    return BadRequest("toDate must be a valid date (e.g., 2026-01-31).");
+                    return BadRequest("toDate must be a valid date (e.g., 2026-08-09).");
                 if (toDt < fromDt)
                     return BadRequest("toDate cannot be earlier than fromDate.");
-                if (string.IsNullOrWhiteSpace(costCtr))
-                    return BadRequest("costCtr is required.");
+                if (string.IsNullOrWhiteSpace(compId))
+                    return BadRequest("compId is required.");
 
-                string fromDateFormatted = fromDt.ToString("yyyy/MM/dd");
-                string toDateFormatted = toDt.ToString("yyyy/MM/dd");
+                // SQL uses TO_DATE(:param,'yyyy/mm/dd'), so format to match the mask with InvariantCulture.
+                string fromDateFormatted = fromDt.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture);
+                string toDateFormatted = toDt.ToString("yyyy/MM/dd", System.Globalization.CultureInfo.InvariantCulture);
 
-                var data = _dal.GetChequeSummary(fromDateFormatted, toDateFormatted, costCtr.Trim());
-                var totalChqAmt = data.Sum(x => x.ChqAmt ?? 0m);
+                var data = _dal.GetBranchPendingDocInquiry(fromDateFormatted, toDateFormatted, compId.Trim());
 
                 const int MAX_RECORDS = 5000;
                 var summary = new
                 {
                     fromDate = fromDt.ToString("yyyy-MM-dd"),
                     toDate = toDt.ToString("yyyy-MM-dd"),
-                    costCtr = costCtr.Trim(),
-                    totalRecords = data.Count,
-                    totalChqAmt
+                    compId = compId.Trim(),
+                    totalRecords = data.Count
                 };
 
                 if (data.Count >= MAX_RECORDS)

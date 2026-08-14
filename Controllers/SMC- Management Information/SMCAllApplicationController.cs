@@ -10,49 +10,22 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/jobregistercc")]
-    public class JobRegisterCCController : ApiController
+    [RoutePrefix("api/smcallapplication")]
+    public class SMCAllApplicationController : ApiController
     {
-        private readonly JobRegisterCCDAL _dal = new JobRegisterCCDAL();
+        private readonly SMCAllApplicationDAL _dal = new SMCAllApplicationDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/jobregistercc/report?fromDate=2026/01/01&toDate=2026/03/01&costCtr=511.20&jobType=CR
+        // QUERY: /api/smcallapplication/report?fromDate=2026/01/01&toDate=2026/01/31&compId=AMBALN
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery(
-            [FromUri] string fromDate,
-            [FromUri] string toDate,
-            [FromUri] string costCtr,
-            [FromUri] string jobType)
+        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string compId)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr, jobType);
+            return ExecuteQuery(fromDate, toDate, compId);
         }
 
-        // QUERY: /api/jobregistercc/jobtypes
-        [HttpGet]
-        [Route("jobtypes")]
-        public IHttpActionResult GetJobTypes()
-        {
-            try
-            {
-                var data = _dal.GetJobTypes();
-
-                return Ok(new
-                {
-                    success = true,
-                    message = data.Any() ? "Data retrieved successfully" : "No records found",
-                    data
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
-                return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
-            }
-        }
-
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string jobType)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string compId)
         {
             try
             {
@@ -67,23 +40,19 @@ namespace MISReports_Api.Controllers
                 if (toDt.Date < fromDt.Date)
                     return BadRequest("toDate cannot be earlier than fromDate.");
 
-                if (string.IsNullOrWhiteSpace(costCtr))
-                    return BadRequest("costCtr is required.");
+                if (string.IsNullOrWhiteSpace(compId))
+                    return BadRequest("compId is required.");
 
-                if (string.IsNullOrWhiteSpace(jobType))
-                    return BadRequest("jobType is required.");
-
-                var data = _dal.GetJobRegisterCC(fromDt, toDt, costCtr.Trim(), jobType.Trim());
+                var data = _dal.GetSMCAllApplication(fromDt, toDt, compId.Trim());
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
                 {
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
-                    costCtr = costCtr.Trim(),
-                    jobType = jobType.Trim(),
+                    compId = compId.Trim(),
                     totalRecords = data.Count,
-                    totalStdCost = data.Sum(x => x.StdCost ?? 0m)
+                    totalPivAmount = data.Sum(x => x.PivAmount ?? 0m)
                 };
 
                 if (data.Count >= MAX_RECORDS)

@@ -13,7 +13,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly PriceVaDAL _dal = new PriceVaDAL();
 
-        // PATH: /api/priceva/report/2022/05/510.00
+        // PATH: /api/priceva/report/2026/02/510.11
         [HttpGet]
         [Route("report/{repYear:regex(^\\d{4}$)}/{repMonth:regex(^\\d{1,2}$)}/{costCtr}")]
         public IHttpActionResult GetReport(string repYear, string repMonth, string costCtr)
@@ -21,7 +21,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(repYear, repMonth, costCtr);
         }
 
-        // QUERY: /api/priceva/report?repYear=2022&repMonth=05&costCtr=510.00
+        // QUERY: /api/priceva/report?repYear=2026&repMonth=02&costCtr=510.11
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string costCtr)
@@ -40,9 +40,6 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                // NOTE: unlike CashSheet, this query compares T2.fin_mth directly (not TO_CHAR padded),
-                // so we pass repMonth as-is. Confirm with your senior whether fin_mth is stored
-                // as '05' or '5' in inadjbtm — if it's zero-padded, pad here instead (m.ToString("00")).
                 string repMonthValue = m.ToString();
 
                 var data = _dal.GetPriceVa(repYear.Trim(), repMonthValue, costCtr.Trim());
