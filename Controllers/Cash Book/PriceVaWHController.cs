@@ -13,7 +13,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly PriceVaWHDAL _dal = new PriceVaWHDAL();
 
-        // PATH: /api/pricevawh/report/2022/05/510.00/WH01
+        // PATH: /api/pricevawh/report/2026/02/510.11/WRH-A
         [HttpGet]
         [Route("report/{repYear:regex(^\\d{4}$)}/{repMonth:regex(^\\d{1,2}$)}/{costCtr}/{whCode}")]
         public IHttpActionResult GetReport(string repYear, string repMonth, string costCtr, string whCode)
@@ -21,7 +21,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(repYear, repMonth, costCtr, whCode);
         }
 
-        // QUERY: /api/pricevawh/report?repYear=2022&repMonth=05&costCtr=510.00&whCode=WH01
+        // QUERY: /api/pricevawh/report?repYear=2026&repMonth=02&costCtr=510.11&whCode=WRH-A
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string costCtr, [FromUri] string whCode)
@@ -42,9 +42,6 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(whCode))
                     return BadRequest("whCode is required.");
 
-                // NOTE: same as PriceVa — T2.fin_mth is compared directly (not TO_CHAR padded),
-                // so repMonth is passed unpadded. Confirm with your senior whether fin_mth is
-                // zero-padded in inadjbtm; if so, switch to m.ToString("00").
                 string repMonthValue = m.ToString("00");
 
                 var data = _dal.GetPriceVaWH(repYear.Trim(), repMonthValue, costCtr.Trim(), whCode.Trim());

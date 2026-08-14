@@ -14,8 +14,8 @@ namespace MISReports_Api.Controllers
     {
         private readonly QuantityMatFIFODAL _dal = new QuantityMatFIFODAL();
 
-        // PATH: /api/quantitymatfifo/report/510.00/WH01/RM
-        // matCode is optional in the path - if omitted, all material codes are returned.
+        // PATH: /api/quantitymatfifo/report/980.90/WRH-TCP-MAIN/RM
+        // matCode is optional
         [HttpGet]
         [Route("report/{costCtr}/{whCode}")]
         public IHttpActionResult GetReport(string costCtr, string whCode)
@@ -23,7 +23,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(costCtr, whCode, null);
         }
 
-        // PATH: /api/quantitymatfifo/report/510.00/WH01/RM
+        // PATH: /api/quantitymatfifo/report/980.90/WRH-TCP-MAIN/
         [HttpGet]
         [Route("report/{costCtr}/{whCode}/{matCode}")]
         public IHttpActionResult GetReport(string costCtr, string whCode, string matCode)
@@ -32,7 +32,7 @@ namespace MISReports_Api.Controllers
         }
 
         // QUERY: /api/quantitymatfifo/report?costCtr=980.90&whCode=WRH_TCP_MAIN&matCode=
-        // matCode is optional - leave it blank (or omit it) to get all material codes.
+        // matCode is optional
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string costCtr, [FromUri] string whCode, [FromUri] string matCode = null)
@@ -52,7 +52,7 @@ namespace MISReports_Api.Controllers
                 string costCtrTrimmed = costCtr.Trim();
                 string whCodeTrimmed = whCode.Trim();
 
-                // matCode is a LIKE prefix filter; a blank/omitted value matches all material codes.
+                // matCode is a LIKE prefix filter
                 string matCodeTrimmed = (matCode ?? string.Empty).Trim();
 
                 var data = _dal.GetQuantityMatFIFO(costCtrTrimmed, whCodeTrimmed, matCodeTrimmed);

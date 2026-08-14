@@ -13,7 +13,7 @@ namespace MISReports_Api.Controllers
     {
         private readonly ChequeSummaryDAL _dal = new ChequeSummaryDAL();
 
-        // PATH: /api/chequesummary/report/2026-01-01/2026-01-31/913.00
+        // PATH: /api/chequesummary/report/2026-01-01/2026-01-31/510.00
         [HttpGet]
         [Route("report/{fromDate}/{toDate}/{costCtr}")]
         public IHttpActionResult GetReport(string fromDate, string toDate, string costCtr)
@@ -21,7 +21,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(fromDate, toDate, costCtr);
         }
 
-        // QUERY: /api/chequesummary/report?fromDate=2026-01-01&toDate=2026-01-31&costCtr=913.00
+        // QUERY: /api/chequesummary/report?fromDate=2026-01-01&toDate=2026-01-31&costCtr=510.00
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
@@ -42,7 +42,6 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                // SQL uses TO_DATE(:param,'yyyy/mm/dd'), so format to match the mask.
                 string fromDateFormatted = fromDt.ToString("yyyy/MM/dd");
                 string toDateFormatted = toDt.ToString("yyyy/MM/dd");
 

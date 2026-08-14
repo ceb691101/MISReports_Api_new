@@ -17,7 +17,7 @@ namespace MISReports_Api.Controllers
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/jobregccnc/report?fromDate=2026/01/01&toDate=2026/08/01&costCtr=510.00
+        // QUERY: /api/jobregccnc/report?fromDate=2026/01/01&toDate=2026/08/13&costCtr=514.10
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)

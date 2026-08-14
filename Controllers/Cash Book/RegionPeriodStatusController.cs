@@ -12,14 +12,14 @@ namespace MISReports_Api.Controllers
     public class RegionPeriodStatusController : ApiController
     {
         private readonly RegionPeriodStatusDAL _dal = new RegionPeriodStatusDAL();
-        // PATH: /api/regionperiodstatus/report/2026/07/510
+        // PATH: /api/regionperiodstatus/report/2026/07/DISCO1
         [HttpGet]
         [Route("report/{repYear:regex(^\\d{4}$)}/{repMonth:regex(^\\d{1,2}$)}/{region}")]
         public IHttpActionResult GetReport(string repYear, string repMonth, string region)
         {
             return ExecuteQuery(repYear, repMonth, region);
         }
-        // QUERY: /api/regionperiodstatus/report?repYear=2026&repMonth=07&region=510
+        // QUERY: /api/regionperiodstatus/report?repYear=2026&repMonth=07&region=DISCO1
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string repYear, [FromUri] string repMonth, [FromUri] string region)
@@ -36,7 +36,7 @@ namespace MISReports_Api.Controllers
                     return BadRequest("repMonth must be a valid period number (1-13).");
                 if (string.IsNullOrWhiteSpace(region))
                     return BadRequest("region is required.");
-                // SQL compares fin_prd directly (numeric column, no zero-padding assumed).
+                
                 string repMonthTrim = m.ToString();
                 var data = _dal.GetRegionPeriodStatus(repYear.Trim(), repMonthTrim, region.Trim());
                 const int MAX_RECORDS = 5000;
