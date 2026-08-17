@@ -10,14 +10,14 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/pivpaidnotenagized")]
-    public class PivIIPaidNotEnagizedController : ApiController
+    [RoutePrefix("api/pivpaidnotenergized")]
+    public class PivIIPaidNotEnergizedController : ApiController
     {
-        private readonly PivIIPaidNotEnagizedDAL _dal = new PivIIPaidNotEnagizedDAL();
+        private readonly PivIIPaidNotEnergizedDAL _dal = new PivIIPaidNotEnergizedDAL();
 
         private const string DateFormat = "yyyy-MM-dd"; // e.g. 2026-07-09 (dashes so it's URL/route safe)
 
-        // PATH: /api/pivpaidnotenagized/report/2026-07-09/2026-08-31/510.00
+        // PATH: /api/pivpaidnotenergized/report/2026-07-09/2026-08-31/510.00
         [HttpGet]
         [Route("report/{fromDate}/{toDate}/{costCtr}")]
         public IHttpActionResult GetReport(string fromDate, string toDate, string costCtr)
@@ -25,7 +25,7 @@ namespace MISReports_Api.Controllers
             return ExecuteQuery(fromDate, toDate, costCtr);
         }
 
-        // QUERY: /api/pivpaidnotenagized/report?fromDate=2026-07-09&toDate=2026-08-31&costCtr=510.00
+        // QUERY: /api/pivpaidnotenergized/report?fromDate=2026-07-09&toDate=2026-08-31&costCtr=510.00
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
@@ -53,7 +53,7 @@ namespace MISReports_Api.Controllers
                 string oracleFromDate = parsedFromDate.ToString("yyyy/MM/dd");
                 string oracleToDate = parsedToDate.ToString("yyyy/MM/dd");
 
-                var data = _dal.GetPivIIPaidNotEnagized(oracleFromDate, oracleToDate, costCtr.Trim());
+                var data = _dal.GetPivIIPaidNotEnergized(oracleFromDate, oracleToDate, costCtr.Trim());
                 var totalPaidAmount = data.Sum(x => x.PaidAmount ?? 0m);
                 var totalStdCost = data.Sum(x => x.StdCost ?? 0m);
 

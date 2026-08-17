@@ -10,14 +10,14 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.DAL
 {
-    public class PivIIPaidNotEnagizedDAL
+    public class PivIIPaidNotEnergizedDAL
     {
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        public List<PivIIPaidNotEnagizedModel> GetPivIIPaidNotEnagized(string fromDate, string toDate, string costCtr)
+        public List<PivIIPaidNotEnergizedModel> GetPivIIPaidNotEnergized(string fromDate, string toDate, string costCtr)
         {
-            var result = new List<PivIIPaidNotEnagizedModel>();
+            var result = new List<PivIIPaidNotEnergizedModel>();
 
             const string query = @"
                 SELECT A.application_type,
@@ -64,7 +64,7 @@ namespace MISReports_Api.DAL
                 {
                     while (reader.Read())
                     {
-                        result.Add(new PivIIPaidNotEnagizedModel
+                        result.Add(new PivIIPaidNotEnergizedModel
                         {
                             ApplicationType = reader["application_type"] == DBNull.Value ? null : reader["application_type"].ToString(),
                             ApplicationSubType = reader["application_sub_type"] == DBNull.Value ? null : reader["application_sub_type"].ToString(),
