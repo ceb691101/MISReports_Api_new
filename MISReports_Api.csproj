@@ -413,6 +413,7 @@
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobRegCCNCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobRegisterCCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnagizedController.cs" />
@@ -606,6 +607,7 @@
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobRegCCNCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobRegisterCCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnagizedDAL.cs" />
@@ -684,6 +686,7 @@
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC- Management Information\JobRegCCNCModel.cs" />
     <Compile Include="Models\SMC- Management Information\JobRegisterCCModel.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnagizeModel.cs" />
