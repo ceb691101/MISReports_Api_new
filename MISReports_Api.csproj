@@ -360,6 +360,7 @@
     <Compile Include="Controllers\BillCalculationController.cs" />
     <Compile Include="Controllers\BillMapController.cs" />
     <Compile Include="Controllers\Cash Book\AreaWiseCashBookInquiryController.cs" />
+    <Compile Include="Controllers\Cash Book\CashBookInquiryDrCrController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
@@ -522,6 +523,7 @@
     <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerPivTotalDAL.cs" />
     <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerStockValueDAL.cs" />
     <Compile Include="DAL\BillMapRepository.cs" />
+    <Compile Include="DAL\Cash Book\CashBookInquiryDrCrDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
@@ -645,6 +647,7 @@
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="Models\AreaEngineerDashboard\AreaEngineerDashboardModel.cs" />
     <Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
+    <Compile Include="Models\Cash Book\CashBookInquiryDrCrModel.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
@@ -1042,6 +1045,7 @@
     <Folder Include="Views\AreaWiseCashBookInquiry\" />
     <Folder Include="Views\Branchgrnnotgen\" />
     <Folder Include="Views\BranchPendingDocInquiry\" />
+    <Folder Include="Views\CashBookInquiryDrCr\" />
     <Folder Include="Views\CCDocInquiryPending\" />
     <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
