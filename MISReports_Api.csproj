@@ -364,6 +364,7 @@
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
+    <Compile Include="Controllers\Cash Book\ChequeCancellationDivisionController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailsExpController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeSummaryController.cs" />
@@ -420,7 +421,7 @@
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobRegCCNCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobRegisterCCController.cs" />
-    <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnagizedController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnergizedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
@@ -524,6 +525,7 @@
     <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerStockValueDAL.cs" />
     <Compile Include="DAL\BillMapRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookInquiryDrCrDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeCancellationDivisionDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
@@ -618,7 +620,7 @@
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobRegCCNCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobRegisterCCDAL.cs" />
-    <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnagizedDAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnergizedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
@@ -649,6 +651,7 @@
     <Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
     <Compile Include="Models\Cash Book\CashBookInquiryDrCrModel.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeCancellationDivisionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
@@ -701,7 +704,7 @@
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobRegCCNCModel.cs" />
     <Compile Include="Models\SMC- Management Information\JobRegisterCCModel.cs" />
-    <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnagizeModel.cs" />
+    <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnergizeModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
@@ -1049,6 +1052,7 @@
     <Folder Include="Views\CCDocInquiryPending\" />
     <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
+    <Folder Include="Views\ChequeCancellationDivision\" />
     <Folder Include="Views\ChequeDetailWP\" />
     <Folder Include="Views\ConstructionCompletedLookUp\" />
     <Folder Include="Views\ConstructionCompleted\" />
