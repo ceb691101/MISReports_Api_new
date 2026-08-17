@@ -365,6 +365,7 @@
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeCancellationDivisionController.cs" />
+    <Compile Include="Controllers\Cash Book\ChequeDetailsInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailsExpController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeSummaryController.cs" />
@@ -526,6 +527,7 @@
     <Compile Include="DAL\BillMapRepository.cs" />
     <Compile Include="DAL\Cash Book\CashBookInquiryDrCrDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeCancellationDivisionDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeDetailsInquiryDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
@@ -654,6 +656,7 @@
     <Compile Include="Models\Cash Book\ChequeCancellationDivisionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeDetailsInquiryModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\CurrentAcctBalCCModel.cs" />
@@ -1053,6 +1056,7 @@
     <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
     <Folder Include="Views\ChequeCancellationDivision\" />
+    <Folder Include="Views\ChequeDetailInquiry\" />
     <Folder Include="Views\ChequeDetailWP\" />
     <Folder Include="Views\ConstructionCompletedLookUp\" />
     <Folder Include="Views\ConstructionCompleted\" />
