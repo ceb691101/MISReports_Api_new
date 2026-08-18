@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -359,9 +359,13 @@
     <Compile Include="Controllers\AreaEngineerDashboard\AreaEngineerDashboardController.cs" />
     <Compile Include="Controllers\BillCalculationController.cs" />
     <Compile Include="Controllers\BillMapController.cs" />
+    <Compile Include="Controllers\Cash Book\AreaWiseCashBookInquiryController.cs" />
+    <Compile Include="Controllers\Cash Book\CashBookInquiryDrCrController.cs" />
     <Compile Include="Controllers\Cash Book\CashBookReportController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetController.cs" />
     <Compile Include="Controllers\Cash Book\CashSheetDateRangePayeeController.cs" />
+    <Compile Include="Controllers\Cash Book\ChequeCancellationDivisionController.cs" />
+    <Compile Include="Controllers\Cash Book\ChequeDetailsInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailsExpController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeDetailWPController.cs" />
     <Compile Include="Controllers\Cash Book\ChequeSummaryController.cs" />
@@ -374,8 +378,10 @@
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
     <Compile Include="Controllers\Catalog\ReportCatalogController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
-    <Compile Include="Controllers\Common\AreaWiseCashBookInquiryController.cs" />
+    <Compile Include="Controllers\Common\BranchPendingDocInquiryController.cs" />
+    <Compile Include="Controllers\Common\CCDocInquiryPendingController.cs" />
     <Compile Include="Controllers\Common\InventoryDocInquiryController.cs" />
+    <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
     <Compile Include="Controllers\Construction\ConstructionAllController.cs" />
     <Compile Include="Controllers\Construction\ConstructionCompletedController.cs" />
@@ -385,6 +391,7 @@
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
     <Compile Include="Controllers\FIFO\IssueReceiptSummaryController.cs" />
     <Compile Include="Controllers\FIFO\QuantityMatFIFOController.cs" />
+    <Compile Include="Controllers\General Ledger\CostcenterwisegldocumentController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingWHController.cs" />
@@ -520,9 +527,15 @@
     <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerPivTotalDAL.cs" />
     <Compile Include="DAL\AreaEngineerDashboard\AreaEngineerStockValueDAL.cs" />
     <Compile Include="DAL\BillMapRepository.cs" />
-    <Compile Include="DAL\Common\AreaWiseCashBookInquiryDAL.cs" />
+    <Compile Include="DAL\Cash Book\CashBookInquiryDrCrDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeCancellationDivisionDAL.cs" />
+    <Compile Include="DAL\Cash Book\ChequeDetailsInquiryDAL.cs" />
+    <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
+    <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
+    <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
+    <Compile Include="DAL\Cash Book\AreaWiseCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDAL.cs" />
     <Compile Include="DAL\Cash Book\CashSheetDateRangePayeeDAL.cs" />
@@ -581,6 +594,7 @@
     <Compile Include="DAL\General\ListingofCustomer\ListingofCustomerDao.cs" />
     <Compile Include="DAL\General\SecurityDepositContractDemandBulk\ContractDemandBulkDao.cs" />
     <Compile Include="DAL\General\SMSRegisteredCustomersOrdinary\RegisteredCustomersBillCycleDao.cs" />
+    <Compile Include="DAL\General Ledger\CostcenterwisegldocumentDAL.cs" />
     <Compile Include="DAL\IncomeExpenditure\IncomeExpenditureRegionDetailedRepository.cs" />
     <Compile Include="DAL\Inventory\avgConsumptionSelectedDataRepository.cs" />
     <Compile Include="DAL\Inventory\Branchgrnnotgendal.cs" />
@@ -640,9 +654,13 @@
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
     <Compile Include="Models\AreaEngineerDashboard\AreaEngineerDashboardModel.cs" />
+    <Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
+    <Compile Include="Models\Cash Book\CashBookInquiryDrCrModel.cs" />
     <Compile Include="Models\Cash Book\CashSheetDateRangePayeeModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeCancellationDivisionModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailsExpRegionModel.cs" />
+    <Compile Include="Models\Cash Book\ChequeDetailsInquiryModel.cs" />
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\CurrentAcctBalCCModel.cs" />
@@ -654,8 +672,10 @@
     <Compile Include="Models\Collection\SalesAndCollectionModel .cs" />
     <Compile Include="Models\Cash Book\CashSheetModel.cs" />
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
-    <Compile Include="Models\Common\AreaWiseCashBookInquiryModel.cs" />
+    <Compile Include="Models\Common\BranchPendingDocInquiryModel.cs" />
+    <Compile Include="Models\Common\CCDocInquiryPendingModel.cs" />
     <Compile Include="Models\Common\InventoryDocInquiryModel.cs" />
+    <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
     <Compile Include="Models\Construction\ConstructionAllModel.cs" />
     <Compile Include="Models\Construction\ConstructionCompletedModel.cs" />
@@ -674,6 +694,7 @@
     <Compile Include="Models\PHV - FIFO\PHVSlowMovingWHModel.cs" />
     <Compile Include="Models\General\ArrearsPositionModel .cs" />
     <Compile Include="Models\General\FinalizedAccountsModel.cs" />
+    <Compile Include="Models\General Ledger\Costcenterwisegldocumentmodel.cs" />
     <Compile Include="Models\Inventory\Branchgrnnotgenmodel.cs" />
     <Compile Include="Models\Inventory\Ccgrnnotgenmodel.cs" />
     <Compile Include="Models\Inventory\Ccwiseissuemodel.cs" />
@@ -740,6 +761,12 @@
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingRetailDetailedDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingRetailSummaryDao.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardRepository.cs" />
+    <Compile Include="DAL\LedgerCard\CostCenterTransferVouchersRepository.cs" />
+    <Compile Include="Models\LedgerCard\CostCenterTransferVouchersModel.cs" />
+    <Compile Include="Controllers\LedgerCard\CostCenterTransferVouchersController.cs" />
+    <Compile Include="DAL\LedgerCard\Report71_8Repository.cs" />
+    <Compile Include="Models\LedgerCard\Report71_8Model.cs" />
+    <Compile Include="Controllers\LedgerCard\Report71_8Controller.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingUsageBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforOrdinaryDao.cs" />
@@ -856,6 +883,9 @@
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardTotalModel.cs" />
+    <Compile Include="Models\LedgerCard\CurrentAccountReconciliationExternalModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrentAccountReconciliationExternalRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrentAccountReconciliationExternalController.cs" />
     <Compile Include="Models\OUMModels.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationSheetModel.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationWHwiseSignatureModel.cs" />
@@ -1035,11 +1065,17 @@
     <Folder Include="App_Data\" />
     <Folder Include="Views\AreaWiseCashBookInquiry\" />
     <Folder Include="Views\Branchgrnnotgen\" />
+    <Folder Include="Views\BranchPendingDocInquiry\" />
+    <Folder Include="Views\CashBookInquiryDrCr\" />
+    <Folder Include="Views\CCDocInquiryPending\" />
     <Folder Include="Views\Ccgrnnotgen\" />
     <Folder Include="Views\Ccwiseissue\" />
+    <Folder Include="Views\ChequeCancellationDivision\" />
+    <Folder Include="Views\ChequeDetailInquiry\" />
     <Folder Include="Views\ChequeDetailWP\" />
     <Folder Include="Views\ConstructionCompletedLookUp\" />
     <Folder Include="Views\ConstructionCompleted\" />
+    <Folder Include="Views\Costcenterwisegldocument\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
     <Folder Include="Views\InventoryDocInquiry\" />
     <Folder Include="Views\IssueReceiptSummary\" />
@@ -1047,6 +1083,7 @@
     <Folder Include="Views\IssuesRaisedForJobs\" />
     <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
+    <Folder Include="Views\MaterialRequisitionWithIssueDetails\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
     <Folder Include="Views\PHVNonMovingBOS\" />
