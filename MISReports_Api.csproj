@@ -761,6 +761,9 @@
     <Compile Include="DAL\LedgerCard\CostCenterTransferVouchersRepository.cs" />
     <Compile Include="Models\LedgerCard\CostCenterTransferVouchersModel.cs" />
     <Compile Include="Controllers\LedgerCard\CostCenterTransferVouchersController.cs" />
+    <Compile Include="DAL\LedgerCard\Report71_8Repository.cs" />
+    <Compile Include="Models\LedgerCard\Report71_8Model.cs" />
+    <Compile Include="Controllers\LedgerCard\Report71_8Controller.cs" />
     <Compile Include="DAL\SolarInformation\SolarConnectionDetails\SolarReadingUsageBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforOrdinaryDao.cs" />
@@ -877,6 +880,9 @@
     <Compile Include="Models\LedgerCard\DivisionalLedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardModel.cs" />
     <Compile Include="Models\LedgerCard\LedgerCardTotalModel.cs" />
+    <Compile Include="Models\LedgerCard\CurrentAccountReconciliationExternalModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrentAccountReconciliationExternalRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrentAccountReconciliationExternalController.cs" />
     <Compile Include="Models\OUMModels.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationSheetModel.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationWHwiseSignatureModel.cs" />
