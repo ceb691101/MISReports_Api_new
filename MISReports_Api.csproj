@@ -883,6 +883,9 @@
     <Compile Include="Models\LedgerCard\CurrentAccountReconciliationExternalModel.cs" />
     <Compile Include="DAL\LedgerCard\CurrentAccountReconciliationExternalRepository.cs" />
     <Compile Include="Controllers\LedgerCard\CurrentAccountReconciliationExternalController.cs" />
+    <Compile Include="Models\LedgerCard\CurrAcctReconExtPeriodModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrAcctReconExtPeriodRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrAcctReconExtPeriodController.cs" />
     <Compile Include="Models\OUMModels.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationSheetModel.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationWHwiseSignatureModel.cs" />
