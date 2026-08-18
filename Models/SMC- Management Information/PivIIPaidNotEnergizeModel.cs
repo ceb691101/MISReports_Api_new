@@ -5,7 +5,7 @@ using System.Web;
 
 namespace MISReports_Api.Models.Accounts
 {
-    public class PivIIPaidNotEnagizedModel
+    public class PivIIPaidNotEnergizedModel
     {
         public string ApplicationType { get; set; }
         public string ApplicationSubType { get; set; }
