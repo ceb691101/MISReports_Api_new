@@ -393,6 +393,7 @@
     <Compile Include="Controllers\FIFO\QuantityMatFIFOController.cs" />
     <Compile Include="Controllers\General Ledger\CostcenterwisegldocumentController.cs" />
     <Compile Include="Controllers\General Ledger\DocInquiryGlController.cs" />
+    <Compile Include="Controllers\General Ledger\GlInquiryByDocController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingWHController.cs" />
@@ -576,6 +577,7 @@
     <Compile Include="DAL\FIFO\IssueReceiptSummaryDAL.cs" />
     <Compile Include="DAL\FIFO\QuantityMatFIFODAL.cs" />
     <Compile Include="DAL\General Ledger\DocInquiryGlDAL.cs" />
+    <Compile Include="DAL\General Ledger\GlInquiryByDocdal.CS" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingWHDAL.cs" />
@@ -690,6 +692,7 @@
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\FIFO\IssueReceiptSummaryModel.cs" />
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
+    <Compile Include="Models\General Ledger\GlInquiryByDocModel.CS" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingWHModel.cs" />
@@ -1080,6 +1083,7 @@
     <Folder Include="Views\ConstructionCompleted\" />
     <Folder Include="Views\Costcenterwisegldocument\" />
     <Folder Include="Views\DocInquiryGl\" />
+    <Folder Include="Views\GlInquiryByDoc\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
     <Folder Include="Views\InventoryDocInquiry\" />
     <Folder Include="Views\IssueReceiptSummary\" />
