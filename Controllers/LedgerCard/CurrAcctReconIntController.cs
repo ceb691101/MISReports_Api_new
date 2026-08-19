@@ -17,19 +17,19 @@ namespace MISReports_Api.Controllers
         [HttpGet]
         [Route("")]
         public IHttpActionResult GetReport(
-            [FromUri] string compId, 
-            [FromUri] int repyear, 
-            [FromUri] int repmonth, 
-            [FromUri] string subac)
+            [FromUri(Name = "REGION")] string region, 
+            [FromUri(Name = "YEAR")] int year, 
+            [FromUri(Name = "MONTH")] int month, 
+            [FromUri(Name = "SUBAC")] string subac)
         {
             try
             {
-                if (string.IsNullOrEmpty(compId) || string.IsNullOrEmpty(subac))
+                if (string.IsNullOrEmpty(region) || string.IsNullOrEmpty(subac))
                 {
-                    return BadRequest("Parameters 'compId' and 'subac' are required.");
+                    return BadRequest("Parameters 'REGION' and 'SUBAC' are required.");
                 }
 
-                var data = _repository.GetData(compId, repyear, repmonth, subac);
+                var data = _repository.GetData(region, year, month, subac);
                 return Ok(data);
             }
             catch (Exception ex)

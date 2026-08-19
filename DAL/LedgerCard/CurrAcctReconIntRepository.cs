@@ -11,7 +11,7 @@ namespace MISReports_Api.DAL
     {
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        public List<CurrAcctReconIntModel> GetData(string compId, int repyear, int repmonth, string subac)
+        public List<CurrAcctReconIntModel> GetData(string region, int year, int month, string subac)
         {
             var result = new List<CurrAcctReconIntModel>();
 
@@ -69,9 +69,9 @@ ORDER   BY    T2.post_dt, T1.doc_no";
                 using (OracleCommand cmd = new OracleCommand(sql, con))
                 {
                     cmd.BindByName = true;
-                    cmd.Parameters.Add(new OracleParameter("COMPID", OracleDbType.Varchar2)).Value = compId;
-                    cmd.Parameters.Add(new OracleParameter("REPYEAR", OracleDbType.Int32)).Value = repyear;
-                    cmd.Parameters.Add(new OracleParameter("REPMONTH", OracleDbType.Int32)).Value = repmonth;
+                    cmd.Parameters.Add(new OracleParameter("COMPID", OracleDbType.Varchar2)).Value = region;
+                    cmd.Parameters.Add(new OracleParameter("REPYEAR", OracleDbType.Int32)).Value = year;
+                    cmd.Parameters.Add(new OracleParameter("REPMONTH", OracleDbType.Int32)).Value = month;
                     cmd.Parameters.Add(new OracleParameter("SUBAC", OracleDbType.Varchar2)).Value = subac;
 
                     con.Open();
