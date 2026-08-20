@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -424,9 +424,11 @@
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
+    <Compile Include="Controllers\SMC\FundSummaryController.cs" />
     <Compile Include="Controllers\SMC\JobRegCCNCController.cs" />
     <Compile Include="Controllers\SMC\JobRegisterCCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnergizedController.cs" />
+    <Compile Include="Controllers\SMC\PendingEstimationCCController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
@@ -628,9 +630,11 @@
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
+    <Compile Include="DAL\SMC\FundSummaryDAL.cs" />
     <Compile Include="DAL\SMC\JobRegCCNCDAL.cs" />
     <Compile Include="DAL\SMC\JobRegisterCCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnergizedDAL.cs" />
+    <Compile Include="DAL\SMC\PendingEstimationCCDAL.cs" />
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
@@ -717,9 +721,11 @@
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
+    <Compile Include="Models\SMC\FundSummaryModel.cs" />
     <Compile Include="Models\SMC\JobRegCCNCModel.cs" />
     <Compile Include="Models\SMC\JobRegisterCCModel.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnergizeModel.cs" />
+    <Compile Include="Models\SMC\PendingEstimationCCModel.cs" />
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
