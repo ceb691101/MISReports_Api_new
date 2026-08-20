@@ -48,9 +48,6 @@ namespace MISReports_Api.DAL
         {
             var result = new List<PendingEstimationCCModel>();
 
-            // When a specific jobType is supplied, filter on that single application type via a
-            // bind variable; when left blank, no application_type restriction is applied at all
-            // (all job types are returned), unlike the original query's hardcoded ('NC','CR') list.
             string jobTypeFilter = string.IsNullOrWhiteSpace(jobType)
                 ? "1 = 1"
                 : "a.APPLICATION_TYPE = :jobtype";
