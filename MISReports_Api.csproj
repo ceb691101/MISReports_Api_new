@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -380,6 +380,7 @@
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\Common\BranchPendingDocInquiryController.cs" />
     <Compile Include="Controllers\Common\CCDocInquiryPendingController.cs" />
+    <Compile Include="Controllers\Common\InquiryCashBookController.cs" />
     <Compile Include="Controllers\Common\InventoryDocInquiryController.cs" />
     <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
@@ -534,6 +535,7 @@
     <Compile Include="DAL\Cash Book\ChequeDetailsInquiryDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
+    <Compile Include="DAL\Common\InquiryCashBookDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
@@ -678,6 +680,7 @@
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\Common\BranchPendingDocInquiryModel.cs" />
     <Compile Include="Models\Common\CCDocInquiryPendingModel.cs" />
+    <Compile Include="Models\Common\InquiryCashBookModel.cs" />
     <Compile Include="Models\Common\InventoryDocInquiryModel.cs" />
     <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
@@ -1085,6 +1088,7 @@
     <Folder Include="Views\DocInquiryGl\" />
     <Folder Include="Views\GlInquiryByDoc\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
+    <Folder Include="Views\InquiryCashBook\" />
     <Folder Include="Views\InventoryDocInquiry\" />
     <Folder Include="Views\IssueReceiptSummary\" />
     <Folder Include="Views\IssueReceiptWP\" />
