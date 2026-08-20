@@ -898,6 +898,9 @@
     <Compile Include="Models\LedgerCard\CurrAcctReconExtPeriodModel.cs" />
     <Compile Include="DAL\LedgerCard\CurrAcctReconExtPeriodRepository.cs" />
     <Compile Include="Controllers\LedgerCard\CurrAcctReconExtPeriodController.cs" />
+    <Compile Include="Models\LedgerCard\CurrAcctReconOwnOtherModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrAcctReconOwnOtherRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrAcctReconOwnOtherController.cs" />
     <Compile Include="Models\OUMModels.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationSheetModel.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationWHwiseSignatureModel.cs" />
