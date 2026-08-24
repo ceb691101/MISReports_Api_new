@@ -10,27 +10,25 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/pendingestimationcc")]
-    public class PendingEstimationCCController : ApiController
+    [RoutePrefix("api/regionsmcallpiv")]
+    public class RegionSMCAllPIVController : ApiController
     {
-        private readonly PendingEstimationCCDAL _dal = new PendingEstimationCCDAL();
+        private readonly RegionSMCAllPIVDAL _dal = new RegionSMCAllPIVDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/pendingestimationcc/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20&jobType=CR
-        // jobType is optional
+        // QUERY: /api/regionsmcallpiv/report?fromDate=2026/01/01&toDate=2026/01/31&compId=DISCO1
         [HttpGet]
         [Route("report")]
         public IHttpActionResult GetQuery(
             [FromUri] string fromDate,
             [FromUri] string toDate,
-            [FromUri] string costCtr,
-            [FromUri] string jobType = null)
+            [FromUri] string compId)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr, jobType);
+            return ExecuteQuery(fromDate, toDate, compId);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string jobType)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string compId)
         {
             try
             {
@@ -45,21 +43,19 @@ namespace MISReports_Api.Controllers
                 if (toDt.Date < fromDt.Date)
                     return BadRequest("toDate cannot be earlier than fromDate.");
 
-                if (string.IsNullOrWhiteSpace(costCtr))
-                    return BadRequest("costCtr is required.");
+                if (string.IsNullOrWhiteSpace(compId))
+                    return BadRequest("compId is required.");
 
-                string jobTypeTrimmed = string.IsNullOrWhiteSpace(jobType) ? null : jobType.Trim();
-
-                var data = _dal.GetPendingEstimationCC(fromDt, toDt, costCtr.Trim(), jobTypeTrimmed);
+                var data = _dal.GetRegionSMCAllPIV(fromDt, toDt, compId.Trim());
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
                 {
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
-                    costCtr = costCtr.Trim(),
-                    jobType = jobTypeTrimmed ?? "ALL",
-                    totalRecords = data.Count
+                    compId = compId.Trim(),
+                    totalRecords = data.Count,
+                    totalPivAmount = data.Sum(x => x.PivAmount ?? 0m)
                 };
 
                 if (data.Count >= MAX_RECORDS)
