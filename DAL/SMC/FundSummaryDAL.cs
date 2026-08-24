@@ -15,7 +15,6 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        // Overflow-safe string reader, same pattern used on the other reports.
         private static string SafeGetString(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -39,8 +38,6 @@ namespace MISReports_Api.DAL
             return reader.GetValue(ordinal)?.ToString();
         }
 
-        // Overflow-safe decimal reader for the aggregated cost/length columns, same pattern
-        // used in JobRegisterCCDAL for StdCost.
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -97,24 +94,6 @@ namespace MISReports_Api.DAL
                           c.TOTAL_COST, qry.RES_TYPE, qry.totcost, qry.cebcost
                 ORDER BY  h.dept_id, h.project_no";
 
-            // Notes vs. the original Jasper query:
-            // 1. $P!{@compId}, $P!{@fromDate}, $P!{@toDate} (Jasper report parameters)
-            //    replaced with real bind variables (:compid, :fromdate, :todateexcl).
-            // 2. TRIM() added around every comp_id column compared to the :compid bind
-            //    variable (glcompm.comp_id in both the AREA_NAME lookup and the nested
-            //    dept_id/comp_id resolution, and gldeptm.comp_id), same convention used
-            //    for dept_id comparisons in the other reports. The correlated
-            //    "dept_nm ... where dept_id = h.dept_id" subquery is a column-to-column
-            //    correlation, not a bind variable, so it's left as-is.
-            // 3. Dates are bound as real OracleDbType.Date parameters instead of
-            //    TO_DATE(:param,'yyyy/mm/dd') string parsing, and toDate is treated as
-            //    inclusive of the whole day (ETIMATE_DT < toDate + 1 day) instead of the
-            //    original "<= toDate", to catch any time component on ETIMATE_DT.
-            // 4. Column aliases were upper-cased/explicit (TOTAL_LENGTH, PREMISES_LENGTH,
-            //    CUSTOMER_AMOUNT, TOTCOST, CEBCOST) so the reader can bind them by name
-            //    reliably; the underlying expressions and GROUP BY/ORDER BY are unchanged.
-            // 5. "ETIMATE_DT" is spelled exactly as it appears in the source schema/query -
-            //    not a typo introduced here, kept as-is to match the actual column name.
             string compIdTrimmed = (compId ?? string.Empty).Trim();
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 
