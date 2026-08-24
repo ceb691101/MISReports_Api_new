@@ -382,6 +382,7 @@
     <Compile Include="Controllers\Common\CCDocInquiryPendingController.cs" />
     <Compile Include="Controllers\Common\InquiryCashBookController.cs" />
     <Compile Include="Controllers\Common\InquiryChequeRunController.cs" />
+    <Compile Include="Controllers\Common\InquiryGeneralLedgerController.cs" />
     <Compile Include="Controllers\Common\InventoryDocInquiryController.cs" />
     <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
@@ -540,6 +541,7 @@
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InquiryCashBookDAL.cs" />
     <Compile Include="DAL\Common\InquiryChequeRunDAL.cs" />
+    <Compile Include="DAL\Common\InquiryGeneralLedgerDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
@@ -688,6 +690,7 @@
     <Compile Include="Models\Common\CCDocInquiryPendingModel.cs" />
     <Compile Include="Models\Common\InquiryCashBookModel.cs" />
     <Compile Include="Models\Common\InquiryChequeRunModel.cs" />
+    <Compile Include="Models\Common\InquiryGeneralLedgerModel.cs" />
     <Compile Include="Models\Common\InventoryDocInquiryModel.cs" />
     <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
@@ -1108,6 +1111,7 @@
     <Folder Include="Views\GrnRaisedForPurchasing\" />
     <Folder Include="Views\InquiryCashBook\" />
     <Folder Include="Views\InquiryChequeRun\" />
+    <Folder Include="Views\InquiryGeneralLedger\" />
     <Folder Include="Views\InventoryDocInquiry\" />
     <Folder Include="Views\IssueReceiptSummary\" />
     <Folder Include="Views\IssueReceiptWP\" />
