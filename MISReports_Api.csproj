@@ -427,8 +427,10 @@
     <Compile Include="Controllers\SMC\JobRegisterCCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnergizedController.cs" />
     <Compile Include="Controllers\SMC\PendingEstimationCCController.cs" />
+    <Compile Include="Controllers\SMC\RegionSMCAllPIVController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
+    <Compile Include="Controllers\SMC\SMCMatDetailsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\CCSolarPendingController.cs" />
     <Compile Include="Controllers\SolarJobs\SolarPendingJobsController.cs" />
@@ -631,8 +633,10 @@
     <Compile Include="DAL\SMC\JobRegisterCCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnergizedDAL.cs" />
     <Compile Include="DAL\SMC\PendingEstimationCCDAL.cs" />
+    <Compile Include="DAL\SMC\RegionSMCAllPIVDAL.cs" />
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
+    <Compile Include="DAL\SMC\SMCMatDetailsDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\CCSolarPendingDAL.cs" />
     <Compile Include="DAL\SolarJobs\SolarPendingJobsRepository.cs" />
@@ -720,8 +724,10 @@
     <Compile Include="Models\SMC\JobRegisterCCModel.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnergizeModel.cs" />
     <Compile Include="Models\SMC\PendingEstimationCCModel.cs" />
+    <Compile Include="Models\SMC\RegionSMCAllPIVModel.cs" />
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
+    <Compile Include="Models\SMC\SMCMatDetailsModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
