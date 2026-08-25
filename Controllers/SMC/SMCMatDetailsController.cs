@@ -47,7 +47,7 @@ namespace MISReports_Api.Controllers
                     return BadRequest("compId is required.");
 
                 var data = _dal.GetSMCMatDetails(fromDt, toDt, compId.Trim());
-                const int MAX_RECORDS = 5000;
+                const int MAX_RECORDS = 100000;
 
                 var summary = new
                 {
