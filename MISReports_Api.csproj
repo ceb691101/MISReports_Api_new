@@ -388,6 +388,7 @@
     <Compile Include="Controllers\Common\InquiryMaterialRequisitionController.cs" />
     <Compile Include="Controllers\Common\InventoryDocInquiryController.cs" />
     <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
+    <Compile Include="Controllers\Common\MaterialReqWithIssueController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
     <Compile Include="Controllers\Construction\ConstructionAllController.cs" />
     <Compile Include="Controllers\Construction\ConstructionCompletedController.cs" />
@@ -550,6 +551,7 @@
     <Compile Include="DAL\Common\InquiryMaterialRequisitionDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
+    <Compile Include="DAL\Common\MaterialReqWithIssueDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
     <Compile Include="DAL\Cash Book\AreaWiseCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
@@ -702,6 +704,7 @@
     <Compile Include="Models\Common\InquiryMaterialRequisitionModel.cs" />
     <Compile Include="Models\Common\InventoryDocInquiryModel.cs" />
     <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
+    <Compile Include="Models\Common\MaterialReqWithIssueModel.cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
     <Compile Include="Models\Construction\ConstructionAllModel.cs" />
     <Compile Include="Models\Construction\ConstructionCompletedModel.cs" />
@@ -1131,6 +1134,7 @@
     <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
     <Folder Include="Views\MaterialRequisitionWithIssueDetails\" />
+    <Folder Include="Views\MaterialReqWithIssue\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
     <Folder Include="Views\PHVNonMovingBOS\" />
