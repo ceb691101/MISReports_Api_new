@@ -10,25 +10,22 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/smcmatdetails")]
-    public class SMCMatDetailsController : ApiController
+    [RoutePrefix("api/energizednotaccountcc")]
+    public class EnergizedNotAccountCCController : ApiController
     {
-        private readonly SMCMatDetailsDAL _dal = new SMCMatDetailsDAL();
+        private readonly EnergizedNotAccountCCDAL _dal = new EnergizedNotAccountCCDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/smcmatdetails/report?fromDate=2026/01/01&toDate=2026/01/31&compId=DISCO1
+        // QUERY: /api/energizednotaccountcc/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery(
-            [FromUri] string fromDate,
-            [FromUri] string toDate,
-            [FromUri] string compId)
+        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
         {
-            return ExecuteQuery(fromDate, toDate, compId);
+            return ExecuteQuery(fromDate, toDate, costCtr);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string compId)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr)
         {
             try
             {
@@ -43,19 +40,18 @@ namespace MISReports_Api.Controllers
                 if (toDt.Date < fromDt.Date)
                     return BadRequest("toDate cannot be earlier than fromDate.");
 
-                if (string.IsNullOrWhiteSpace(compId))
-                    return BadRequest("compId is required.");
+                if (string.IsNullOrWhiteSpace(costCtr))
+                    return BadRequest("costCtr is required.");
 
-                var data = _dal.GetSMCMatDetails(fromDt, toDt, compId.Trim());
-                const int MAX_RECORDS = 100000;
+                var data = _dal.GetEnergizedNotAccountCC(fromDt, toDt, costCtr.Trim());
+                const int MAX_RECORDS = 5000;
 
                 var summary = new
                 {
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
-                    compId = compId.Trim(),
-                    totalRecords = data.Count,
-                    totalQty = data.Sum(x => x.Qty ?? 0m)
+                    costCtr = costCtr.Trim(),
+                    totalRecords = data.Count
                 };
 
                 if (data.Count >= MAX_RECORDS)
