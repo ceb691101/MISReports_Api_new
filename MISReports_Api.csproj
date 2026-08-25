@@ -422,6 +422,8 @@
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
+    <Compile Include="Controllers\SMC\EnergizeAgeAnalysisController.cs" />
+    <Compile Include="Controllers\SMC\EnergizedNotAccountCCController.cs" />
     <Compile Include="Controllers\SMC\FundSummaryController.cs" />
     <Compile Include="Controllers\SMC\JobRegCCNCController.cs" />
     <Compile Include="Controllers\SMC\JobRegisterCCController.cs" />
@@ -628,6 +630,8 @@
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
+    <Compile Include="DAL\SMC\EnergizeAgeAnalysisDAL.cs" />
+    <Compile Include="DAL\SMC\EnergizedNotAccountCCDAL.cs" />
     <Compile Include="DAL\SMC\FundSummaryDAL.cs" />
     <Compile Include="DAL\SMC\JobRegCCNCDAL.cs" />
     <Compile Include="DAL\SMC\JobRegisterCCDAL.cs" />
@@ -719,6 +723,8 @@
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
+    <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
+    <Compile Include="Models\SMC\EnergizedNotAccountCCModel.cs" />
     <Compile Include="Models\SMC\FundSummaryModel.cs" />
     <Compile Include="Models\SMC\JobRegCCNCModel.cs" />
     <Compile Include="Models\SMC\JobRegisterCCModel.cs" />
