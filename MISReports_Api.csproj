@@ -372,6 +372,7 @@
     <Compile Include="Controllers\Cash Book\ChqDetailsExpRegionController.cs" />
     <Compile Include="Controllers\Cash Book\CurrentAcctBalCCController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
+    <Compile Include="Controllers\Cash Book\InquiryCashBookUnpostedCancelController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
     <Compile Include="Controllers\Cash Book\ProvinceWisePeriodStatusController.cs" />
@@ -539,6 +540,7 @@
     <Compile Include="DAL\Cash Book\CashBookInquiryDrCrDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeCancellationDivisionDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailsInquiryDAL.cs" />
+    <Compile Include="DAL\Cash Book\InquiryCashBookUnpostedCancelDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InquiryCashBookDAL.cs" />
@@ -682,6 +684,7 @@
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\CurrentAcctBalCCModel.cs" />
+    <Compile Include="Models\Cash Book\InquiryCashBookUnpostedCancelModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
     <Compile Include="Models\Cash Book\ProvinceWisePeriodStatusModel.cs" />
@@ -1115,6 +1118,7 @@
     <Folder Include="Views\DocInquiryGl\" />
     <Folder Include="Views\GlInquiryByDoc\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
+    <Folder Include="Views\InquiryCashBookUnpostedCancel\" />
     <Folder Include="Views\InquiryCashBook\" />
     <Folder Include="Views\InquiryChequeRun\" />
     <Folder Include="Views\InquiryGeneralLedger\" />
