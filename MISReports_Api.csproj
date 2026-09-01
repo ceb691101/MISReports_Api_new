@@ -375,6 +375,7 @@
     <Compile Include="Controllers\Cash Book\InquiryCashBookUnpostedCancelController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
+    <Compile Include="Controllers\Cash Book\ProvinceCashBookInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\ProvinceWisePeriodStatusController.cs" />
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
     <Compile Include="Controllers\Catalog\ReportCatalogController.cs" />
@@ -548,6 +549,7 @@
     <Compile Include="DAL\Cash Book\ChequeCancellationDivisionDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailsInquiryDAL.cs" />
     <Compile Include="DAL\Cash Book\InquiryCashBookUnpostedCancelDAL.cs" />
+    <Compile Include="DAL\Cash Book\ProvinceCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
     <Compile Include="DAL\Common\InquiryCashBookDAL.cs" />
@@ -701,6 +703,7 @@
     <Compile Include="Models\Cash Book\InquiryCashBookUnpostedCancelModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
+    <Compile Include="Models\Cash Book\ProvinceCashBookInquiryModel.cs" />
     <Compile Include="Models\Cash Book\ProvinceWisePeriodStatusModel.cs" />
     <Compile Include="Models\Cash Book\RegionPeriodStatusModel.cs" />
     <Compile Include="Models\Catalog\ReportCatalogModel.cs" />
@@ -1160,6 +1163,7 @@
     <Folder Include="Views\PHVObsoleteIdleBOS\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
     <Folder Include="Views\PivIIPaidNotEnergized\" />
+    <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
   </ItemGroup>
