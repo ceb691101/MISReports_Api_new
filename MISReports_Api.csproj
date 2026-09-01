@@ -440,6 +440,7 @@
     <Compile Include="Controllers\SMC\JobRegisterCCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnergizedController.cs" />
     <Compile Include="Controllers\SMC\JobStatusDocInquiryController.cs" />
+    <Compile Include="Controllers\SMC\JobsummaryallController.cs" />
     <Compile Include="Controllers\SMC\PendingEstimationCCController.cs" />
     <Compile Include="Controllers\SMC\RegionSMCAllPIVController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
@@ -660,6 +661,7 @@
     <Compile Include="DAL\SMC\JobRegisterCCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnergizedDAL.cs" />
     <Compile Include="DAL\SMC\JobStatusDocInquiryDAL.cs" />
+    <Compile Include="DAL\SMC\JobsummaryallDAL.cs" />
     <Compile Include="DAL\SMC\PendingEstimationCCDAL.cs" />
     <Compile Include="DAL\SMC\RegionSMCAllPIVDAL.cs" />
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
@@ -765,6 +767,7 @@
     <Compile Include="Models\SMC\JobRegisterCCModel.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnergizeModel.cs" />
     <Compile Include="Models\SMC\JobStatusDocInquiryModel.cs" />
+    <Compile Include="Models\SMC\JobsummaryallModel.cs" />
     <Compile Include="Models\SMC\PendingEstimationCCModel.cs" />
     <Compile Include="Models\SMC\RegionSMCAllPIVModel.cs" />
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
@@ -1152,6 +1155,7 @@
     <Folder Include="Views\IssueReceiptSummary\" />
     <Folder Include="Views\IssueReceiptWP\" />
     <Folder Include="Views\IssuesRaisedForJobs\" />
+    <Folder Include="Views\Jobsummaryall\" />
     <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
     <Folder Include="Views\MaterialRequisitionWithIssueDetails\" />
