@@ -10,22 +10,27 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/energizeageanalysis")]
-    public class EnergizeAgeAnalysisController : ApiController
+    [RoutePrefix("api/jobestimatedetailscc")]
+    public class JobEstimateDetailsCCController : ApiController
     {
-        private readonly EnergizeAgeAnalysisDAL _dal = new EnergizeAgeAnalysisDAL();
+        private readonly JobEstimateDetailsCCDAL _dal = new JobEstimateDetailsCCDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/energizeageanalysis/report?fromDate=2026/01/01&toDate=2026/03/31&costCtr=511.20
+        // QUERY: /api/jobestimatedetailscc/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20&matCode=A01
+        // matCode is optional
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
+        public IHttpActionResult GetQuery(
+            [FromUri] string fromDate,
+            [FromUri] string toDate,
+            [FromUri] string costCtr,
+            [FromUri] string matCode = null)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr);
+            return ExecuteQuery(fromDate, toDate, costCtr, matCode);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string matCode)
         {
             try
             {
@@ -43,7 +48,9 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                var data = _dal.GetEnergizeAgeAnalysis(fromDt, toDt, costCtr.Trim());
+                string matCodeTrimmed = (matCode ?? string.Empty).Trim();
+
+                var data = _dal.GetJobEstimateDetailsCC(fromDt, toDt, costCtr.Trim(), matCodeTrimmed);
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
@@ -51,11 +58,9 @@ namespace MISReports_Api.Controllers
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
                     costCtr = costCtr.Trim(),
+                    matCode = matCodeTrimmed,
                     totalRecords = data.Count,
-                    totalCount = data.Sum(x => x.Sum),
-                    // no_of_jobs is a constant (not per-period) value in the original query -
-                    // every row carries the same total, so just surface it once here.
-                    noOfJobs = data.FirstOrDefault()?.NoOfJobs ?? 0
+                    totalEstimateQty = data.Sum(x => x.EstimateQty ?? 0m)
                 };
 
                 if (data.Count >= MAX_RECORDS)

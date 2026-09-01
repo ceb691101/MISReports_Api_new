@@ -10,22 +10,51 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/energizeageanalysis")]
-    public class EnergizeAgeAnalysisController : ApiController
+    [RoutePrefix("api/jobstatusdocinquiry")]
+    public class JobStatusDocInquiryController : ApiController
     {
-        private readonly EnergizeAgeAnalysisDAL _dal = new EnergizeAgeAnalysisDAL();
+        private readonly JobStatusDocInquiryDAL _dal = new JobStatusDocInquiryDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/energizeageanalysis/report?fromDate=2026/01/01&toDate=2026/03/31&costCtr=511.20
+        // QUERY: /api/jobstatusdocinquiry/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20&appSubType=NC1
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
+        public IHttpActionResult GetQuery(
+            [FromUri] string fromDate,
+            [FromUri] string toDate,
+            [FromUri] string costCtr,
+            [FromUri] string appSubType)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr);
+            return ExecuteQuery(fromDate, toDate, costCtr, appSubType);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr)
+        // QUERY: /api/jobstatusdocinquiry/appsubtypes
+        // Mirrors JobRegisterCCController's /jobtypes lookup
+
+        [HttpGet]
+        [Route("appsubtypes")]
+        public IHttpActionResult GetApplicationSubTypes()
+        {
+            try
+            {
+                var data = _dal.GetApplicationSubTypes();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = data.Any() ? "Data retrieved successfully" : "No records found",
+                    data
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
+                return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
+            }
+        }
+
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string appSubType)
         {
             try
             {
@@ -43,7 +72,10 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                var data = _dal.GetEnergizeAgeAnalysis(fromDt, toDt, costCtr.Trim());
+                if (string.IsNullOrWhiteSpace(appSubType))
+                    return BadRequest("appSubType is required.");
+
+                var data = _dal.GetJobStatusDocInquiry(fromDt, toDt, costCtr.Trim(), appSubType.Trim());
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
@@ -51,11 +83,8 @@ namespace MISReports_Api.Controllers
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
                     costCtr = costCtr.Trim(),
-                    totalRecords = data.Count,
-                    totalCount = data.Sum(x => x.Sum),
-                    // no_of_jobs is a constant (not per-period) value in the original query -
-                    // every row carries the same total, so just surface it once here.
-                    noOfJobs = data.FirstOrDefault()?.NoOfJobs ?? 0
+                    appSubType = appSubType.Trim(),
+                    totalRecords = data.Count
                 };
 
                 if (data.Count >= MAX_RECORDS)
