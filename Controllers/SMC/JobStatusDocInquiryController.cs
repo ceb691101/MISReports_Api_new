@@ -30,7 +30,6 @@ namespace MISReports_Api.Controllers
         }
 
         // QUERY: /api/jobstatusdocinquiry/appsubtypes
-        // Mirrors JobRegisterCCController's /jobtypes lookup
 
         [HttpGet]
         [Route("appsubtypes")]
