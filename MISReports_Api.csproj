@@ -392,6 +392,7 @@
     <Compile Include="Controllers\Common\MaterialReqJobwiseNoMatController.cs" />
     <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
     <Compile Include="Controllers\Common\ProvinceMaterialReqDetailController.cs" />
+    <Compile Include="Controllers\Common\ProvinceMaterialReqSummaryController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
     <Compile Include="Controllers\Construction\ConstructionAllController.cs" />
     <Compile Include="Controllers\Construction\ConstructionCompletedController.cs" />
@@ -562,6 +563,7 @@
     <Compile Include="DAL\Common\MaterialReqJobwiseNoMatDAL.cs" />
     <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
     <Compile Include="DAL\Common\ProvinceMaterialReqDetailDAL.cs" />
+    <Compile Include="DAL\Common\ProvinceMaterialReqSummaryDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
     <Compile Include="DAL\Cash Book\AreaWiseCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
@@ -722,6 +724,7 @@
     <Compile Include="Models\Common\MaterialReqJobwiseNoMatModel.cs" />
     <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
     <Compile Include="Models\Common\ProvinceMaterialReqDetailModel.cs" />
+    <Compile Include="Models\Common\ProvinceMaterialReqSummaryModel.cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
     <Compile Include="Models\Construction\ConstructionAllModel.cs" />
     <Compile Include="Models\Construction\ConstructionCompletedModel.cs" />
@@ -1167,6 +1170,7 @@
     <Folder Include="Views\PivIIPaidNotEnergized\" />
     <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\ProvinceMaterialReqDetail\" />
+    <Folder Include="Views\ProvinceMaterialReqSummary\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
   </ItemGroup>
