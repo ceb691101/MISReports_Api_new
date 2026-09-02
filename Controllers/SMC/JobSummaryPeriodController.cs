@@ -10,50 +10,22 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/jobstatusdocinquiry")]
-    public class JobStatusDocInquiryController : ApiController
+    [RoutePrefix("api/jobsummaryperiod")]
+    public class JobSummaryPeriodController : ApiController
     {
-        private readonly JobStatusDocInquiryDAL _dal = new JobStatusDocInquiryDAL();
+        private readonly JobSummaryPeriodDAL _dal = new JobSummaryPeriodDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/jobstatusdocinquiry/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20&appSubType=NC1
+        // QUERY: /api/jobsummaryperiod/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery(
-            [FromUri] string fromDate,
-            [FromUri] string toDate,
-            [FromUri] string costCtr,
-            [FromUri] string appSubType)
+        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr, appSubType);
+            return ExecuteQuery(fromDate, toDate, costCtr);
         }
 
-        // QUERY: /api/jobstatusdocinquiry/appsubtypes
-
-        [HttpGet]
-        [Route("appsubtypes")]
-        public IHttpActionResult GetApplicationSubTypes()
-        {
-            try
-            {
-                var data = _dal.GetApplicationSubTypes();
-
-                return Ok(new
-                {
-                    success = true,
-                    message = data.Any() ? "Data retrieved successfully" : "No records found",
-                    data
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
-                return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
-            }
-        }
-
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string appSubType)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr)
         {
             try
             {
@@ -71,10 +43,7 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                if (string.IsNullOrWhiteSpace(appSubType))
-                    return BadRequest("appSubType is required.");
-
-                var data = _dal.GetJobStatusDocInquiry(fromDt, toDt, costCtr.Trim(), appSubType.Trim());
+                var data = _dal.GetJobSummaryPeriod(fromDt, toDt, costCtr.Trim());
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
@@ -82,8 +51,10 @@ namespace MISReports_Api.Controllers
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
                     costCtr = costCtr.Trim(),
-                    appSubType = appSubType.Trim(),
-                    totalRecords = data.Count
+                    totalRecords = data.Count,
+                    totalStandardCost = data.Sum(x => x.StandardCost ?? 0m),
+                    totalEstimateCost = data.Sum(x => x.EstimateCost ?? 0m),
+                    totalActual = data.Sum(x => x.Actual ?? 0m)
                 };
 
                 if (data.Count >= MAX_RECORDS)
