@@ -15,9 +15,6 @@ namespace MISReports_Api.DAL
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
-        // Overflow-safe decimal reader, same pattern used on the other reports (unbounded
-        // NUMBER columns can exceed .NET decimal's ~28-29 digit range and make
-        // Convert.ToDecimal throw).
         private static decimal? SafeGetDecimal(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -71,22 +68,6 @@ namespace MISReports_Api.DAL
                   AND     ap.application_type = 'NC'
                 ORDER BY 1";
 
-            // Notes vs. the original query:
-            // 1. Dates are bound as real OracleDbType.Date parameters instead of
-            //    TO_DATE(:param,'yyyy/mm/dd') string parsing, and toDate is treated as
-            //    inclusive of the whole day (PRJ_ASS_DT < toDate + 1 day).
-            // 2. No dept_id/comp_id bind-variable comparisons exist in this query (no
-            //    :costctr parameter is used at all), so the CHAR blank-padding fix applied
-            //    on the other reports doesn't apply here -- the only join/filter columns
-            //    are estimate_no, application_id, and application_no, none of which are
-            //    compared against a bind variable.
-            // 3. Column naming is reproduced exactly as given: sp.total_cost (from the
-            //    original standard estimate table) is aliased Std_cost, while pc.std_cost
-            //    (PCESTHMT's own cost field) is aliased actual_cost. That looks
-            //    intentional -- pc.std_cost likely reflects the job's current/updated
-            //    cost while sp.total_cost is the original estimate -- but worth
-            //    double-checking that the aliasing matches what you actually want
-            //    "Standard Cost" vs "Actual Cost" to mean in the report.
             DateTime toDateExclusive = toDate.Date.AddDays(1);
 
             using (var conn = new OracleConnection(_connectionString))
