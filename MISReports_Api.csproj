@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -400,6 +400,7 @@
     <Compile Include="Controllers\Construction\ConstructionCompletedController.cs" />
     <Compile Include="Controllers\Construction\ConstructionCompletedLookUpController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\CustomerDashboard\CustomerDashboardController.cs" />
     <Compile Include="Controllers\CustomerDetailsController.cs" />
     <Compile Include="Controllers\DgmDashboard\DgmDashboardController.cs" />
     <Compile Include="Controllers\FIFO\IssueReceiptSummaryController.cs" />
@@ -602,6 +603,7 @@
     <Compile Include="DAL\Dashboard\OrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
     <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
+    <Compile Include="DAL\CustomerDashboard\CustomerDetailDao.cs" />
     <Compile Include="DAL\CustomerDetails\PaymentInquiryDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
@@ -751,6 +753,7 @@
     <Compile Include="Models\DgmDashboard\DgmAppCountModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmConnectionGivenModel.cs" />
     <Compile Include="Models\DgmDashboard\DgmPendingApplicationModel.cs" />
+    <Compile Include="Models\CustomerDashboard\CustomerDetailModel.cs" />
     <Compile Include="Models\BillMapModel.cs" />
     <Compile Include="Models\FIFO\IssueReceiptSummaryModel.cs" />
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
@@ -924,6 +927,7 @@
     <Compile Include="Models\Dashboard\OrdinaryCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
     <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
+    <Compile Include="Models\CustomerDashboard\CustomerDetailModel.cs" />
     <Compile Include="Models\CustomerDetails\PaymentInquiryModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
