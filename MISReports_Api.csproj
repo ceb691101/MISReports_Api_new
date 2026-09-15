@@ -407,6 +407,7 @@
     <Compile Include="Controllers\General Ledger\CostcenterwisegldocumentController.cs" />
     <Compile Include="Controllers\General Ledger\DocInquiryGlController.cs" />
     <Compile Include="Controllers\General Ledger\GlInquiryByDocController.cs" />
+    <Compile Include="Controllers\Inventory\MaterialPriceByYearController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingWHController.cs" />
@@ -619,6 +620,7 @@
     <Compile Include="DAL\FIFO\QuantityMatFIFODAL.cs" />
     <Compile Include="DAL\General Ledger\DocInquiryGlDAL.cs" />
     <Compile Include="DAL\General Ledger\GlInquiryByDocdal.CS" />
+    <Compile Include="DAL\Inventory\MaterialPriceByYearDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingWHDAL.cs" />
@@ -761,6 +763,7 @@
     <Compile Include="Models\FIFO\IssueReceiptSummaryModel.cs" />
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
     <Compile Include="Models\General Ledger\GlInquiryByDocModel.CS" />
+    <Compile Include="Models\Inventory\MaterialPriceByYearModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingWHModel.cs" />
@@ -1189,6 +1192,7 @@
     <Folder Include="Views\Jobsummaryall\" />
     <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
+    <Folder Include="Views\MaterialPriceByYear\" />
     <Folder Include="Views\MaterialReqJobwiseNoMat\" />
     <Folder Include="Views\MaterialReqJobwise\" />
     <Folder Include="Views\MaterialRequisitionWithIssueDetails\" />
