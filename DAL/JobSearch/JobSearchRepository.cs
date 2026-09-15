@@ -226,6 +226,7 @@ SELECT
     sl.submit_date,
     sl.derived_status,
     sl.customer_status,
+    ap.status AS application_status,
     a.telephone_no AS TEL,
     a.mobile_no   AS MOBILE
 FROM STATUS_LOGIC sl
@@ -267,6 +268,7 @@ ORDER BY sl.submit_date DESC";
                                     SubmitDate = SafeGetDateTime(reader, "submit_date"),
                                     Status = SafeGetString(reader, "derived_status"),
                                     CustomerStatus = SafeGetString(reader, "customer_status"),
+                                    ApplicationStatus = SafeGetString(reader, "application_status"),
 
                                     // ── New fields ───────────────────────────────────────────────
                                     Telephone = SafeGetString(reader, "TEL"),

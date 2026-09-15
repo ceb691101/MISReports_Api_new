@@ -14,12 +14,6 @@ namespace MISReports_Api.DAL
     {
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
-
-        // Overflow-safe string reader, same pattern used on the other reports: several of
-        // these columns (amounts, meter/reading numbers, PIV amounts, etc.) may be NUMBER
-        // columns under the hood, and reading them via the plain reader["x"] indexer risks
-        // the decimal-overflow exception seen on BulkConnectionDetails if the underlying
-        // value has more digits than .NET decimal supports.
         private static string SafeGetString(OracleDataReader reader, string columnName)
         {
             int ordinal = reader.GetOrdinal(columnName);

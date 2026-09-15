@@ -10,26 +10,22 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/completedjobscc")]
-    public class CompletedJobsCCController : ApiController
+    [RoutePrefix("api/jobsummaryall")]
+    public class JobSummaryAllController : ApiController
     {
-        private readonly CompletedJobsCCDAL _dal = new CompletedJobsCCDAL();
+        private readonly JobSummaryAllDAL _dal = new JobSummaryAllDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/completedjobscc/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20&jobType=CR
+        // QUERY: /api/jobsummaryall/report?fromDate=2026/01/01&toDate=2026/01/31
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery(
-            [FromUri] string fromDate,
-            [FromUri] string toDate,
-            [FromUri] string costCtr,
-            [FromUri] string jobType)
+        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr, jobType);
+            return ExecuteQuery(fromDate, toDate);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string jobType)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate)
         {
             try
             {
@@ -44,22 +40,16 @@ namespace MISReports_Api.Controllers
                 if (toDt.Date < fromDt.Date)
                     return BadRequest("toDate cannot be earlier than fromDate.");
 
-                if (string.IsNullOrWhiteSpace(costCtr))
-                    return BadRequest("costCtr is required.");
-
-                if (string.IsNullOrWhiteSpace(jobType))
-                    return BadRequest("jobType is required.");
-
-                var data = _dal.GetCompletedJobsCC(fromDt, toDt, costCtr.Trim(), jobType.Trim());
-                const int MAX_RECORDS = 5000;
+                var data = _dal.GetJobSummaryAll(fromDt, toDt);
+                const int MAX_RECORDS = 50000;
 
                 var summary = new
                 {
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
-                    costCtr = costCtr.Trim(),
-                    jobType = jobType.Trim(),
-                    totalRecords = data.Count
+                    totalRecords = data.Count,
+                    totalStdCost = data.Sum(x => x.StdCost ?? 0m),
+                    totalActualCost = data.Sum(x => x.ActualCost ?? 0m)
                 };
 
                 if (data.Count >= MAX_RECORDS)

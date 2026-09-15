@@ -372,16 +372,29 @@
     <Compile Include="Controllers\Cash Book\ChqDetailsExpRegionController.cs" />
     <Compile Include="Controllers\Cash Book\CurrentAcctBalCCController.cs" />
     <Compile Include="Controllers\Cash Book\DocumentInquiryController.cs" />
+    <Compile Include="Controllers\Cash Book\InquiryCashBookUnpostedCancelController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaController.cs" />
     <Compile Include="Controllers\Cash Book\PriceVaWHController.cs" />
+    <Compile Include="Controllers\Cash Book\ProvinceCashBookInquiryController.cs" />
     <Compile Include="Controllers\Cash Book\ProvinceWisePeriodStatusController.cs" />
     <Compile Include="Controllers\Cash Book\RegionPeriodStatusController.cs" />
     <Compile Include="Controllers\Catalog\ReportCatalogController.cs" />
     <Compile Include="Controllers\CollectionController.cs" />
     <Compile Include="Controllers\Common\BranchPendingDocInquiryController.cs" />
     <Compile Include="Controllers\Common\CCDocInquiryPendingController.cs" />
+    <Compile Include="Controllers\Common\InquiryCashBookController.cs" />
+    <Compile Include="Controllers\Common\InquiryChequeRunController.cs" />
+    <Compile Include="Controllers\Common\InquiryGeneralLedgerController.cs" />
+    <Compile Include="Controllers\Common\InquiryInventoryController.cs" />
+    <Compile Include="Controllers\Common\InquiryMaterialRequisitionController.cs" />
     <Compile Include="Controllers\Common\InventoryDocInquiryController.cs" />
+    <Compile Include="Controllers\Common\MaterialReqJobwiseController.cs" />
+    <Compile Include="Controllers\Common\MaterialReqJobwiseNoMatController.cs" />
     <Compile Include="Controllers\Common\MaterialRequisitionWithIssueDetailsController.cs" />
+    <Compile Include="Controllers\Common\ProvinceMaterialReqDetailController.cs" />
+    <Compile Include="Controllers\Common\ProvinceMaterialReqSummaryController.cs" />
+    <Compile Include="Controllers\Common\TenderDocInquiryController.cs" />
+    <Compile Include="Controllers\Common\TransactionsPerCostCenterController.cs" />
     <Compile Include="Controllers\Construction\BulkConnectionDetailsController.cs" />
     <Compile Include="Controllers\Construction\ConstructionAllController.cs" />
     <Compile Include="Controllers\Construction\ConstructionCompletedController.cs" />
@@ -394,6 +407,7 @@
     <Compile Include="Controllers\General Ledger\CostcenterwisegldocumentController.cs" />
     <Compile Include="Controllers\General Ledger\DocInquiryGlController.cs" />
     <Compile Include="Controllers\General Ledger\GlInquiryByDocController.cs" />
+    <Compile Include="Controllers\Inventory\MaterialPriceByYearController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingWHController.cs" />
@@ -421,14 +435,28 @@
     <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\AreaT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC\CCJobSummaryController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
+    <Compile Include="Controllers\SMC\EnergizeAgeAnalysisController.cs" />
+    <Compile Include="Controllers\SMC\EnergizedNotAccountCCController.cs" />
+    <Compile Include="Controllers\SMC\FundSummaryController.cs" />
+    <Compile Include="Controllers\SMC\JobAllocatedEstimatesDetailsController.cs" />
+    <Compile Include="Controllers\SMC\JobEstimateDetailsCCController.cs" />
     <Compile Include="Controllers\SMC\JobRegCCNCController.cs" />
     <Compile Include="Controllers\SMC\JobRegisterCCController.cs" />
     <Compile Include="Controllers\SMC- Management Information\PivIIPaidNotEnergizedController.cs" />
+    <Compile Include="Controllers\SMC\JobStatusDocInquiryController.cs" />
+    <Compile Include="Controllers\SMC\JobsummaryallController.cs" />
+    <Compile Include="Controllers\SMC\JobSummaryPeriodController.cs" />
+    <Compile Include="Controllers\SMC\PendingEstimationCCController.cs" />
+    <Compile Include="Controllers\SMC\RegionSMCAllPIVController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
+    <Compile Include="Controllers\SMC\SMCMatDetailsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\CCSolarPendingController.cs" />
     <Compile Include="Controllers\SolarJobs\SolarPendingJobsController.cs" />
@@ -491,6 +519,7 @@
     <Compile Include="Controllers\SRP\AreaWiseSRPApplicationPIVStatusController.cs" />
     <Compile Include="Controllers\SRP\AreaWiseSRPEstimationPIVController.cs" />
     <Compile Include="Controllers\SRP\DivisionWiseSRPEstimationController.cs" />
+    <Compile Include="Controllers\SystemController.cs" />
     <Compile Include="Controllers\WorkInProgController\CostCenterWorkInProgressController.cs" />
     <Compile Include="Controllers\Debtors\AreasController.cs" />
     <Compile Include="Controllers\Debtors\BillCycleController.cs" />
@@ -532,10 +561,23 @@
     <Compile Include="DAL\Cash Book\CashBookInquiryDrCrDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeCancellationDivisionDAL.cs" />
     <Compile Include="DAL\Cash Book\ChequeDetailsInquiryDAL.cs" />
+    <Compile Include="DAL\Cash Book\InquiryCashBookUnpostedCancelDAL.cs" />
+    <Compile Include="DAL\Cash Book\ProvinceCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Common\BranchPendingDocInquiryDAL.cs" />
     <Compile Include="DAL\Common\CCDocInquiryPendingDAL.cs" />
+    <Compile Include="DAL\Common\InquiryCashBookDAL.cs" />
+    <Compile Include="DAL\Common\InquiryChequeRunDAL.cs" />
+    <Compile Include="DAL\Common\InquiryGeneralLedgerDAL.cs" />
+    <Compile Include="DAL\Common\InquiryInventoryDAL.cs" />
+    <Compile Include="DAL\Common\InquiryMaterialRequisitionDAL.cs" />
     <Compile Include="DAL\Common\InventoryDocInquiryDAL.cs" />
+    <Compile Include="DAL\Common\MaterialReqJobwiseDAL.cs" />
+    <Compile Include="DAL\Common\MaterialReqJobwiseNoMatDAL.cs" />
     <Compile Include="DAL\Common\MaterialRequisitionWithIssueDetailsDAL.cs" />
+    <Compile Include="DAL\Common\ProvinceMaterialReqDetailDAL.cs" />
+    <Compile Include="DAL\Common\ProvinceMaterialReqSummaryDAL.cs" />
+    <Compile Include="DAL\Common\TenderDocInquiryDAL.cs" />
+    <Compile Include="DAL\Common\TransactionsPerCostCenterDAL.cs" />
     <Compile Include="DAL\Construction\BulkConnectionDetailsDAL.cs" />
     <Compile Include="DAL\Cash Book\AreaWiseCashBookInquiryDAL.cs" />
     <Compile Include="DAL\Cash Book\CashBookReportRepository.cs" />
@@ -578,6 +620,7 @@
     <Compile Include="DAL\FIFO\QuantityMatFIFODAL.cs" />
     <Compile Include="DAL\General Ledger\DocInquiryGlDAL.cs" />
     <Compile Include="DAL\General Ledger\GlInquiryByDocdal.CS" />
+    <Compile Include="DAL\Inventory\MaterialPriceByYearDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingWHDAL.cs" />
@@ -625,15 +668,29 @@
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
+    <Compile Include="DAL\SMC- Management Information\AreaT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC\CCJobSummaryDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
+    <Compile Include="DAL\SMC\EnergizeAgeAnalysisDAL.cs" />
+    <Compile Include="DAL\SMC\EnergizedNotAccountCCDAL.cs" />
+    <Compile Include="DAL\SMC\FundSummaryDAL.cs" />
+    <Compile Include="DAL\SMC\JobAllocatedEstimatesDetailsDAL.cs" />
+    <Compile Include="DAL\SMC\JobEstimateDetailsCCDAl.cs" />
     <Compile Include="DAL\SMC\JobRegCCNCDAL.cs" />
     <Compile Include="DAL\SMC\JobRegisterCCDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\PivIIPaidNotEnergizedDAL.cs" />
+    <Compile Include="DAL\SMC\JobStatusDocInquiryDAL.cs" />
+    <Compile Include="DAL\SMC\JobsummaryallDAL.cs" />
+    <Compile Include="DAL\SMC\JobSummaryPeriodDAL.cs" />
+    <Compile Include="DAL\SMC\PendingEstimationCCDAL.cs" />
+    <Compile Include="DAL\SMC\RegionSMCAllPIVDAL.cs" />
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\SolarInformation\SolarRooftopPaymentsandExportUnitsDao.cs" />
+    <Compile Include="DAL\SMC\SMCMatDetailsDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\CCSolarPendingDAL.cs" />
     <Compile Include="DAL\SolarJobs\SolarPendingJobsRepository.cs" />
@@ -669,8 +726,10 @@
     <Compile Include="Models\Cash Book\ChequeDetailWPModel.cs" />
     <Compile Include="Models\Cash Book\ChequeSummaryModel.cs" />
     <Compile Include="Models\Cash Book\CurrentAcctBalCCModel.cs" />
+    <Compile Include="Models\Cash Book\InquiryCashBookUnpostedCancelModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaModel.cs" />
     <Compile Include="Models\Cash Book\PriceVaWHModel.cs" />
+    <Compile Include="Models\Cash Book\ProvinceCashBookInquiryModel.cs" />
     <Compile Include="Models\Cash Book\ProvinceWisePeriodStatusModel.cs" />
     <Compile Include="Models\Cash Book\RegionPeriodStatusModel.cs" />
     <Compile Include="Models\Catalog\ReportCatalogModel.cs" />
@@ -679,8 +738,19 @@
     <Compile Include="Models\Collection\SuspensePaymentDetailsModel.cs" />
     <Compile Include="Models\Common\BranchPendingDocInquiryModel.cs" />
     <Compile Include="Models\Common\CCDocInquiryPendingModel.cs" />
+    <Compile Include="Models\Common\InquiryCashBookModel.cs" />
+    <Compile Include="Models\Common\InquiryChequeRunModel.cs" />
+    <Compile Include="Models\Common\InquiryGeneralLedgerModel.cs" />
+    <Compile Include="Models\Common\InquiryInventoryModel.cs" />
+    <Compile Include="Models\Common\InquiryMaterialRequisitionModel.cs" />
     <Compile Include="Models\Common\InventoryDocInquiryModel.cs" />
+    <Compile Include="Models\Common\MaterialReqJobwiseModel.cs" />
+    <Compile Include="Models\Common\MaterialReqJobwiseNoMatModel.cs" />
     <Compile Include="Models\Common\MaterialRequisitionWithIssueDetailsModel .cs" />
+    <Compile Include="Models\Common\ProvinceMaterialReqDetailModel.cs" />
+    <Compile Include="Models\Common\ProvinceMaterialReqSummaryModel.cs" />
+    <Compile Include="Models\Common\TenderDocInquiryModel.cs" />
+    <Compile Include="Models\Common\TransactionsPerCostCenterModel.cs" />
     <Compile Include="Models\Construction\BulkConnectionDetailsModel.cs" />
     <Compile Include="Models\Construction\ConstructionAllModel.cs" />
     <Compile Include="Models\Construction\ConstructionCompletedModel.cs" />
@@ -694,6 +764,7 @@
     <Compile Include="Models\FIFO\IssueReceiptSummaryModel.cs" />
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
     <Compile Include="Models\General Ledger\GlInquiryByDocModel.CS" />
+    <Compile Include="Models\Inventory\MaterialPriceByYearModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingWHModel.cs" />
@@ -715,15 +786,29 @@
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
+    <Compile Include="Models\SMC- Management Information\AreaT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
+    <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
+    <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
+    <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
+    <Compile Include="Models\SMC\EnergizedNotAccountCCModel.cs" />
+    <Compile Include="Models\SMC\FundSummaryModel.cs" />
+    <Compile Include="Models\SMC\JobAllocatedEstimatesDetailsModel.cs" />
+    <Compile Include="Models\SMC\JobEstimateDetailsCCModel.cs" />
     <Compile Include="Models\SMC\JobRegCCNCModel.cs" />
     <Compile Include="Models\SMC\JobRegisterCCModel.cs" />
     <Compile Include="Models\SMC- Management Information\PivIIPaidNotEnergizeModel.cs" />
+    <Compile Include="Models\SMC\JobStatusDocInquiryModel.cs" />
+    <Compile Include="Models\SMC\JobsummaryallModel.cs" />
+    <Compile Include="Models\SMC\JobSummaryPeriodModel.cs" />
+    <Compile Include="Models\SMC\PendingEstimationCCModel.cs" />
+    <Compile Include="Models\SMC\RegionSMCAllPIVModel.cs" />
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\SolarInformation\SolarRooftopPaymentsandExportUnitsModel.cs" />
+    <Compile Include="Models\SMC\SMCMatDetailsModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
@@ -894,6 +979,15 @@
     <Compile Include="Models\LedgerCard\CurrentAccountReconciliationExternalModel.cs" />
     <Compile Include="DAL\LedgerCard\CurrentAccountReconciliationExternalRepository.cs" />
     <Compile Include="Controllers\LedgerCard\CurrentAccountReconciliationExternalController.cs" />
+    <Compile Include="Models\LedgerCard\CurrAcctReconIntModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrAcctReconIntRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrAcctReconIntController.cs" />
+    <Compile Include="Models\LedgerCard\CurrAcctReconExtPeriodModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrAcctReconExtPeriodRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrAcctReconExtPeriodController.cs" />
+    <Compile Include="Models\LedgerCard\CurrAcctReconOwnOtherModel.cs" />
+    <Compile Include="DAL\LedgerCard\CurrAcctReconOwnOtherRepository.cs" />
+    <Compile Include="Controllers\LedgerCard\CurrAcctReconOwnOtherController.cs" />
     <Compile Include="Models\OUMModels.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationSheetModel.cs" />
     <Compile Include="Models\PhysicalVerification\AnnualVerificationWHwiseSignatureModel.cs" />
@@ -1087,13 +1181,24 @@
     <Folder Include="Views\DocInquiryGl\" />
     <Folder Include="Views\GlInquiryByDoc\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
+    <Folder Include="Views\InquiryCashBookUnpostedCancel\" />
+    <Folder Include="Views\InquiryCashBook\" />
+    <Folder Include="Views\InquiryChequeRun\" />
+    <Folder Include="Views\InquiryGeneralLedger\" />
+    <Folder Include="Views\InquiryInventory\" />
+    <Folder Include="Views\InquiryMaterialRequisition\" />
     <Folder Include="Views\InventoryDocInquiry\" />
     <Folder Include="Views\IssueReceiptSummary\" />
     <Folder Include="Views\IssueReceiptWP\" />
     <Folder Include="Views\IssuesRaisedForJobs\" />
+    <Folder Include="Views\Jobsummaryall\" />
     <Folder Include="Views\MaterialFlow\" />
     <Folder Include="Views\MaterialMaster\" />
+    <Folder Include="Views\MaterialPriceByYear\" />
+    <Folder Include="Views\MaterialReqJobwiseNoMat\" />
+    <Folder Include="Views\MaterialReqJobwise\" />
     <Folder Include="Views\MaterialRequisitionWithIssueDetails\" />
+    <Folder Include="Views\MaterialReqWithIssue\" />
     <Folder Include="Views\PHVDamageBOS\" />
     <Folder Include="Views\PHVDamageBSO\" />
     <Folder Include="Views\PHVNonMovingBOS\" />
@@ -1101,8 +1206,13 @@
     <Folder Include="Views\PHVObsoleteIdleBOS\" />
     <Folder Include="Views\PHVSlowMovingWH\" />
     <Folder Include="Views\PivIIPaidNotEnergized\" />
+    <Folder Include="Views\ProvinceCashBookInquiry\" />
+    <Folder Include="Views\ProvinceMaterialReqDetail\" />
+    <Folder Include="Views\ProvinceMaterialReqSummary\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
+    <Folder Include="Views\TenderDocInquiry\" />
+    <Folder Include="Views\TransactionsPerCostCenter\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -1112,6 +1222,25 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -1137,15 +1266,15 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
     <Error Condition="!Exists('packages\NLog.Schema.6.0.3\build\NLog.Schema.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\NLog.Schema.6.0.3\build\NLog.Schema.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
   </Target>
   <Import Project="packages\NLog.Schema.6.0.3\build\NLog.Schema.targets" Condition="Exists('packages\NLog.Schema.6.0.3\build\NLog.Schema.targets')" />
+  <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

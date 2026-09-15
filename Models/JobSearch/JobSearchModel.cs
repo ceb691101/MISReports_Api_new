@@ -17,6 +17,7 @@ namespace MISReports_Api.Models
         public DateTime? SubmitDate { get; set; }
         public string Status { get; set; }
         public string CustomerStatus { get; set; }
+        public string ApplicationStatus { get; set; }
         public string Telephone { get; set; }
         public string Mobile { get; set; }
     }

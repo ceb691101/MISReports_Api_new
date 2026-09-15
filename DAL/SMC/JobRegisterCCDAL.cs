@@ -112,29 +112,49 @@ namespace MISReports_Api.DAL
         public List<Dictionary<string, object>> GetJobTypes()
         {
             var result = new List<Dictionary<string, object>>();
-
             const string query = "SELECT * FROM APPLICATIONSUBTYPES";
+            int maxRetries = 2;
 
-            using (var conn = new OracleConnection(_connectionString))
-            using (var cmd = new OracleCommand(query, conn))
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
             {
-                cmd.CommandType = CommandType.Text;
-
-                conn.Open();
-
-                using (var reader = cmd.ExecuteReader())
+                try
                 {
-                    while (reader.Read())
+                    using (var conn = new OracleConnection(_connectionString))
+                    using (var cmd = new OracleCommand(query, conn))
                     {
-                        var row = new Dictionary<string, object>();
-                        for (int i = 0; i < reader.FieldCount; i++)
+                        cmd.CommandType = CommandType.Text;
+                        cmd.CommandTimeout = 30; // Add timeout
+
+                        conn.Open();
+
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            string colName = reader.GetName(i);
-                            object val = reader.IsDBNull(i) ? null : reader.GetValue(i);
-                            row[colName] = val;
+                            while (reader.Read())
+                            {
+                                var row = new Dictionary<string, object>();
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    string colName = reader.GetName(i);
+                                    object val = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                    row[colName] = val;
+                                }
+                                result.Add(row);
+                            }
                         }
-                        result.Add(row);
                     }
+                    return result; // Success, exit
+                }
+                catch (Exception ex) when (attempt < maxRetries)
+                {
+                    // Log and retry
+                    System.Diagnostics.Debug.WriteLine($"Attempt {attempt + 1} failed: {ex.Message}");
+                    System.Threading.Thread.Sleep(1000 * (attempt + 1));
+                }
+                catch (Exception ex)
+                {
+                    // Last attempt failed
+                    System.Diagnostics.Debug.WriteLine($"Final attempt failed: {ex.Message}\n{ex.StackTrace}");
+                    throw new Exception($"Failed to retrieve job types: {ex.Message}", ex);
                 }
             }
 

@@ -10,26 +10,22 @@ using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("api/completedjobscc")]
-    public class CompletedJobsCCController : ApiController
+    [RoutePrefix("api/energizednotaccountcc")]
+    public class EnergizedNotAccountCCController : ApiController
     {
-        private readonly CompletedJobsCCDAL _dal = new CompletedJobsCCDAL();
+        private readonly EnergizedNotAccountCCDAL _dal = new EnergizedNotAccountCCDAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
 
-        // QUERY: /api/completedjobscc/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20&jobType=CR
+        // QUERY: /api/energizednotaccountcc/report?fromDate=2026/01/01&toDate=2026/01/31&costCtr=511.20
         [HttpGet]
         [Route("report")]
-        public IHttpActionResult GetQuery(
-            [FromUri] string fromDate,
-            [FromUri] string toDate,
-            [FromUri] string costCtr,
-            [FromUri] string jobType)
+        public IHttpActionResult GetQuery([FromUri] string fromDate, [FromUri] string toDate, [FromUri] string costCtr)
         {
-            return ExecuteQuery(fromDate, toDate, costCtr, jobType);
+            return ExecuteQuery(fromDate, toDate, costCtr);
         }
 
-        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr, string jobType)
+        private IHttpActionResult ExecuteQuery(string fromDate, string toDate, string costCtr)
         {
             try
             {
@@ -47,10 +43,7 @@ namespace MISReports_Api.Controllers
                 if (string.IsNullOrWhiteSpace(costCtr))
                     return BadRequest("costCtr is required.");
 
-                if (string.IsNullOrWhiteSpace(jobType))
-                    return BadRequest("jobType is required.");
-
-                var data = _dal.GetCompletedJobsCC(fromDt, toDt, costCtr.Trim(), jobType.Trim());
+                var data = _dal.GetEnergizedNotAccountCC(fromDt, toDt, costCtr.Trim());
                 const int MAX_RECORDS = 5000;
 
                 var summary = new
@@ -58,7 +51,6 @@ namespace MISReports_Api.Controllers
                     fromDate = fromDt.ToString("yyyy/MM/dd"),
                     toDate = toDt.ToString("yyyy/MM/dd"),
                     costCtr = costCtr.Trim(),
-                    jobType = jobType.Trim(),
                     totalRecords = data.Count
                 };
 
