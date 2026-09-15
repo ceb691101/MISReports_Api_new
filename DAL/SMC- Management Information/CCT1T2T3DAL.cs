@@ -23,42 +23,44 @@ namespace MISReports_Api.DAL
                         b.application_id,
                         a.project_no,
                         a.ACC_CREATED_DATE,
-                        (SELECT submit_date
+                        (SELECT MAX(submit_date)
                            FROM applications
                           WHERE application_id = b.application_id) AS piv_1_date,
                         c.APPROVED_DATE AS approval_date,
                         d.TOTAL_COST AS estimate_cost,
-                        (SELECT CONFIRMED_DATE
+                        (SELECT MAX(CONFIRMED_DATE)
                            FROM PIV_DETAIL
                           WHERE reference_no = b.application_no
                             AND reference_type = 'EST'
                             AND status = 'P') AS piv2_date,
-                        (SELECT CONNECTED_DATE
+                        (SELECT MAX(CONNECTED_DATE)
                            FROM spodrcrd
                           WHERE PROJECT_NO = a.project_no) AS engized_date,
-                        (c.APPROVED_DATE - (SELECT submit_date
+                        (c.APPROVED_DATE - (SELECT MAX(submit_date)
                                                FROM applications
                                               WHERE application_id = b.application_id)) AS t1,
-                        ((SELECT CONNECTED_DATE
+                        ((SELECT MAX(CONNECTED_DATE)
                             FROM spodrcrd
                            WHERE PROJECT_NO = a.project_no) - c.APPROVED_DATE) AS t2_ln,
-                        ((SELECT CONNECTED_DATE
+                        ((SELECT MAX(CONNECTED_DATE)
                             FROM spodrcrd
                            WHERE PROJECT_NO = a.project_no) -
-                         (SELECT CONFIRMED_DATE
+                         (SELECT MAX(CONFIRMED_DATE)
                             FROM PIV_DETAIL
                            WHERE reference_no = b.application_no
                              AND reference_type = 'EST'
                              AND status = 'P')) AS t2_smc,
-                        (a.ACC_CREATED_DATE - (SELECT CONNECTED_DATE
+                        (a.ACC_CREATED_DATE - (SELECT MAX(CONNECTED_DATE)
                                                   FROM spodrcrd
                                                  WHERE PROJECT_NO = a.project_no)) AS t3,
-                        (SELECT 'Loan'
-                           FROM PIV_DETAIL
-                          WHERE reference_no = b.application_no
-                            AND reference_type = 'ELN'
-                            AND status = 'C') AS loan,
-                        (SELECT dept_nm
+                        (CASE WHEN EXISTS (
+                               SELECT 1
+                               FROM PIV_DETAIL
+                              WHERE reference_no = b.application_no
+                                AND reference_type = 'ELN'
+                                AND status = 'C'
+                           ) THEN 'Loan' END) AS loan,
+                        (SELECT MAX(dept_nm)
                            FROM gldeptm
                           WHERE TRIM(dept_id) = TRIM(:costctr)) AS cct_name
                 FROM      Spexpjob a, Application_Reference b, approval c, speststd d
