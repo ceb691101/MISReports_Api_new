@@ -805,7 +805,6 @@
     <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
-    <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\AreaTrialBalanceJasperReportService.cs" />
     <Compile Include="Services\Reporting\PHVObsoleteIdleJasperReportService.cs" />
     <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
