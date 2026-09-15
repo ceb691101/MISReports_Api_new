@@ -431,6 +431,7 @@
     <Compile Include="Controllers\SMC- Management Information\AreaT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC\CCJobSummaryController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
     <Compile Include="Controllers\SMC\EnergizeAgeAnalysisController.cs" />
@@ -655,6 +656,7 @@
     <Compile Include="DAL\SMC- Management Information\AreaT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC\CCJobSummaryDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
     <Compile Include="DAL\SMC\EnergizeAgeAnalysisDAL.cs" />
@@ -764,6 +766,7 @@
     <Compile Include="Models\SMC- Management Information\AreaT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
+    <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
     <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
     <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
