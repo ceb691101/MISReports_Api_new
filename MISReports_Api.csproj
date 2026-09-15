@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -414,6 +414,7 @@
     <Compile Include="Controllers\PHV - FIFO\PHVObsoleteBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVSlowMovingWHController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
+    <Compile Include="Controllers\IntegratedDashboard\IntegratedDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
@@ -630,6 +631,9 @@
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
+    <Compile Include="DAL\IntegratedDashboard\IntegratedFinancialDao.cs" />
+    <Compile Include="DAL\IntegratedDashboard\IntegratedConstructionDao.cs" />
+    <Compile Include="DAL\IntegratedDashboard\IntegratedAreaEngineerDao.cs" />
     <Compile Include="DAL\General\ArrearsPosition\ArrearsPositionDao.cs" />
     <Compile Include="DAL\General\FinalizedAccounts\FinalizedAccountsDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
@@ -815,7 +819,6 @@
     <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
-    <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\AreaTrialBalanceJasperReportService.cs" />
     <Compile Include="Services\Reporting\PHVObsoleteIdleJasperReportService.cs" />
     <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
@@ -946,6 +949,9 @@
     <Compile Include="Models\FinancialDashboard\PivDivisionModel.cs" />
     <Compile Include="Models\FinancialDashboard\PivTotalModel.cs" />
     <Compile Include="Models\FinancialDashboard\StockDivisionModel.cs" />
+    <Compile Include="Models\IntegratedDashboard\IntegratedFinancialModels.cs" />
+    <Compile Include="Models\IntegratedDashboard\IntegratedConstructionModels.cs" />
+    <Compile Include="Models\IntegratedDashboard\IntegratedAreaEngineerModels.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
     <Compile Include="Models\Debtors\BillCycleModel.cs" />
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
