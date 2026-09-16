@@ -23,7 +23,8 @@ namespace MISReports_Api.DAL.Shared
                     conn.Open();
 
                     // Get min bill cycle from areas table
-                    string minCycleSql = "SELECT MIN(bill_cycle) FROM areas";
+                //    string minCycleSql = "SELECT MIN(bill_cycle) FROM areas";
+                    string minCycleSql = "SELECT Max(bill_cycle) FROM areas";
                     int minCycle;
 
                     using (OleDbCommand cmd = new OleDbCommand(minCycleSql, conn))
@@ -55,7 +56,17 @@ namespace MISReports_Api.DAL.Shared
 
                     // Determine maxCycle based on count
                     int maxCycle;
-                    if (count == 0)
+                    //if (count == 0)
+                    //{
+                    //    maxCycle = minCycle;
+                    //}
+                    //else
+                    //{
+                    //    maxCycle = minCycle - 1;
+                    //}
+
+
+                    if (count == 70)
                     {
                         maxCycle = minCycle;
                     }
@@ -63,10 +74,10 @@ namespace MISReports_Api.DAL.Shared
                     {
                         maxCycle = minCycle - 1;
                     }
-
                     model.MaxBillCycle = maxCycle.ToString();
                     model.BillCycles = BillCycleHelper.Generate24MonthYearStrings(maxCycle);
                 }
+                
                 catch (OleDbException ex)
                 {
                     System.Diagnostics.Trace.WriteLine($"Error retrieving bill cycle: {ex.Message}");
