@@ -460,6 +460,7 @@
     <Compile Include="Controllers\SMC\SMCMatDetailsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\CCSolarPendingController.cs" />
+    <Compile Include="Controllers\SolarJobs\SolarOrdinaryCustomersGenerationCapacityController.cs" />
     <Compile Include="Controllers\SolarJobs\SolarPendingJobsController.cs" />
     <Compile Include="Controllers\LedgerCard\DivisionalLedgerCardController.cs" />
     <Compile Include="Controllers\LedgerCard\LedgerCardController.cs" />
@@ -697,6 +698,7 @@
     <Compile Include="DAL\SMC\SMCMatDetailsDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\CCSolarPendingDAL.cs" />
+    <Compile Include="DAL\SolarJobs\SolarOrdinaryCustomersGenerationCapacityDAL.cs" />
     <Compile Include="DAL\SolarJobs\SolarPendingJobsRepository.cs" />
     <Compile Include="DAL\LedgerCard\DivisionalLedgerCardRepository.cs" />
     <Compile Include="DAL\LedgerCard\LedgerCardTotalRepository.cs" />
@@ -814,6 +816,7 @@
     <Compile Include="Models\SolarInformation\SolarRooftopPaymentsandExportUnitsModel.cs" />
     <Compile Include="Models\SMC\SMCMatDetailsModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
+    <Compile Include="Models\SolarJobs\SolarOrdinaryCustomersGenerationCapacityModel.cs" />
     <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\CcApplicationJasperReportService.cs" />
     <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
@@ -1217,6 +1220,7 @@
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
+    <Folder Include="Views\SolarOrdinaryCustomersGenerationCapacity\" />
     <Folder Include="Views\TenderDocInquiry\" />
     <Folder Include="Views\TransactionsPerCostCenter\" />
   </ItemGroup>
