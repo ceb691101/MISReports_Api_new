@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Web.Http;
 using MISReports_Api.DAL.CustomerDashboard;
 using MISReports_Api.Models.CustomerDashboard;
@@ -82,6 +82,68 @@ namespace MISReports_Api.Controllers.CustomerDashboard
                 {
                     success = false,
                     totalCount = 0,
+                    errorMessage = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// GET api/CustomerDashboard/GetCountByBank
+        /// Returns count of stod_cust records (status1 = 'Q') grouped by each configured bank/branch.
+        /// </summary>
+        [HttpGet]
+        [Route("GetCountByBank")]
+        public IHttpActionResult GetCountByBank()
+        {
+            try
+            {
+                var records = _customerDetailDao.GetCountByBank();
+                return Ok(new
+                {
+                    success = true,
+                    data = records,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    data = (object)null,
+                    errorMessage = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// GET api/CustomerDashboard/GetMnthBill?acctNumber=...
+        /// Returns all mnth_bill records for the given account, ordered latest to oldest.
+        /// </summary>
+        [HttpGet]
+        [Route("GetMnthBill")]
+        public IHttpActionResult GetMnthBill([FromUri] string acctNumber)
+        {
+            if (string.IsNullOrWhiteSpace(acctNumber))
+                return Ok(new { success = false, data = (object)null, errorMessage = "acctNumber is required." });
+
+            try
+            {
+                var records = _customerDetailDao.GetMnthBillsByAccount(acctNumber);
+                return Ok(new
+                {
+                    success = true,
+                    data = records,
+                    count = records.Count,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    data = (object)null,
                     errorMessage = ex.Message
                 });
             }
