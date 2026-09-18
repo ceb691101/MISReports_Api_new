@@ -6,7 +6,7 @@ using System.Web.Http;
 
 namespace MISReports_Api.Controllers
 {
-    [RoutePrefix("misapi/api/material-price")]
+    [RoutePrefix("api/material-price")]
     public class MaterialPriceByYearController : ApiController
     {
         private readonly MaterialPriceByYearDAL _materialPriceByYearDAL =
