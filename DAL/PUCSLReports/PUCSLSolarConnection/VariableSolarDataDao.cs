@@ -118,7 +118,16 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                         string bulkTypeCode = request.TypeCode;
                         if (reportType == SolarReportType.Province && request.TypeCode.Length == 1)
                         {
-                            bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                            // bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+
+                            if (char.IsDigit(request.TypeCode[0]))
+                            {
+                                bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                            }
+                            else
+                            {
+                                bulkTypeCode = request.TypeCode;
+                            }
                         }
 
                         // Query each capacity range for bulk
