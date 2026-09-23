@@ -123,7 +123,7 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                         string bulkTypeCode = request.TypeCode;
                         if (reportType == SolarReportType.Province && request.TypeCode.Length == 1)
                         {
-                            // bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                            // bulkTypeCode = request.TypeCode.PadLeft(2, '0'); - By Dinuli 2026-09-23
                             if (char.IsDigit(request.TypeCode[0]))
                             {
                                 bulkTypeCode = request.TypeCode.PadLeft(2, '0');
