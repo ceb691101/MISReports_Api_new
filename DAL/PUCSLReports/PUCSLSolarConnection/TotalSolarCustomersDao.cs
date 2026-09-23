@@ -146,7 +146,15 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 string bulkTypeCode = request.TypeCode;
                 if (reportType == SolarReportType.Province && !string.IsNullOrEmpty(request.TypeCode) && request.TypeCode.Length == 1)
                 {
-                    bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                    //bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                    if (char.IsDigit(request.TypeCode[0]))
+                    {
+                        bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                    }
+                    else
+                    {
+                        bulkTypeCode = request.TypeCode;
+                    }
                 }
 
                 var bulkTariffs = GetAllBulkTariffs(request.BillCycle);
