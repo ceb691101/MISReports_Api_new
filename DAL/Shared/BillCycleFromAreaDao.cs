@@ -24,7 +24,7 @@ namespace MISReports_Api.DAL.Shared
 
                     // Get min bill cycle from areas table
                 //    string minCycleSql = "SELECT MIN(bill_cycle) FROM areas";
-                    string minCycleSql = "SELECT Max(bill_cycle) FROM areas";
+                    string minCycleSql = "SELECT Max(calc_cycle) FROM areas";
                     int minCycle;
 
                     using (OleDbCommand cmd = new OleDbCommand(minCycleSql, conn))
