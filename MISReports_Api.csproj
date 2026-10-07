@@ -408,6 +408,7 @@
     <Compile Include="Controllers\General Ledger\DocInquiryGlController.cs" />
     <Compile Include="Controllers\General Ledger\GlInquiryByDocController.cs" />
     <Compile Include="Controllers\Inventory\MaterialPriceByYearController.cs" />
+    <Compile Include="Controllers\Inventory\QuantityOnHandLessThanReorderLevelController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingWHController.cs" />
@@ -619,6 +620,7 @@
     <Compile Include="DAL\General Ledger\DocInquiryGlDAL.cs" />
     <Compile Include="DAL\General Ledger\GlInquiryByDocdal.CS" />
     <Compile Include="DAL\Inventory\MaterialPriceByYearDAL.cs" />
+    <Compile Include="DAL\Inventory\QuantityOnHandLessThanReorderLevelDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingWHDAL.cs" />
@@ -760,6 +762,7 @@
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
     <Compile Include="Models\General Ledger\GlInquiryByDocModel.CS" />
     <Compile Include="Models\Inventory\MaterialPriceByYearModel.cs" />
+    <Compile Include="Models\Inventory\QuantityOnHandLessThanReorderLevelModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingWHModel.cs" />
@@ -1201,6 +1204,7 @@
     <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\ProvinceMaterialReqDetail\" />
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
+    <Folder Include="Views\QuantityOnHandLessThanReorderLevel\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
     <Folder Include="Views\SolarOrdinaryCustomersGenerationCapacity\" />
