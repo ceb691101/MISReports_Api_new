@@ -1,4 +1,4 @@
-using MISReports_Api.DBAccess;
+﻿using MISReports_Api.DBAccess;
 using MISReports_Api.Helpers;
 using MISReports_Api.Models.PUCSLReports;
 using MISReports_Api.Models.PUCSLReports.PUCSLSolarConnection;
@@ -1341,6 +1341,14 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
         // ================================================================
         //  UTILITY
         // ================================================================
+        private string GetBulkTypeCode(SolarReportType rt, string typeCode)
+        {
+            if (rt != SolarReportType.Province || string.IsNullOrEmpty(typeCode))
+                return typeCode;
+
+            return int.TryParse(typeCode, out _) ? typeCode.PadLeft(2, '0') : typeCode;
+        }
+
         private SolarReportType MapReportType(PUCSLReportCategory cat)
         {
             switch (cat)
