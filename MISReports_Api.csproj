@@ -610,6 +610,7 @@
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
     <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
     <Compile Include="DAL\CustomerDetails\PaymentInquiryDao.cs" />
+    <Compile Include="DAL\CustomerDetails\StandingOrderDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
@@ -948,6 +949,7 @@
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
     <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
     <Compile Include="Models\CustomerDetails\PaymentInquiryModel.cs" />
+    <Compile Include="Models\CustomerDetails\StandingOrderModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
     <Compile Include="Models\Analysis\SolarAgeAnalysisModel.cs" />
@@ -1242,7 +1244,7 @@
     <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -1252,7 +1254,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>

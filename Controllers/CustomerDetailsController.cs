@@ -224,5 +224,33 @@ namespace MISReports_Api.Controllers
         }
 
         #endregion
+
+        /// <summary>POST api/customerdetails/standing-order-report</summary>
+        /// Standing Order (Automatic Bill Settlement Inquiry)
+        [HttpPost]
+        [Route("standing-order-report")]
+        public IHttpActionResult GetStandingOrderReport([FromBody] StandingOrderRequest request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.AcctNo))
+                {
+                    return BadRequest("Account number is required.");
+                }
+
+                var dao = new StandingOrderDao();
+                var result = dao.GetStandingOrderDetails(request.AcctNo);
+
+                return Ok(new
+                {
+                    data = result,
+                    errorMessage = string.IsNullOrWhiteSpace(result.ErrorMessage) ? (string)null : result.ErrorMessage
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = "Cannot get standing order report.", errorDetails = ex.Message });
+            }
+        }
     }
 }
