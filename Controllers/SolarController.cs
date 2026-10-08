@@ -10,6 +10,7 @@ using MISReports_Api.Models.SolarInformation;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Web.Http;
 using System.Linq;
 
@@ -32,6 +33,7 @@ namespace MISReports_Api.Controllers
         private readonly PVCapacityBulkDao _pvCapacityBulkDao = new PVCapacityBulkDao();
         private readonly PVCapacitySummaryDao _pvCapacitySummaryDao = new PVCapacitySummaryDao();
         private readonly SolarPaymentBulkDao _solarPaymentBulkDao = new SolarPaymentBulkDao();
+        private readonly SolarRooftopPaymentsandExportUnitsDao _solarRooftopPaymentsandExportUnitsDao = new SolarRooftopPaymentsandExportUnitsDao();
         private readonly SolarReadingRetailDetailedDao _solarReadingDetailedDao = new SolarReadingRetailDetailedDao();
         private readonly SolarReadingRetailSummaryDao _solarReadingSummaryDao = new SolarReadingRetailSummaryDao();
         private readonly SolarReadingUsageBulkDao _solarReadingUsageBulkDao = new SolarReadingUsageBulkDao();
@@ -1436,6 +1438,109 @@ namespace MISReports_Api.Controllers
                 request.ProvCode,
                 request.Region
             );
+        }
+
+        [HttpGet]
+        [Route("solar-rooftop-payments-export-units")]
+        public IHttpActionResult GetSolarRooftopPaymentsAndExportUnitsReport(
+            [FromUri] string customerType,
+            [FromUri] string type,
+            [FromUri] string divisionOrProvince = null,
+            [FromUri] string billCycle = null,
+            [FromUri] string reportType = "payments")
+        {
+            // Accept requests from frontend versions using the original parameter name.
+            // An optional scope parameter lets Web API reach this action for either name.
+            if (string.IsNullOrWhiteSpace(divisionOrProvince))
+                divisionOrProvince = Request.GetQueryNameValuePairs()
+                    .FirstOrDefault(parameter => string.Equals(parameter.Key, "division", StringComparison.OrdinalIgnoreCase))
+                    .Value;
+
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(customerType))
+                validationErrors.Add("Customer type is required.");
+            else if (!new[] { "ordinary", "bulk" }.Contains(customerType.Trim(), StringComparer.OrdinalIgnoreCase))
+                validationErrors.Add("Customer type must be Ordinary or Bulk.");
+
+            if (string.IsNullOrWhiteSpace(billCycle))
+                validationErrors.Add("Bill cycle is required.");
+
+            if (string.IsNullOrWhiteSpace(type))
+                validationErrors.Add("Type is required.");
+            else if (!new[] { "Province", "Division" }.Contains(type.Trim(), StringComparer.OrdinalIgnoreCase))
+                validationErrors.Add("Type must be Province or Division.");
+
+            if (string.IsNullOrWhiteSpace(divisionOrProvince))
+                validationErrors.Add("Province or division is required.");
+
+            if (string.IsNullOrWhiteSpace(reportType))
+                validationErrors.Add("Report type is required.");
+            else if (!new[] { "payments", "exportunits", "export units" }.Contains(reportType.Trim(), StringComparer.OrdinalIgnoreCase))
+                validationErrors.Add("Report type must be payments or exportUnits.");
+
+            if (validationErrors.Count > 0)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = string.Join("; ", validationErrors)
+                });
+            }
+
+            bool isProvince = type.Trim().Equals("Province", StringComparison.OrdinalIgnoreCase);
+            string locationCode = divisionOrProvince.Trim();
+            // The province dropdown displays "code - name" but filters by code only.
+            // Accept that display text from manual Swagger requests as well.
+            if (isProvince)
+            {
+                int separator = locationCode.IndexOf('-');
+                if (separator > 0)
+                    locationCode = locationCode.Substring(0, separator).Trim();
+            }
+
+            var request = new SolarRooftopPaymentsandExportUnitsRequest
+            {
+                CustomerType = customerType.Trim(),
+                BillCycle = billCycle.Trim(),
+                Province = isProvince ? locationCode : null,
+                Area = null,
+                Region = isProvince ? null : locationCode,
+                ReportType = reportType.Trim().Equals("exportunits", StringComparison.OrdinalIgnoreCase) ||
+                    reportType.Trim().Equals("export units", StringComparison.OrdinalIgnoreCase)
+                    ? SolarRooftopReportType.ExportUnits
+                    : SolarRooftopReportType.Payments
+            };
+
+            try
+            {
+                if (!_solarRooftopPaymentsandExportUnitsDao.TestConnection(out string connError, request.CustomerType))
+                {
+                    return Ok(new
+                    {
+                        data = (object)null,
+                        errorMessage = "Database connection failed.",
+                        errorDetails = connError
+                    });
+                }
+
+                var data = _solarRooftopPaymentsandExportUnitsDao.GetReport(request);
+
+                return Ok(new
+                {
+                    data = data,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot get solar rooftop payments and export units report data.",
+                    errorDetails = ex.Message
+                });
+            }
         }
 
 

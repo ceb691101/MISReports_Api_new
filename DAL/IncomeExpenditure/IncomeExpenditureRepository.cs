@@ -117,11 +117,14 @@ namespace MISReports_Api.DAL
                 conn.Open();
 
                 string sql = @"
-                  SELECT g.dept_id, g.dept_nm
-                  FROM rep_roles_cct_new cct , gldeptm g, rep_role_new r
-                  WHERE  Upper(Trim(r.roleid)) = Upper(Trim(cct.roleid))  AND
-                 cct.lvl_no=0 and cct.costcentre =g.dept_id
-                and trim(r.epf_no)= '033480' order by g.dept_id";
+                                    SELECT c.costcentre, d.dept_nm
+                                    FROM rep_roles_cct_new c, rep_role_new r, gldeptm d
+                                    WHERE r.roleid = c.roleid
+                                        AND r.epf_no = :epfno
+                                        AND c.lvl_no = 0
+                                        AND c.costcentre = d.dept_id
+                                        AND d.status = 2
+                                    ORDER BY c.costcentre";
 
 
 
@@ -137,7 +140,7 @@ namespace MISReports_Api.DAL
                         {
                             deptList.Add(new UserDepartment
                             {
-                                DeptId = reader["dept_id"]?.ToString(),
+                                DeptId = reader["costcentre"]?.ToString(),
                                 DeptName = reader["dept_nm"]?.ToString()
                             });
                         }
