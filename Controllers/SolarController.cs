@@ -2038,22 +2038,22 @@ namespace MISReports_Api.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("payment-liss-recon")]
-        public IHttpActionResult GetPaymentLissReconReport([FromBody] SolarPaymentLissReconRequest request)
+        public IHttpActionResult GetPaymentLissReconReport(
+            [FromUri] string billCycle,
+            [FromUri] string reportCategory,
+            [FromUri] string typeCode)
         {
-            if (request == null)
-                return BadRequest("Request body cannot be null.");
-
             var validationErrors = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(request.BillCycle))
+            if (string.IsNullOrWhiteSpace(billCycle))
                 validationErrors.Add("Bill cycle is required.");
 
-            if (string.IsNullOrWhiteSpace(request.ReportCategory))
+            if (string.IsNullOrWhiteSpace(reportCategory))
                 validationErrors.Add("Report category (Province or Division) is required.");
 
-            if (string.IsNullOrWhiteSpace(request.TypeCode))
+            if (string.IsNullOrWhiteSpace(typeCode))
                 validationErrors.Add("Province/Division code is required.");
 
             if (validationErrors.Count > 0)
@@ -2067,6 +2067,13 @@ namespace MISReports_Api.Controllers
 
             try
             {
+                var request = new SolarPaymentLissReconRequest
+                {
+                    BillCycle = billCycle.Trim(),
+                    ReportCategory = reportCategory.Trim(),
+                    TypeCode = typeCode.Trim()
+                };
+
                 var result = _solarPaymentLissReconDao.GetReconciliationReport(request);
                 return Ok(new
                 {
