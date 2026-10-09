@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DAL.SolarInformation.SolarProgressClarification;
+using MISReports_Api.DAL.SolarInformation.SolarProgressClarification;
 using MISReports_Api.DAL.SolarInformation.SolarPVConnections;
 using MISReports_Api.DAL.SolarInformation.SolarPaymentRetail;
 using MISReports_Api.DAL.SolarInformation.SolarPVCapacity;
@@ -40,6 +40,7 @@ namespace MISReports_Api.Controllers
         private readonly SolarCustomerInforOrdinaryDao _solarCustomerInforOrdinaryDao = new SolarCustomerInforOrdinaryDao();
         private readonly SolarCustomerInforBulkDao _solarCustomerInforBulkDao = new SolarCustomerInforBulkDao();
         private readonly RoofTopSolarInputDataDao _roofTopSolarInputDataDao = new RoofTopSolarInputDataDao();
+        private readonly SolarPaymentLissReconDao _solarPaymentLissReconDao = new SolarPaymentLissReconDao();
 
 
         [HttpGet]
@@ -2037,5 +2038,54 @@ namespace MISReports_Api.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("payment-liss-recon")]
+        public IHttpActionResult GetPaymentLissReconReport([FromBody] SolarPaymentLissReconRequest request)
+        {
+            if (request == null)
+                return BadRequest("Request body cannot be null.");
+
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(request.BillCycle))
+                validationErrors.Add("Bill cycle is required.");
+
+            if (string.IsNullOrWhiteSpace(request.ReportCategory))
+                validationErrors.Add("Report category (Province or Division) is required.");
+
+            if (string.IsNullOrWhiteSpace(request.TypeCode))
+                validationErrors.Add("Province/Division code is required.");
+
+            if (validationErrors.Count > 0)
+            {
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = string.Join("; ", validationErrors)
+                });
+            }
+
+            try
+            {
+                var result = _solarPaymentLissReconDao.GetReconciliationReport(request);
+                return Ok(new
+                {
+                    data = result,
+                    errorMessage = (string)null
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"ERROR GetPaymentLissReconReport: {ex.Message}");
+                return Ok(new
+                {
+                    data = (object)null,
+                    errorMessage = "Error generating Solar Payment & LISS Reconciliation report.",
+                    errorDetails = ex.Message
+                });
+            }
+        }
+
     }
 }
+
