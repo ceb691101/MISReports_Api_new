@@ -874,6 +874,7 @@
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforOrdinaryDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPaymentBulkDao.cs" />
+    <Compile Include="DAL\SolarInformation\SolarPaymentLissReconDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVCapacity\PVCapacityBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVCapacity\PVCapacityOrdinaryDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVCapacity\PVCapacityBillCycleDao.cs" />
@@ -1067,6 +1068,7 @@
     <Compile Include="Models\SolarInformation\RoofTopSolarInputDataModel.cs" />
     <Compile Include="Models\SolarInformation\SolarCustomerInforModel.cs" />
     <Compile Include="Models\SolarInformation\SolarPaymentBulkModel.cs" />
+    <Compile Include="Models\SolarInformation\SolarPaymentLissReconModel.cs" />
     <Compile Include="Models\SolarInformation\SolarProgressDetailedModel.cs" />
     <Compile Include="Models\SolarInformation\SolarProgressSummaryModel.cs" />
     <Compile Include="Models\SolarInformation\SolarReadingDetailedModel.cs" />
