@@ -17,18 +17,18 @@ namespace MISReports_Api.Controllers
         [HttpGet]
         [Route("")]
         public IHttpActionResult GetReport(
-            [FromUri] string costctr, 
-            [FromUri] int repyear, 
-            [FromUri] int startmonth, 
-            [FromUri] int endmonth, 
-            [FromUri] string subac,
+            [FromUri] string costctr,
+            [FromUri] int repyear,
+            [FromUri] int startmonth,
+            [FromUri] int endmonth,
+            [FromUri] string subac = null,
             [FromUri] string docpf = null)
         {
             try
             {
-                if (string.IsNullOrEmpty(costctr) || string.IsNullOrEmpty(subac))
+                if (string.IsNullOrEmpty(costctr))
                 {
-                    return BadRequest("Parameters 'costctr' and 'subac' are required.");
+                    return BadRequest("Parameter 'costctr' is required.");
                 }
 
                 var data = _repository.GetCostCenterTransferVouchersData(costctr, repyear, startmonth, endmonth, subac, docpf);
