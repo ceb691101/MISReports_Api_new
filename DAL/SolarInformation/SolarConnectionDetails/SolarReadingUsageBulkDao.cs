@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DBAccess;
+using MISReports_Api.DBAccess;
 using MISReports_Api.Models.SolarInformation;
 using NLog;
 using System;
@@ -157,7 +157,16 @@ namespace MISReports_Api.DAL.SolarInformation.SolarConnectionDetails
                             cmd.Parameters.AddWithValue("@net_type", request.NetType);
                             break;
                         case SolarReportType.Province:
-                            cmd.Parameters.AddWithValue("@prov_code", request.ProvCode);
+                            string provTrim = request.ProvCode?.Trim() ?? "";
+                            string provPad = provTrim;
+                            string provNoPad = provTrim;
+                            if (int.TryParse(provTrim, out int prInt))
+                            {
+                                provPad = prInt.ToString("D2");
+                                provNoPad = prInt.ToString();
+                            }
+                            cmd.Parameters.AddWithValue("@prov_code1", provPad);
+                            cmd.Parameters.AddWithValue("@prov_code2", provNoPad);
                             cmd.Parameters.AddWithValue("@net_type", request.NetType);
                             break;
                         case SolarReportType.Region:
@@ -233,7 +242,7 @@ namespace MISReports_Api.DAL.SolarInformation.SolarConnectionDetails
                                       AND r.mtr_seq='2' 
                                       AND m.bill_cycle=? 
                                       AND c.area_cd = a.area_code 
-                                      AND a.prov_code=? 
+                                      AND (a.prov_code=? OR a.prov_code=?) 
                                       AND m.net_type=? 
                                       AND c.acc_nbr = m.acc_nbr 
                                       ORDER BY c.acc_nbr, r.mtr_seq";

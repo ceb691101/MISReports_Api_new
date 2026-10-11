@@ -1,4 +1,4 @@
-using MISReports_Api.DBAccess;
+﻿using MISReports_Api.DBAccess;
 using MISReports_Api.Helpers;
 using MISReports_Api.Models.PUCSLReports;
 using MISReports_Api.Models.PUCSLReports.PUCSLSolarConnection;
@@ -491,8 +491,12 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
 
             try
             {
-                string bulkTypeCode = (rt == SolarReportType.Province)
+                /*string bulkTypeCode = (rt == SolarReportType.Province)
                     ? typeCode.PadLeft(2, '0')  // "3" → "03"
+                    : typeCode;*/ // -By Dinuli 2026 - 10 - 02
+
+                string bulkTypeCode = (rt == SolarReportType.Province && char.IsDigit(typeCode[0]))
+                    ? typeCode.PadLeft(2, '0')
                     : typeCode;
 
                 using (var conn = _dbConnection.GetConnection(true))
@@ -734,8 +738,12 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
 
             try
             {
-                string bulkTypeCode = (rt == SolarReportType.Province)
+                /*string bulkTypeCode = (rt == SolarReportType.Province)
                     ? typeCode.PadLeft(2, '0')  // "3" → "03"
+                    : typeCode;*/ // -By Dinuli 2026 - 10 - 02
+
+                string bulkTypeCode = (rt == SolarReportType.Province && char.IsDigit(typeCode[0]))
+                    ? typeCode.PadLeft(2, '0')
                     : typeCode;
 
                 using (var conn = _dbConnection.GetConnection(true))
@@ -972,8 +980,12 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
 
             try
             {
-                string bulkTypeCode = (rt == SolarReportType.Province)
+                /* string bulkTypeCode = (rt == SolarReportType.Province)
                     ? typeCode.PadLeft(2, '0')  // "3" → "03"
+                    : typeCode;*/ // -By Dinuli 2026 - 10 - 02
+
+                string bulkTypeCode = (rt == SolarReportType.Province && char.IsDigit(typeCode[0]))
+                    ? typeCode.PadLeft(2, '0')
                     : typeCode;
 
                 using (var conn = _dbConnection.GetConnection(true))
@@ -1211,8 +1223,12 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
 
             try
             {
-                string bulkTypeCode = (rt == SolarReportType.Province)
+                /* string bulkTypeCode = (rt == SolarReportType.Province)
                     ? typeCode.PadLeft(2, '0')  // "3" → "03"
+                    : typeCode;*/ // -By Dinuli 2026 - 10 - 02
+
+                string bulkTypeCode = (rt == SolarReportType.Province && char.IsDigit(typeCode[0]))
+                    ? typeCode.PadLeft(2, '0')
                     : typeCode;
 
                 using (var conn = _dbConnection.GetConnection(true))
@@ -1325,6 +1341,14 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
         // ================================================================
         //  UTILITY
         // ================================================================
+        private string GetBulkTypeCode(SolarReportType rt, string typeCode)
+        {
+            if (rt != SolarReportType.Province || string.IsNullOrEmpty(typeCode))
+                return typeCode;
+
+            return int.TryParse(typeCode, out _) ? typeCode.PadLeft(2, '0') : typeCode;
+        }
+
         private SolarReportType MapReportType(PUCSLReportCategory cat)
         {
             switch (cat)

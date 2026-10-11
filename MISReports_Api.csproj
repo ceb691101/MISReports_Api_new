@@ -16,7 +16,8 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
-    <Use64BitIISExpress />
+    <Use64BitIISExpress>
+    </Use64BitIISExpress>
     <IISExpressSSLPort>44381</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -415,6 +416,7 @@
     <Compile Include="Controllers\PHV - FIFO\PHVObsoleteBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVSlowMovingWHController.cs" />
     <Compile Include="Controllers\FinancialDashboardController.cs" />
+    <Compile Include="Controllers\IntegratedDashboard\IntegratedDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
@@ -431,13 +433,18 @@
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
     <Compile Include="Controllers\Inventory\MaterialCommittedStockController.cs" />
     <Compile Include="Controllers\Inventory\QtyonHandAllRegionController.cs" />
+    <Compile Include="Controllers\Inventory\QtyOnHandReorderController.cs" />
     <Compile Include="Controllers\JobCard\JobCardController.cs" />
     <Compile Include="Controllers\JobCard\JobCardMaterialsController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchMainTableController.cs" />
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\AreaT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\SmcLineDetailsController.cs" />
+    <Compile Include="Controllers\SMC\CCJobSummaryController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
     <Compile Include="Controllers\SMC\EnergizeAgeAnalysisController.cs" />
     <Compile Include="Controllers\SMC\EnergizedNotAccountCCController.cs" />
@@ -607,6 +614,7 @@
     <Compile Include="DAL\Dashboard\SalesAndCollectionRangeDao.cs" />
     <Compile Include="DAL\Dashboard\TopCustomersDao.cs" />
     <Compile Include="DAL\CustomerDetails\PaymentInquiryDao.cs" />
+    <Compile Include="DAL\CustomerDetails\StandingOrderDao.cs" />
     <Compile Include="DAL\Dashboard\SolarBulkCustomersDao.cs" />
     <Compile Include="DAL\Dashboard\SolarOrdinaryCustomersDao.cs" />
     <Compile Include="DAL\Analysis\SolarAgeAnalysisDao.cs" />
@@ -631,6 +639,9 @@
     <Compile Include="DAL\FinancialDashboard\PivTotalDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockDivisionDao.cs" />
     <Compile Include="DAL\FinancialDashboard\StockTotalDao.cs" />
+    <Compile Include="DAL\IntegratedDashboard\IntegratedFinancialDao.cs" />
+    <Compile Include="DAL\IntegratedDashboard\IntegratedConstructionDao.cs" />
+    <Compile Include="DAL\IntegratedDashboard\IntegratedAreaEngineerDao.cs" />
     <Compile Include="DAL\General\ArrearsPosition\ArrearsPositionDao.cs" />
     <Compile Include="DAL\General\FinalizedAccounts\FinalizedAccountsDao.cs" />
     <Compile Include="DAL\General\GovernmentCustomerAccounts\ListOfGovernmentAccountsDao.cs" />
@@ -658,6 +669,7 @@
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
     <Compile Include="DAL\Inventory\MaterialCommittedStockRepository.cs" />
     <Compile Include="DAL\Inventory\QtyonHandAllRegionRepository.cs" />
+    <Compile Include="DAL\Inventory\QtyOnHandReorderDAL.cs" />
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
@@ -669,8 +681,12 @@
     <Compile Include="DAL\Shared\ContractDemandBillCycleDao.cs" />
     <Compile Include="DAL\Shared\GovernmentaccountsbillcycleDao.cs" />
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
+    <Compile Include="DAL\SMC- Management Information\AreaT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\SmcLineDetailsDAL.cs" />
+    <Compile Include="DAL\SMC\CCJobSummaryDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
     <Compile Include="DAL\SMC\EnergizeAgeAnalysisDAL.cs" />
     <Compile Include="DAL\SMC\EnergizedNotAccountCCDAL.cs" />
@@ -688,6 +704,7 @@
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCLineDetailsByProvinceDAL.cs" />
+    <Compile Include="DAL\SolarInformation\SolarRooftopPaymentsandExportUnitsDao.cs" />
     <Compile Include="DAL\SMC\SMCMatDetailsDAL.cs" />
     <Compile Include="DAL\SolarJobs\CcApplicationRepository.cs" />
     <Compile Include="DAL\SolarJobs\CCSolarPendingDAL.cs" />
@@ -783,11 +800,16 @@
     <Compile Include="Models\Inventory\IssueSummaryProvinceModel.cs" />
     <Compile Include="Models\Inventory\MaterialMasterModel.cs" />
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
+    <Compile Include="Models\Inventory\QtyOnHandReorderModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
+    <Compile Include="Models\SMC- Management Information\AreaT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
+    <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\SmcLineDetailsModel.cs" />
+    <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
     <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
     <Compile Include="Models\SMC\EnergizedNotAccountCCModel.cs" />
@@ -805,6 +827,7 @@
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCLineDetailsByProvinceModel.cs" />
+    <Compile Include="Models\SolarInformation\SolarRooftopPaymentsandExportUnitsModel.cs" />
     <Compile Include="Models\SMC\SMCMatDetailsModel.cs" />
     <Compile Include="Models\SolarJobs\CCSolarPendingModel.cs" />
     <Compile Include="Models\SolarJobs\SolarOrdinaryCustomersGenerationCapacityModel.cs" />
@@ -813,7 +836,6 @@
     <Compile Include="Services\Reporting\SolarPendingJobsJasperReportService.cs" />
     <Compile Include="DAL\PIV\ConsolidatedOutputVATRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationWarehousewiseRepository.cs" />
-    <Compile Include="Services\Reporting\PHVValidationJasperReportService.cs" />
     <Compile Include="Services\Reporting\AreaTrialBalanceJasperReportService.cs" />
     <Compile Include="Services\Reporting\PHVObsoleteIdleJasperReportService.cs" />
     <Compile Include="DAL\PIV\CostCenterwisePivdetailsRepository.cs" />
@@ -862,6 +884,7 @@
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarCustomerInformation\SolarCustomerInforOrdinaryDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPaymentBulkDao.cs" />
+    <Compile Include="DAL\SolarInformation\SolarPaymentLissReconDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVCapacity\PVCapacityBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVCapacity\PVCapacityOrdinaryDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarPVCapacity\PVCapacityBillCycleDao.cs" />
@@ -937,6 +960,7 @@
     <Compile Include="Models\Dashboard\SalesAndCollectionRangeModel.cs" />
     <Compile Include="Models\Dashboard\TopCustomersModel.cs" />
     <Compile Include="Models\CustomerDetails\PaymentInquiryModel.cs" />
+    <Compile Include="Models\CustomerDetails\StandingOrderModel.cs" />
     <Compile Include="Models\Dashboard\SolarBulkCustomersModel.cs" />
     <Compile Include="Models\Dashboard\SolarOrdinaryCustomersModel.cs" />
     <Compile Include="Models\Analysis\SolarAgeAnalysisModel.cs" />
@@ -944,6 +968,9 @@
     <Compile Include="Models\FinancialDashboard\PivDivisionModel.cs" />
     <Compile Include="Models\FinancialDashboard\PivTotalModel.cs" />
     <Compile Include="Models\FinancialDashboard\StockDivisionModel.cs" />
+    <Compile Include="Models\IntegratedDashboard\IntegratedFinancialModels.cs" />
+    <Compile Include="Models\IntegratedDashboard\IntegratedConstructionModels.cs" />
+    <Compile Include="Models\IntegratedDashboard\IntegratedAreaEngineerModels.cs" />
     <Compile Include="Models\Debtors\AreaModel.cs" />
     <Compile Include="Models\Debtors\BillCycleModel.cs" />
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
@@ -1051,6 +1078,7 @@
     <Compile Include="Models\SolarInformation\RoofTopSolarInputDataModel.cs" />
     <Compile Include="Models\SolarInformation\SolarCustomerInforModel.cs" />
     <Compile Include="Models\SolarInformation\SolarPaymentBulkModel.cs" />
+    <Compile Include="Models\SolarInformation\SolarPaymentLissReconModel.cs" />
     <Compile Include="Models\SolarInformation\SolarProgressDetailedModel.cs" />
     <Compile Include="Models\SolarInformation\SolarProgressSummaryModel.cs" />
     <Compile Include="Models\SolarInformation\SolarReadingDetailedModel.cs" />
@@ -1207,9 +1235,11 @@
     <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\ProvinceMaterialReqDetail\" />
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
+    <Folder Include="Views\QtyOnHandReorder\" />
     <Folder Include="Views\QuantityOnHandLessThanReorderLevel\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
+    <Folder Include="Views\SmcLineDetails\" />
     <Folder Include="Views\SolarOrdinaryCustomersGenerationCapacity\" />
     <Folder Include="Views\TenderDocInquiry\" />
     <Folder Include="Views\TransactionsPerCostCenter\" />
@@ -1228,7 +1258,7 @@
     <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
@@ -1238,7 +1268,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>

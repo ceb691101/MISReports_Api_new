@@ -1,4 +1,4 @@
-﻿using MISReports_Api.Models.SolarInformation;
+using MISReports_Api.Models.SolarInformation;
 using MISReports_Api.DBAccess;
 using System;
 using System.Collections.Generic;
@@ -31,19 +31,49 @@ namespace MISReports_Api.DAL.Shared
 
                     string sql = "SELECT area_code, area_name, prov_code, region FROM areas";
 
+                    string pPad = null;
+                    string pNoPad = null;
+
                     if (!string.IsNullOrWhiteSpace(regionCode))
+                    {
                         sql += " WHERE region = ?";
+                    }
                     else if (!string.IsNullOrWhiteSpace(provCode))
-                        sql += " WHERE prov_code = ?";
+                    {
+                        string pTrim = provCode.Trim();
+                        if (int.TryParse(pTrim, out int pInt))
+                        {
+                            pPad = pInt.ToString("D2");
+                            pNoPad = pInt.ToString();
+                            sql += " WHERE (prov_code = ? OR prov_code = ?)";
+                        }
+                        else
+                        {
+                            pPad = pTrim;
+                            sql += " WHERE prov_code = ?";
+                        }
+                    }
 
                     sql += " ORDER BY area_name";
 
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         if (!string.IsNullOrWhiteSpace(regionCode))
+                        {
                             cmd.Parameters.AddWithValue("?", regionCode);
+                        }
                         else if (!string.IsNullOrWhiteSpace(provCode))
-                            cmd.Parameters.AddWithValue("?", provCode);
+                        {
+                            if (pNoPad != null)
+                            {
+                                cmd.Parameters.AddWithValue("?", pPad);
+                                cmd.Parameters.AddWithValue("?", pNoPad);
+                            }
+                            else
+                            {
+                                cmd.Parameters.AddWithValue("?", pPad);
+                            }
+                        }
 
                         using (var reader = cmd.ExecuteReader())
                         {

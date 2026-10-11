@@ -1,4 +1,4 @@
-﻿using MISReports_Api.DBAccess;
+using MISReports_Api.DBAccess;
 using MISReports_Api.Helpers;
 using MISReports_Api.Models.PUCSLReports.PUCSLSolarConnection;
 using MISReports_Api.Models.SolarInformation;
@@ -144,9 +144,17 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
                 // ═══════════════════════════════════════════════════════════
 
                 string bulkTypeCode = request.TypeCode;
-                if (reportType == SolarReportType.Province && !string.IsNullOrEmpty(request.TypeCode) && request.TypeCode.Length == 1)
+                if (reportType == SolarReportType.Province && !string.IsNullOrEmpty(request.TypeCode) && int.TryParse(request.TypeCode, out _))
                 {
-                    bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                    //bulkTypeCode = request.TypeCode.PadLeft(2, '0'); - By Dinuli 2026-09-23
+                    if (char.IsDigit(request.TypeCode[0]))
+                    {
+                        bulkTypeCode = request.TypeCode.PadLeft(2, '0');
+                    }
+                    else
+                    {
+                        bulkTypeCode = request.TypeCode;
+                    }
                 }
 
                 var bulkTariffs = GetAllBulkTariffs(request.BillCycle);

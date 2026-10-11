@@ -305,7 +305,7 @@ namespace MISReports_Api.DAL.PUCSLReports.PUCSLSolarConnection
             try
             {
                 string bulkTypeCode = (rt == SolarReportType.Province)
-                    ? typeCode.PadLeft(2, '0')  // "3" → "03"
+                    ? (!string.IsNullOrEmpty(typeCode) && int.TryParse(typeCode, out _) ? typeCode.PadLeft(2, '0') : typeCode)
                     : typeCode;
 
                 using (var conn = _dbConnection.GetConnection(true))
