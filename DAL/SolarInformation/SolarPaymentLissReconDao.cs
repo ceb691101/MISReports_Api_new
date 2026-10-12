@@ -56,67 +56,35 @@ namespace MISReports_Api.DAL.SolarInformation
 
             foreach (var (netType, schemeName) in Schemes)
             {
+                decimal ordF = ordFixed.ContainsKey(netType) ? ordFixed[netType] : 0m;
+                decimal ordO = ordOther.ContainsKey(netType) ? ordOther[netType] : 0m;
+                decimal ordV = ordVariable.ContainsKey(netType) ? ordVariable[netType] : 0m;
+
+                decimal bulkF = bulkFixed.ContainsKey(netType) ? bulkFixed[netType] : 0m;
+                decimal bulkO = bulkOther.ContainsKey(netType) ? bulkOther[netType] : 0m;
+                decimal bulkV = bulkVariable.ContainsKey(netType) ? bulkVariable[netType] : 0m;
+
                 var row = new SolarPaymentLissReconItem
                 {
                     NetType = netType,
                     SchemeName = schemeName,
-
-                    // Ordinary
-                    OrdFixedPayment = ordFixed.ContainsKey(netType) ? ordFixed[netType] : 0m,
-                    OrdOtherAmount = ordOther.ContainsKey(netType) ? ordOther[netType] : 0m,
-                    OrdVariablePayment = ordVariable.ContainsKey(netType) ? ordVariable[netType] : 0m,
-
-                    // Bulk
-                    BulkFixedPayment = bulkFixed.ContainsKey(netType) ? bulkFixed[netType] : 0m,
-                    BulkOtherAmount = bulkOther.ContainsKey(netType) ? bulkOther[netType] : 0m,
-                    BulkVariablePayment = bulkVariable.ContainsKey(netType) ? bulkVariable[netType] : 0m,
+                    Ordinary = ordFinancial.ContainsKey(netType) ? ordFinancial[netType] : 0m,
+                    buLK = bulkFinancial.ContainsKey(netType) ? bulkFinancial[netType] : 0m,
+                    oLiss = ordF + ordO + ordV,
+                    Bliss = bulkF + bulkO + bulkV
                 };
-
-                // Ordinary Total & Variance
-                row.OrdTotalLiss = row.OrdFixedPayment + row.OrdOtherAmount + row.OrdVariablePayment;
-                row.OrdFinancialReport = ordFinancial.ContainsKey(netType) ? ordFinancial[netType] : 0m;
-                row.OrdDifference = row.OrdTotalLiss - row.OrdFinancialReport;
-
-                // Bulk Total & Variance
-                row.BulkTotalLiss = row.BulkFixedPayment + row.BulkOtherAmount + row.BulkVariablePayment;
-                row.BulkFinancialReport = bulkFinancial.ContainsKey(netType) ? bulkFinancial[netType] : 0m;
-                row.BulkDifference = row.BulkTotalLiss - row.BulkFinancialReport;
-
-                // Combined Total
-                row.TotalFixedPayment = row.OrdFixedPayment + row.BulkFixedPayment;
-                row.TotalOtherAmount = row.OrdOtherAmount + row.BulkOtherAmount;
-                row.TotalVariablePayment = row.OrdVariablePayment + row.BulkVariablePayment;
-                row.TotalLiss = row.OrdTotalLiss + row.BulkTotalLiss;
-                row.TotalFinancialReport = row.OrdFinancialReport + row.BulkFinancialReport;
-                row.TotalDifference = row.TotalLiss - row.TotalFinancialReport;
 
                 response.Rows.Add(row);
 
-                // Add to Grand Total
-                grandTotal.OrdFixedPayment += row.OrdFixedPayment;
-                grandTotal.OrdOtherAmount += row.OrdOtherAmount;
-                grandTotal.OrdVariablePayment += row.OrdVariablePayment;
-                grandTotal.OrdTotalLiss += row.OrdTotalLiss;
-                grandTotal.OrdFinancialReport += row.OrdFinancialReport;
-                grandTotal.OrdDifference += row.OrdDifference;
-
-                grandTotal.BulkFixedPayment += row.BulkFixedPayment;
-                grandTotal.BulkOtherAmount += row.BulkOtherAmount;
-                grandTotal.BulkVariablePayment += row.BulkVariablePayment;
-                grandTotal.BulkTotalLiss += row.BulkTotalLiss;
-                grandTotal.BulkFinancialReport += row.BulkFinancialReport;
-                grandTotal.BulkDifference += row.BulkDifference;
-
-                grandTotal.TotalFixedPayment += row.TotalFixedPayment;
-                grandTotal.TotalOtherAmount += row.TotalOtherAmount;
-                grandTotal.TotalVariablePayment += row.TotalVariablePayment;
-                grandTotal.TotalLiss += row.TotalLiss;
-                grandTotal.TotalFinancialReport += row.TotalFinancialReport;
-                grandTotal.TotalDifference += row.TotalDifference;
+                grandTotal.Ordinary += row.Ordinary;
+                grandTotal.buLK += row.buLK;
+                grandTotal.oLiss += row.oLiss;
+                grandTotal.Bliss += row.Bliss;
             }
 
             response.GrandTotal = grandTotal;
             return response;
+
         }
 
         #region Ordinary Queries (billsmry@hqinfdb10)
