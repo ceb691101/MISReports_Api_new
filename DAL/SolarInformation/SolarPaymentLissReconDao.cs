@@ -15,7 +15,7 @@ namespace MISReports_Api.DAL.SolarInformation
 
         private static readonly (string NetType, string SchemeName)[] Schemes = new[]
         {
-            ("1", "Net Metering"),
+            // ("1", "Net Metering"), // Temporarily commented out as requested; can be uncommented whenever needed in future
             ("2", "Net Accounting"),
             ("3", "Net Plus"),
             ("4", "Net Plus Plus"),
@@ -254,10 +254,37 @@ namespace MISReports_Api.DAL.SolarInformation
 
         #region Bulk Queries (billhsbhq@bulkinfdb1)
 
+        private void GetProvinceFilter(string typeCode, bool isDivision, out string filterSql, out Action<OleDbCommand> addParams)
+        {
+            if (isDivision)
+            {
+                filterSql = "a.region = ?";
+                addParams = cmd => cmd.Parameters.AddWithValue("?", typeCode);
+            }
+            else
+            {
+                string provTrim = typeCode?.Trim() ?? "";
+                string provPad = provTrim;
+                string provNoPad = provTrim;
+                if (int.TryParse(provTrim, out int prInt))
+                {
+                    provPad = prInt.ToString("D2");
+                    provNoPad = prInt.ToString();
+                }
+
+                filterSql = "(a.prov_code = ? OR a.prov_code = ?)";
+                addParams = cmd =>
+                {
+                    cmd.Parameters.AddWithValue("?", provPad);
+                    cmd.Parameters.AddWithValue("?", provNoPad);
+                };
+            }
+        }
+
         private Dictionary<string, decimal> GetBulkFixed(string billCycle, string typeCode, bool isDivision)
         {
             var dict = new Dictionary<string, decimal>();
-            string areaCol = isDivision ? "a.region" : "a.prov_code";
+            GetProvinceFilter(typeCode, isDivision, out string areaFilter, out var addParams);
             string sql = $@"SELECT n.net_type, SUM(kwh_sales) 
                            FROM netmtcons n, areas a, netmeter m 
                            WHERE n.bill_cycle = ? 
@@ -265,7 +292,7 @@ namespace MISReports_Api.DAL.SolarInformation
                              AND m.schm IN ('1','2') 
                              AND rate IN ('22','15.50','34.50','37','27.06','23.18') 
                              AND a.area_code = n.area_cd 
-                             AND {areaCol} = ? 
+                             AND {areaFilter} 
                            GROUP BY 1";
 
             try
@@ -276,7 +303,7 @@ namespace MISReports_Api.DAL.SolarInformation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("?", billCycle);
-                        cmd.Parameters.AddWithValue("?", typeCode);
+                        addParams(cmd);
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -299,7 +326,7 @@ namespace MISReports_Api.DAL.SolarInformation
         private Dictionary<string, decimal> GetBulkOther(string billCycle, string typeCode, bool isDivision)
         {
             var dict = new Dictionary<string, decimal>();
-            string areaCol = isDivision ? "a.region" : "a.prov_code";
+            GetProvinceFilter(typeCode, isDivision, out string areaFilter, out var addParams);
             string sql = $@"SELECT n.net_type, SUM(kwh_sales) 
                            FROM netmtcons n, areas a, netmeter m 
                            WHERE n.bill_cycle = ? 
@@ -307,7 +334,7 @@ namespace MISReports_Api.DAL.SolarInformation
                              AND m.schm IN ('1','2') 
                              AND rate NOT IN ('22','15.50','34.50','37','27.06','23.18') 
                              AND a.area_code = n.area_cd 
-                             AND {areaCol} = ? 
+                             AND {areaFilter} 
                            GROUP BY 1";
 
             try
@@ -318,7 +345,7 @@ namespace MISReports_Api.DAL.SolarInformation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("?", billCycle);
-                        cmd.Parameters.AddWithValue("?", typeCode);
+                        addParams(cmd);
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -341,14 +368,14 @@ namespace MISReports_Api.DAL.SolarInformation
         private Dictionary<string, decimal> GetBulkVariable(string billCycle, string typeCode, bool isDivision)
         {
             var dict = new Dictionary<string, decimal>();
-            string areaCol = isDivision ? "a.region" : "a.prov_code";
+            GetProvinceFilter(typeCode, isDivision, out string areaFilter, out var addParams);
             string sql = $@"SELECT n.net_type, SUM(kwh_sales) 
                            FROM netmtcons n, netmeter m, areas a 
                            WHERE n.bill_cycle = ? 
                              AND m.schm = '3' 
                              AND m.acc_nbr = n.acc_nbr 
                              AND a.area_code = n.area_cd 
-                             AND {areaCol} = ? 
+                             AND {areaFilter} 
                            GROUP BY 1";
 
             try
@@ -359,7 +386,7 @@ namespace MISReports_Api.DAL.SolarInformation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("?", billCycle);
-                        cmd.Parameters.AddWithValue("?", typeCode);
+                        addParams(cmd);
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -382,12 +409,12 @@ namespace MISReports_Api.DAL.SolarInformation
         private Dictionary<string, decimal> GetBulkFinancial(string billCycle, string typeCode, bool isDivision)
         {
             var dict = new Dictionary<string, decimal>();
-            string areaCol = isDivision ? "a.region" : "a.prov_code";
+            GetProvinceFilter(typeCode, isDivision, out string areaFilter, out var addParams);
             string sql = $@"SELECT n.net_type, SUM(kwh_sales) 
                            FROM netmtcons n, areas a 
                            WHERE n.bill_cycle = ? 
                              AND n.area_cd = a.area_code 
-                             AND {areaCol} = ? 
+                             AND {areaFilter} 
                            GROUP BY 1";
 
             try
@@ -398,7 +425,7 @@ namespace MISReports_Api.DAL.SolarInformation
                     using (var cmd = new OleDbCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("?", billCycle);
-                        cmd.Parameters.AddWithValue("?", typeCode);
+                        addParams(cmd);
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
