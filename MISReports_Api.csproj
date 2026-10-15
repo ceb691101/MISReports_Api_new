@@ -533,6 +533,8 @@
     <Compile Include="Controllers\Debtors\DebtorDetailController.cs" />
     <Compile Include="Controllers\Debtors\DebtorsBulkController.cs" />
     <Compile Include="Controllers\Debtors\DebtorsController.cs" />
+    <Compile Include="Controllers\Debtors\GovernmentAgeAnalysisController.cs" />
+    <Compile Include="App_Start\GovernmentAgeAnalysisSwaggerFilter.cs" />
     <Compile Include="Controllers\OUMController.cs" />
     <Compile Include="Controllers\SolarController.cs" />
     <Compile Include="Controllers\TrialBalance\AreaTrialBalanceController.cs" />
@@ -903,6 +905,7 @@
     <Compile Include="DAL\Debtors\DebtorDetailRepository.cs" />
     <Compile Include="DAL\Debtors\DebtorsBulkRepository.cs" />
     <Compile Include="DAL\Debtors\DebtorsReposatory.cs" />
+    <Compile Include="DAL\Debtors\GovernmentAgeAnalysisRepository.cs" />
     <Compile Include="DAL\OUMRepository.cs" />
     <Compile Include="DAL\Shared\AreasDao.cs" />
     <Compile Include="DAL\Shared\ProvinceDao.cs" />
@@ -976,6 +979,7 @@
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
+    <Compile Include="Models\Debtors\GovernmentAgeAnalysisModel.cs" />
     <Compile Include="Models\General\ListingofcustomerModel .cs" />
     <Compile Include="Models\General\ListOfGovernmentAccountsModel.cs" />
     <Compile Include="Models\General\ActiveCustomersModel.cs" />
@@ -1246,6 +1250,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Scripts\Swagger\GovernmentAgeAnalysis.js">
+      <LogicalName>MISReports_Api.Swagger.GovernmentAgeAnalysis.js</LogicalName>
+    </EmbeddedResource>
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
