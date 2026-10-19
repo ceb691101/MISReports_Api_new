@@ -3,6 +3,7 @@ using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.General.ListingOfCustomer;
 using MISReports_Api.DAL.General.ArrearsPosition;
+using MISReports_Api.DAL.General;
 using MISReports_Api.DAL.Dashboard;
 using MISReports_Api.DAL.Shared;
 using MISReports_Api.DAL;
@@ -57,6 +58,7 @@ namespace MISReports_Api.Controllers
         private readonly ArrearsPositionDao _arrearsPositionDao = new ArrearsPositionDao();
 
         private readonly FinalizedAccountsDao _finalizedAccountsDao = new FinalizedAccountsDao();
+        private readonly MeterReadingCompletionStatusDao _meterReadingCompletionStatusDao = new MeterReadingCompletionStatusDao();
 
 
         // ================================================================== //
@@ -927,6 +929,24 @@ namespace MISReports_Api.Controllers
                 return InternalServerError(new Exception(result.ErrorMessage));
 
             return Ok(result);
+        }
+
+        // ------------------------------------------------------------------ //
+        // GET api/meter-reading/completion-status                            //
+        // ------------------------------------------------------------------ //
+        [HttpGet]
+        [Route("meter-reading/completion-status")]
+        public IHttpActionResult GetMeterReadingCompletionStatus([FromUri] int? billCycle = null)
+        {
+            try
+            {
+                var result = _meterReadingCompletionStatusDao.GetCompletionStatus(billCycle);
+                return Ok(new { data = result, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = ex.Message });
+            }
         }
     }
 }

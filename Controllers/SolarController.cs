@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Linq;
 
+
 namespace MISReports_Api.Controllers
 {
     [RoutePrefix("solarapi")]
@@ -41,6 +42,7 @@ namespace MISReports_Api.Controllers
         private readonly SolarCustomerInforBulkDao _solarCustomerInforBulkDao = new SolarCustomerInforBulkDao();
         private readonly RoofTopSolarInputDataDao _roofTopSolarInputDataDao = new RoofTopSolarInputDataDao();
         private readonly SolarPaymentLissReconDao _solarPaymentLissReconDao = new SolarPaymentLissReconDao();
+        private readonly SolarJournalsBulkDao _solarJournalsBulkDao = new SolarJournalsBulkDao();
 
 
         [HttpGet]
@@ -2095,6 +2097,40 @@ namespace MISReports_Api.Controllers
             }
         }
 
+
+        //SolarJournalsBulkDao//
+        [HttpGet]
+        [Route("solar-journals/bulk")]
+        public IHttpActionResult GetSolarJournalsBulk(
+    [FromUri] string billCycle,
+    [FromUri] string reportCategory,
+    [FromUri] string typeCode = null)
+        {
+            if (string.IsNullOrWhiteSpace(billCycle))
+                return Ok(new { data = (object)null, errorMessage = "Bill cycle is required." });
+
+            if (string.IsNullOrWhiteSpace(reportCategory))
+                return Ok(new { data = (object)null, errorMessage = "Report category is required." });
+
+            try
+            {
+                var request = new SolarJournalsBulkRequest
+                {
+                    BillCycle = billCycle.Trim(),
+                    ReportCategory = reportCategory.Trim(),
+                    TypeCode = typeCode?.Trim()
+                };
+
+                var result = _solarJournalsBulkDao.GetSolarJournals(request);
+                return Ok(new { data = result, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { data = (object)null, errorMessage = ex.Message });
+            }
+        }
+
     }
 }
+
 
