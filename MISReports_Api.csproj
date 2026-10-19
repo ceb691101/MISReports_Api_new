@@ -677,6 +677,7 @@
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
     <Compile Include="DAL\PUCSLReports\BulkPUCSLSolarCustomersDao.cs" />
     <Compile Include="DAL\PUCSLReports\OrdinaryPUCSLSolarCustomersDao.cs" />
+    <Compile Include="DAL\PUCSLReports\SolarJournalsRetailDao.cs" />
     <Compile Include="DAL\ReportParamFlagsRepository.cs" />
     <Compile Include="DAL\Shared\ArrearsPositionbillcycleDao.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
@@ -805,6 +806,7 @@
     <Compile Include="Models\Inventory\QtyOnHandReorderModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
+    <Compile Include="Models\PUCSLReports\SolarJournalsRetailModel.cs" />
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
     <Compile Include="Models\SMC- Management Information\AreaT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
@@ -1252,6 +1254,9 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Scripts\Swagger\GovernmentAgeAnalysis.js">
       <LogicalName>MISReports_Api.Swagger.GovernmentAgeAnalysis.js</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Scripts\Swagger\SolarJournalsRetail.js">
+      <LogicalName>MISReports_Api.Swagger.SolarJournalsRetail.js</LogicalName>
     </EmbeddedResource>
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
