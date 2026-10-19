@@ -33,6 +33,7 @@ namespace MISReports_Api
                         // additional fields by chaining methods off SingleApiVersion.
                         //
                         c.SingleApiVersion("v1", "MISReports_Api");
+                        c.OperationFilter<GovernmentAgeAnalysisSwaggerFilter>();
 
                         // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
                         //
@@ -179,6 +180,7 @@ namespace MISReports_Api
                     })
                 .EnableSwaggerUi(c =>
                     {
+                        c.InjectJavaScript(thisAssembly, "MISReports_Api.Swagger.GovernmentAgeAnalysis.js");
                         // Use the "DocumentTitle" option to change the Document title.
                         // Very helpful when you have multiple Swagger pages open, to tell them apart.
                         //

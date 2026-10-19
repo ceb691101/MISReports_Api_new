@@ -432,6 +432,7 @@
     <Compile Include="Controllers\Inventory\ProvinceQtyOnHandCrossTabController.cs" />
     <Compile Include="Controllers\Inventory\MaterialCommittedStockController.cs" />
     <Compile Include="Controllers\Inventory\QtyonHandAllRegionController.cs" />
+    <Compile Include="Controllers\Inventory\QtyOnHandReorderController.cs" />
     <Compile Include="Controllers\JobCard\JobCardController.cs" />
     <Compile Include="Controllers\JobCard\JobCardMaterialsController.cs" />
     <Compile Include="Controllers\JobSearch\JobSearchController.cs" />
@@ -441,6 +442,7 @@
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\SmcLineDetailsController.cs" />
     <Compile Include="Controllers\SMC\CCJobSummaryController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
     <Compile Include="Controllers\SMC\EnergizeAgeAnalysisController.cs" />
@@ -458,6 +460,7 @@
     <Compile Include="Controllers\SMC\RegionSMCAllPIVController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
+    <Compile Include="Controllers\SMC- Management Information\SMCLineDetailsByProvinceController.cs" />
     <Compile Include="Controllers\SMC\SMCMatDetailsController.cs" />
     <Compile Include="Controllers\SolarJobs\CcApplicationController.cs" />
     <Compile Include="Controllers\SolarJobs\CCSolarPendingController.cs" />
@@ -529,6 +532,8 @@
     <Compile Include="Controllers\Debtors\DebtorDetailController.cs" />
     <Compile Include="Controllers\Debtors\DebtorsBulkController.cs" />
     <Compile Include="Controllers\Debtors\DebtorsController.cs" />
+    <Compile Include="Controllers\Debtors\GovernmentAgeAnalysisController.cs" />
+    <Compile Include="App_Start\GovernmentAgeAnalysisSwaggerFilter.cs" />
     <Compile Include="Controllers\OUMController.cs" />
     <Compile Include="Controllers\SolarController.cs" />
     <Compile Include="Controllers\TrialBalance\AreaTrialBalanceController.cs" />
@@ -665,6 +670,7 @@
     <Compile Include="DAL\Inventory\ProvinceQtyOnHandCrossTabRepository.cs" />
     <Compile Include="DAL\Inventory\MaterialCommittedStockRepository.cs" />
     <Compile Include="DAL\Inventory\QtyonHandAllRegionRepository.cs" />
+    <Compile Include="DAL\Inventory\QtyOnHandReorderDAL.cs" />
     <Compile Include="DAL\JobCard\JobCardMaterialsRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchMainTableRepository.cs" />
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
@@ -680,6 +686,7 @@
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\SmcLineDetailsDAL.cs" />
     <Compile Include="DAL\SMC\CCJobSummaryDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
     <Compile Include="DAL\SMC\EnergizeAgeAnalysisDAL.cs" />
@@ -795,6 +802,7 @@
     <Compile Include="Models\Inventory\IssueSummaryProvinceModel.cs" />
     <Compile Include="Models\Inventory\MaterialMasterModel.cs" />
     <Compile Include="Models\Inventory\IssueReceiptWPModel.cs" />
+    <Compile Include="Models\Inventory\QtyOnHandReorderModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
@@ -802,6 +810,7 @@
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\SmcLineDetailsModel.cs" />
     <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
     <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
@@ -897,6 +906,7 @@
     <Compile Include="DAL\Debtors\DebtorDetailRepository.cs" />
     <Compile Include="DAL\Debtors\DebtorsBulkRepository.cs" />
     <Compile Include="DAL\Debtors\DebtorsReposatory.cs" />
+    <Compile Include="DAL\Debtors\GovernmentAgeAnalysisRepository.cs" />
     <Compile Include="DAL\OUMRepository.cs" />
     <Compile Include="DAL\Shared\AreasDao.cs" />
     <Compile Include="DAL\Shared\ProvinceDao.cs" />
@@ -970,6 +980,7 @@
     <Compile Include="Models\Debtors\DebtorDetailModel.cs" />
     <Compile Include="Models\Debtors\DebtorsBulkModel.cs" />
     <Compile Include="Models\Debtors\DebtorsModel.cs" />
+    <Compile Include="Models\Debtors\GovernmentAgeAnalysisModel.cs" />
     <Compile Include="Models\General\ListingofcustomerModel .cs" />
     <Compile Include="Models\General\ListOfGovernmentAccountsModel.cs" />
     <Compile Include="Models\General\ActiveCustomersModel.cs" />
@@ -1229,15 +1240,20 @@
     <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\ProvinceMaterialReqDetail\" />
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
+    <Folder Include="Views\QtyOnHandReorder\" />
     <Folder Include="Views\QuantityOnHandLessThanReorderLevel\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SMCJobProgress\" />
+    <Folder Include="Views\SmcLineDetails\" />
     <Folder Include="Views\SolarOrdinaryCustomersGenerationCapacity\" />
     <Folder Include="Views\TenderDocInquiry\" />
     <Folder Include="Views\TransactionsPerCostCenter\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Scripts\Swagger\GovernmentAgeAnalysis.js">
+      <LogicalName>MISReports_Api.Swagger.GovernmentAgeAnalysis.js</LogicalName>
+    </EmbeddedResource>
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
