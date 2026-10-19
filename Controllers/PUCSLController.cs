@@ -33,6 +33,32 @@ namespace MISReports_Api.Controllers
         private readonly OrdinaryPUCSLSolarCustomersDao _ordinaryPUCSLSolarCustomersDao = new OrdinaryPUCSLSolarCustomersDao();
         private readonly SolarDataUNTCalculationDao _untCalculationDao = new SolarDataUNTCalculationDao();
 
+        [HttpPost]
+        [Route("pucsl/solarJournalsRetail")]
+        public IHttpActionResult GetSolarJournalsRetail([FromBody] SolarJournalsRetailRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                SolarJournalsRetailDao.ValidateRequest(request);
+                var report = new SolarJournalsRetailDao().GetReport(request);
+                return Ok(JObject.FromObject(new { data = report, errorMessage = (string)null }));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Cannot retrieve Solar Journals - Retail report.");
+                return Content(System.Net.HttpStatusCode.InternalServerError, new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve Solar Journals - Retail report. Please try again."
+                });
+            }
+        }
+
 
         // ================================================================
         //  POST  pucsl/solarConnections
