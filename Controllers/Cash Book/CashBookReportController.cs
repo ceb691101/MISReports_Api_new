@@ -29,7 +29,21 @@ namespace MISReports_Api.Controllers
             return GetData(fromDate, toDate, payee);
         }
 
-        private IHttpActionResult GetData(string fromDate, string toDate, string payee)
+        [HttpGet]
+        [Route("ccreport")]
+        public IHttpActionResult GetCostCenterReport(
+            [FromUri] string fromDate,
+            [FromUri] string toDate,
+            [FromUri] string costCtr,
+            [FromUri] string payee)
+        {
+            if (string.IsNullOrWhiteSpace(costCtr))
+                return BadRequest("costCtr is required.");
+
+            return GetData(fromDate, toDate, payee, costCtr.Trim());
+        }
+
+        private IHttpActionResult GetData(string fromDate, string toDate, string payee, string costCtr = null)
         {
             try
             {
@@ -43,7 +57,7 @@ namespace MISReports_Api.Controllers
                 if (payee.Length < 3)
                     return BadRequest("Payee must be at least 3 characters for accurate search.");
 
-                var data = _repo.GetCashBookData(fromDate, toDate, payee);
+                var data = _repo.GetCashBookData(fromDate, toDate, payee, costCtr);
                 decimal totalAmt = data.Sum(x => x.ChqAmt ?? 0m);
 
                 const int MAX_RECORDS = 5000;
