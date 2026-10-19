@@ -5,6 +5,7 @@ using System.Web;
 using System.Configuration;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Types;
 using MISReports_Api.Models.Accounts;
 
 namespace MISReports_Api.DAL
@@ -103,13 +104,13 @@ namespace MISReports_Api.DAL
                             AccCreatedDate = reader["ACC_CREATED_DATE"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["ACC_CREATED_DATE"]),
                             Piv1Date = reader["piv_1_date"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["piv_1_date"]),
                             ApprovalDate = reader["approval_date"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["approval_date"]),
-                            EstimateCost = reader["estimate_cost"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["estimate_cost"]),
+                            EstimateCost = GetSafeDecimal(reader, "estimate_cost"),
                             Piv2Date = reader["piv2_date"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["piv2_date"]),
                             EnergizedDate = reader["engized_date"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["engized_date"]),
-                            T1 = reader["t1"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["t1"]),
-                            T2Ln = reader["t2_ln"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["t2_ln"]),
-                            T2Smc = reader["t2_smc"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["t2_smc"]),
-                            T3 = reader["t3"] == DBNull.Value ? (decimal?)null : Convert.ToDecimal(reader["t3"]),
+                            T1 = GetSafeDecimal(reader, "t1"),
+                            T2Ln = GetSafeDecimal(reader, "t2_ln"),
+                            T2Smc = GetSafeDecimal(reader, "t2_smc"),
+                            T3 = GetSafeDecimal(reader, "t3"),
                             Loan = reader["loan"] == DBNull.Value ? null : reader["loan"].ToString(),
                             CctName = reader["cct_name"] == DBNull.Value ? null : reader["cct_name"].ToString()
                         });
@@ -118,6 +119,16 @@ namespace MISReports_Api.DAL
             }
 
             return result;
+        }
+
+        private static decimal? GetSafeDecimal(OracleDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            if (reader.IsDBNull(ordinal))
+                return null;
+
+            OracleDecimal value = OracleDecimal.SetPrecision(reader.GetOracleDecimal(ordinal), 28);
+            return value.Value;
         }
     }
 }
