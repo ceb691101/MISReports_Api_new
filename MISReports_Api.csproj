@@ -734,6 +734,7 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="DAL\SMC- Management Information\SMCLineDetailsByProvinceDAL.cs" />
     <Compile Include="Models\AreaEngineerDashboard\AreaEngineerDashboardModel.cs" />
     <Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
     <Compile Include="Models\Cash Book\CashBookInquiryDrCrModel.cs" />
@@ -813,6 +814,7 @@
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\SmcLineDetailsModel.cs" />
+    <Compile Include="Models\SMC- Management Information\SMCLineDetailsByProvinceModel.cs" />
     <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
     <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
