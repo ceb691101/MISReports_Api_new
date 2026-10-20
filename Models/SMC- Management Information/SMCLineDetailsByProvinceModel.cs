@@ -29,3 +29,4 @@ namespace MISReports_Api.Models.Accounts
         public string CompNm { get; set; }
     }
 }
+
