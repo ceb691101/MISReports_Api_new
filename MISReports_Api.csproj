@@ -442,6 +442,7 @@
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SmcLineDetailsController.cs" />
     <Compile Include="Controllers\SMC\CCJobSummaryController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
@@ -458,6 +459,7 @@
     <Compile Include="Controllers\SMC\JobSummaryPeriodController.cs" />
     <Compile Include="Controllers\SMC\PendingEstimationCCController.cs" />
     <Compile Include="Controllers\SMC\RegionSMCAllPIVController.cs" />
+    <Compile Include="Controllers\SMC\SawMillsMetalCrushersWeldingPlantsDetailsController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCLineDetailsByProvinceController.cs" />
@@ -687,6 +689,7 @@
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SmcLineDetailsDAL.cs" />
     <Compile Include="DAL\SMC\CCJobSummaryDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
@@ -703,6 +706,7 @@
     <Compile Include="DAL\SMC\JobSummaryPeriodDAL.cs" />
     <Compile Include="DAL\SMC\PendingEstimationCCDAL.cs" />
     <Compile Include="DAL\SMC\RegionSMCAllPIVDAL.cs" />
+    <Compile Include="DAL\SMC\SawMillsMetalCrushersWeldingPlantsDetailsDAL.cs" />
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\General\MeterReadingCompletionStatusDao.cs" />
@@ -813,6 +817,7 @@
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsModel.cs" />
     <Compile Include="Models\SMC- Management Information\SmcLineDetailsModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCLineDetailsByProvinceModel.cs" />
     <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
@@ -830,6 +835,7 @@
     <Compile Include="Models\SMC\JobSummaryPeriodModel.cs" />
     <Compile Include="Models\SMC\PendingEstimationCCModel.cs" />
     <Compile Include="Models\SMC\RegionSMCAllPIVModel.cs" />
+    <Compile Include="Models\SMC\SawMillsMetalCrushersWeldingPlantsDetailsModel.cs" />
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\General\MeterReadingCompletionStatusModel.cs" />
@@ -1244,9 +1250,11 @@
     <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\ProvinceMaterialReqDetail\" />
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
+    <Folder Include="Views\ProvincewiseSMCJobMaterialDetails\" />
     <Folder Include="Views\QtyOnHandReorder\" />
     <Folder Include="Views\QuantityOnHandLessThanReorderLevel\" />
     <Folder Include="Views\RegionPeriodStatus\" />
+    <Folder Include="Views\SawMillsMetalCrushersWeldingPlantsDetails\" />
     <Folder Include="Views\SMCJobProgress\" />
     <Folder Include="Views\SmcLineDetails\" />
     <Folder Include="Views\SolarOrdinaryCustomersGenerationCapacity\" />
