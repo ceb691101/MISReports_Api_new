@@ -54,7 +54,7 @@ WHERE
     AND TRIM(T3.WRH_CD)  = :wrh_cd
     AND TO_CHAR(T3.PHV_DT,'YYYY') = :rep_year
     AND TO_CHAR(T3.PHV_DT,'MM')   = :rep_month
-    AND T4.STATUS IN (2,7) 
+    AND T4.STATUS IN (2,7,3) 
 ORDER BY
     WRH_CD,
     MAT_CD,
