@@ -3,7 +3,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Text;
 
 namespace MISReports_Api.DAL.CustomerDashboard
@@ -12,6 +12,31 @@ namespace MISReports_Api.DAL.CustomerDashboard
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private const string ConnectionName = "Informixstndordr";
+
+        static CustomerDetailDao()
+        {
+            try
+            {
+                // Ensure local/corrupt sqlhosts environment variables don't prevent Ifxoledbc from discovering hqinfdb10
+                Environment.SetEnvironmentVariable("INFORMIXSQLHOSTS", null, EnvironmentVariableTarget.Process);
+                if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("INFORMIXSERVER")))
+                {
+                    Environment.SetEnvironmentVariable("INFORMIXSERVER", "hqinfdb10", EnvironmentVariableTarget.Process);
+                }
+                if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CLIENT_LOCALE")))
+                {
+                    Environment.SetEnvironmentVariable("CLIENT_LOCALE", "en_US.CP1252", EnvironmentVariableTarget.Process);
+                }
+                if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DB_LOCALE")))
+                {
+                    Environment.SetEnvironmentVariable("DB_LOCALE", "en_US.819", EnvironmentVariableTarget.Process);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, "Failed to initialize Informix process environment variables");
+            }
+        }
 
         public CustomerDetailResponse GetCustomerDetails(string accNumber = null)
         {
@@ -47,15 +72,13 @@ namespace MISReports_Api.DAL.CustomerDashboard
                               $"WHERE c.status1 = 'A'";
                     }
 
-                    using (var cmd = new OdbcCommand(sql, conn))
+                    using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        // Full unfiltered scan (+ join) over stod_cust can take longer than the
-                        // 30s ODBC default, especially now that it is no longer capped to 100 rows.
                         cmd.CommandTimeout = 180;
 
                         if (hasFilter)
                         {
-                            cmd.Parameters.Add(new OdbcParameter("acct_number", accNumber.Trim()));
+                            cmd.Parameters.Add(new OleDbParameter("acct_number", accNumber.Trim()));
                         }
 
                         using (var reader = cmd.ExecuteReader())
@@ -85,21 +108,19 @@ namespace MISReports_Api.DAL.CustomerDashboard
                     }
                 }
             }
-            catch (OdbcException odbcEx)
+            catch (OleDbException oleEx)
             {
                 var sb = new StringBuilder();
-                sb.AppendLine($"Odbc Exception: {odbcEx.Message} (ErrorCode: 0x{odbcEx.ErrorCode:X8})");
-                if (odbcEx.Errors != null && odbcEx.Errors.Count > 0)
+                sb.AppendLine($"OleDb Exception: {oleEx.Message} (ErrorCode: 0x{oleEx.ErrorCode:X8})");
+                if (oleEx.Errors != null && oleEx.Errors.Count > 0)
                 {
-                    foreach (OdbcError err in odbcEx.Errors)
+                    foreach (OleDbError err in oleEx.Errors)
                     {
                         sb.AppendLine($"  - Details: {err.Message} (SQLState: {err.SQLState}, NativeError: {err.NativeError})");
                     }
                 }
-                logger.Error(odbcEx, "Odbc error while fetching standing order customer details");
+                logger.Error(oleEx, "OleDb error while fetching standing order customer details");
 
-                // A mid-stream failure (e.g. timeout) shouldn't discard rows already read —
-                // surface what we have instead of wiping out a large partial result.
                 if (response.Records.Count == 0)
                 {
                     response.ErrorMessage = sb.ToString().Trim();
@@ -126,7 +147,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
                 {
                     conn.Open();
                     string sql = "SELECT COUNT(*) FROM stod_cust WHERE status1 = 'A'";
-                    using (var cmd = new OdbcCommand(sql, conn))
+                    using (var cmd = new OleDbCommand(sql, conn))
                     {
                         object result = cmd.ExecuteScalar();
                         if (result != null && result != DBNull.Value && int.TryParse(result.ToString(), out int total))
@@ -153,9 +174,6 @@ namespace MISReports_Api.DAL.CustomerDashboard
                 {
                     conn.Open();
 
-                    // Dynamically discover all bank + branch combinations present in stod_cust
-                    // with status1 = 'A', joined with bank_name for a human-readable label.
-                    // Any new bank added to the database will automatically appear as a card.
                     string sql =
                         "SELECT c.bank_code, c.bran_code, " +
                         "       b.bran_name, " +
@@ -167,7 +185,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
                         "GROUP BY c.bank_code, c.bran_code, b.bran_name " +
                         "ORDER BY record_count DESC";
 
-                    using (var cmd = new OdbcCommand(sql, conn))
+                    using (var cmd = new OleDbCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -176,8 +194,6 @@ namespace MISReports_Api.DAL.CustomerDashboard
                             string branCode = GetStringValue(reader, "bran_code");
                             string branName = GetStringValue(reader, "bran_name");
 
-                            // Use bran_name from bank_name table if available;
-                            // otherwise fall back to "bank_code / bran_code"
                             string label = !string.IsNullOrWhiteSpace(branName)
                                 ? branName
                                 : string.Format("{0} / {1}", bankCode, branCode);
@@ -221,9 +237,9 @@ namespace MISReports_Api.DAL.CustomerDashboard
                                  "FROM mnth_bill WHERE acct_number = ? " +
                                  "ORDER BY bill_mon DESC, ref_id DESC";
 
-                    using (var cmd = new OdbcCommand(sql, conn))
+                    using (var cmd = new OleDbCommand(sql, conn))
                     {
-                        cmd.Parameters.Add(new OdbcParameter("acct_number", acctNumber.Trim()));
+                        cmd.Parameters.Add(new OleDbParameter("acct_number", acctNumber.Trim()));
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
@@ -271,7 +287,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
             return records;
         }
 
-        private static OdbcConnection GetConnection()
+        private static OleDbConnection GetConnection()
         {
             var connectionStringSettings = ConfigurationManager.ConnectionStrings[ConnectionName];
 
@@ -280,10 +296,10 @@ namespace MISReports_Api.DAL.CustomerDashboard
                 throw new ConfigurationErrorsException($"{ConnectionName} connection string is missing from Web.config");
             }
 
-            return new OdbcConnection(connectionStringSettings.ConnectionString);
+            return new OleDbConnection(connectionStringSettings.ConnectionString);
         }
 
-        private static string GetStringValue(OdbcDataReader reader, string columnName)
+        private static string GetStringValue(OleDbDataReader reader, string columnName)
         {
             try
             {
