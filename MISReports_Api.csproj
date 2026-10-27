@@ -442,6 +442,7 @@
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SMC- Management Information\AreaT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\CostPaidJobProgressController.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsController.cs" />
@@ -689,6 +690,7 @@
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SMC- Management Information\AreaT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\CostPaidJobProgressDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsDAL.cs" />
@@ -817,6 +819,7 @@
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
     <Compile Include="Models\SMC- Management Information\AreaT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\CostPaidJobProgressModel.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsModel.cs" />
@@ -1221,6 +1224,7 @@
     <Folder Include="Views\ConstructionCompletedLookUp\" />
     <Folder Include="Views\ConstructionCompleted\" />
     <Folder Include="Views\Costcenterwisegldocument\" />
+    <Folder Include="Views\CostPaidJobProgress\" />
     <Folder Include="Views\DocInquiryGl\" />
     <Folder Include="Views\GlInquiryByDoc\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
