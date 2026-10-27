@@ -1,4 +1,5 @@
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
+using MISReports_Api.DAL.General;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.General.ListingOfCustomer;
@@ -41,6 +42,51 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class GeneralController : ApiController
     {
+        [HttpGet]
+        [Route("general/total-customer-base")]
+        public IHttpActionResult GetTotalCustomerBase([FromUri] TotalCustomerBaseRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                var data = new TotalCustomerBaseDao().GetReport(request);
+                return Ok(new { data, errorMessage = (string)null });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Cannot retrieve Total Customer Base report.");
+                return Content(System.Net.HttpStatusCode.InternalServerError, new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve Total Customer Base report. Please try again."
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("general/total-customer-base/bill-cycles")]
+        public IHttpActionResult GetTotalCustomerBaseBillCycles()
+        {
+            try
+            {
+                var data = new TotalCustomerBaseDao().GetBillCycles();
+                return Ok(new { data, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Cannot retrieve Total Customer Base bill cycles.");
+                return Content(System.Net.HttpStatusCode.InternalServerError, new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot load bill cycles. Please try again."
+                });
+            }
+        }
+
         // ── DAO fields ────────────────────────────────────────────────────────
         private readonly ContractDemandBulkDao _contractDemandBulkDao = new ContractDemandBulkDao();
         private readonly ContractDemandBillCycleDao _billCycleDao = new ContractDemandBillCycleDao();

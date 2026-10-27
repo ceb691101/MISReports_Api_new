@@ -12,7 +12,7 @@ namespace MISReports_Api.DAL.Shared
 
         public bool TestConnection(out string errorMessage)
         {
-            return _dbConnection.TestConnection(out errorMessage);
+            return _dbConnection.TestConnection(out errorMessage, false);
         }
 
         public List<RegionModel> GetRegion()

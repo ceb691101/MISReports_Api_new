@@ -417,6 +417,8 @@
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\IntegratedDashboard\IntegratedDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
+    <Compile Include="DAL\General\TotalCustomerBaseDao.cs" />
+    <Compile Include="Models\General\TotalCustomerBaseModel.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
     <Compile Include="Controllers\Inventory\BranchgrnnotgenController.cs" />
