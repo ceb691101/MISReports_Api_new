@@ -38,13 +38,13 @@ namespace MISReports_Api.DAL.CustomerDashboard
                     {
                         sql = $"SELECT {columns} FROM stod_cust c " +
                               $"LEFT JOIN bank_name b ON c.bank_code = b.bank_code AND c.bran_code = b.bran_code " +
-                              $"WHERE c.status1 = 'Q' AND c.acct_number = ?";
+                              $"WHERE c.status1 = 'A' AND c.acct_number = ?";
                     }
                     else
                     {
                         sql = $"SELECT {columns} FROM stod_cust c " +
                               $"LEFT JOIN bank_name b ON c.bank_code = b.bank_code AND c.bran_code = b.bran_code " +
-                              $"WHERE c.status1 = 'Q'";
+                              $"WHERE c.status1 = 'A'";
                     }
 
                     using (var cmd = new OdbcCommand(sql, conn))
@@ -125,7 +125,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
                 using (var conn = GetConnection())
                 {
                     conn.Open();
-                    string sql = "SELECT COUNT(*) FROM stod_cust WHERE status1 = 'Q'";
+                    string sql = "SELECT COUNT(*) FROM stod_cust WHERE status1 = 'A'";
                     using (var cmd = new OdbcCommand(sql, conn))
                     {
                         object result = cmd.ExecuteScalar();
@@ -138,7 +138,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Error fetching total standing order customer count (status1 = 'Q')");
+                logger.Error(ex, "Error fetching total standing order customer count (status1 = 'A')");
             }
             return 0;
         }
@@ -154,7 +154,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
                     conn.Open();
 
                     // Dynamically discover all bank + branch combinations present in stod_cust
-                    // with status1 = 'Q', joined with bank_name for a human-readable label.
+                    // with status1 = 'A', joined with bank_name for a human-readable label.
                     // Any new bank added to the database will automatically appear as a card.
                     string sql =
                         "SELECT c.bank_code, c.bran_code, " +
@@ -163,7 +163,7 @@ namespace MISReports_Api.DAL.CustomerDashboard
                         "FROM stod_cust c " +
                         "LEFT JOIN bank_name b " +
                         "       ON c.bank_code = b.bank_code AND c.bran_code = b.bran_code " +
-                        "WHERE c.status1 = 'Q' " +
+                        "WHERE c.status1 = 'A' " +
                         "GROUP BY c.bank_code, c.bran_code, b.bran_name " +
                         "ORDER BY record_count DESC";
 

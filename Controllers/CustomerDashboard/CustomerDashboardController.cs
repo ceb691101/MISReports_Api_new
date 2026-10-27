@@ -18,7 +18,7 @@ namespace MISReports_Api.Controllers.CustomerDashboard
         /// <summary>
         /// GET api/CustomerDashboard/GetCustomerDetails?accNumber=...
         /// GET api/CustomerDashboard?accNumber=...
-        /// Returns standing order customer records (stod_cust joined with bank_name) where status1 = 'Q'.
+        /// Returns standing order customer records (stod_cust joined with bank_name) where status1 = 'A'.
         /// </summary>
         [HttpGet]
         [Route("")]
@@ -60,7 +60,7 @@ namespace MISReports_Api.Controllers.CustomerDashboard
 
         /// <summary>
         /// GET api/CustomerDashboard/GetCustomerCount
-        /// Returns total row count from stod_cust where status1 = 'Q'.
+        /// Returns total row count from stod_cust where status1 = 'A'.
         /// </summary>
         [HttpGet]
         [Route("GetCustomerCount")]
@@ -89,7 +89,7 @@ namespace MISReports_Api.Controllers.CustomerDashboard
 
         /// <summary>
         /// GET api/CustomerDashboard/GetCountByBank
-        /// Returns count of stod_cust records (status1 = 'Q') grouped by each configured bank/branch.
+        /// Returns count of stod_cust records (status1 = 'A') grouped by each configured bank/branch.
         /// </summary>
         [HttpGet]
         [Route("GetCountByBank")]
