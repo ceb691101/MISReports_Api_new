@@ -12,6 +12,8 @@ namespace MISReports_Api.DAL
 {
     public class JobRegisterCCDAL
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -146,12 +148,14 @@ namespace MISReports_Api.DAL
                 }
                 catch (Exception ex) when (attempt < maxRetries)
                 {
+                    logger.Warn(ex, "GetJobTypes attempt failed; retrying / trying next option");
                     // Log and retry
                     System.Diagnostics.Debug.WriteLine($"Attempt {attempt + 1} failed: {ex.Message}");
                     System.Threading.Thread.Sleep(1000 * (attempt + 1));
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetJobTypes failed (exception rethrown)");
                     // Last attempt failed
                     System.Diagnostics.Debug.WriteLine($"Final attempt failed: {ex.Message}\n{ex.StackTrace}");
                     throw new Exception($"Failed to retrieve job types: {ex.Message}", ex);

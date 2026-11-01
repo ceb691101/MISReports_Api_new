@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/avg-consumption-selected")]
     public class AvgConsumptionSelectedController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly IAvgConsumptionSelectedDataRepository _repository;
 
         public AvgConsumptionSelectedController()
@@ -53,6 +55,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSelectedAverageConsumption failed. costCenter={costCenter}, warehouseCode={warehouseCode}, fromDate={fromDate}, toDate={toDate}, matCode={matCode}", costCenter, warehouseCode, fromDate, toDate, matCode);
                 return Ok(new AvgConsumptionSelectedResponse
                 {
                     Data = null,

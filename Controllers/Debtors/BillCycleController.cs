@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/billcycle")]
     public class BillCycleController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly BillCycleRepository _repository = new BillCycleRepository();
 
         [HttpGet]
@@ -28,6 +30,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaxBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -53,6 +56,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCustomerTypeDescription failed. custType={custType}", custType);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

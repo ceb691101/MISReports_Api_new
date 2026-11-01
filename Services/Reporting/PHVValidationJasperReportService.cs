@@ -25,6 +25,8 @@ namespace MISReports_Api.Services.Reporting
 
     public class PHVValidationJasperReportService
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private const int ProcessTimeoutMs = 10 * 60 * 1000;
         private readonly string _javaExecutable;
         private readonly string _jarPath;
@@ -171,6 +173,7 @@ namespace MISReports_Api.Services.Reporting
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GeneratePhvValidationPdfAsync failed (exception rethrown). costCenterLabel={costCenterLabel}, repYear={repYear}, repMonth={repMonth}", costCenterLabel, repYear, repMonth);
                 throw new JasperReportExecutionException("Unexpected error while generating the PHV validation PDF.", ex);
             }
             finally

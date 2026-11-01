@@ -24,6 +24,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class PUCSLController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly FixedSolarDataDao _fixedSolarDataDao = new FixedSolarDataDao();
         private readonly VariableSolarDataDao _variableSolarDataDao = new VariableSolarDataDao();
         private readonly TotalSolarCustomersDao _totalSolarCustomersDao = new TotalSolarCustomersDao();
@@ -46,6 +48,7 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException ex)
             {
+                logger.Warn("GetSolarJournalsRetail rejected: {error}. request={@request}", ex.Message, request);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -155,10 +158,12 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException argEx)
             {
+                logger.Warn("ProcessFixedSolarData rejected: {error}", argEx.Message);
                 return BadRequest(argEx.Message); 
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessFixedSolarData failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -195,10 +200,12 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException argEx)
             {
+                logger.Warn("ProcessVariableSolarData rejected: {error}", argEx.Message);
                 return BadRequest(argEx.Message); // Returns 400 with clean message
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessVariableSolarData failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -235,6 +242,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessTotalSolarCustomers failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -271,6 +279,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessRawDataForSolar failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -307,6 +316,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessNetMetering failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -384,10 +394,12 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException argEx)
             {
+                logger.Warn("GetBulkSolarCustomers rejected: {error}. request={@request}", argEx.Message, request);
                 return BadRequest(argEx.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBulkSolarCustomers failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -466,10 +478,12 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException argEx)
             {
+                logger.Warn("GetOrdinarySolarCustomers rejected: {error}. request={@request}", argEx.Message, request);
                 return BadRequest(argEx.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetOrdinarySolarCustomers failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -538,6 +552,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSolarDataUNT failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

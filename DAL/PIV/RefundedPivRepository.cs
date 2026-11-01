@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class RefundedPivRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -89,6 +91,7 @@ ORDER BY
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetRefundedPivs failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, costctr={costctr}", fromDate, toDate, costctr);
                     throw new Exception("Error fetching Refunded PIV data: " + ex.Message, ex);
                 }
             }

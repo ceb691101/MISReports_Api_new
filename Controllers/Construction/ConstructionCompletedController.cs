@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/constructioncompleted")]
     public class ConstructionCompletedController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ConstructionCompletedDAL _dal = new ConstructionCompletedDAL();
 
         // PATH: /api/constructioncompleted/report/ALL/COLOMBO/510.00
@@ -84,6 +86,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. costCtr={costCtr}, fundId={fundId}, district={district}, csc={csc}", costCtr, fundId, district, csc);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

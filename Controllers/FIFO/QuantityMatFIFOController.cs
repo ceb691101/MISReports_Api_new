@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/quantitymatfifo")]
     public class QuantityMatFIFOController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly QuantityMatFIFODAL _dal = new QuantityMatFIFODAL();
 
         // PATH: /api/quantitymatfifo/report/980.90/WRH-TCP-MAIN/RM
@@ -89,6 +91,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. costCtr={costCtr}, whCode={whCode}, matCode={matCode}", costCtr, whCode, matCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

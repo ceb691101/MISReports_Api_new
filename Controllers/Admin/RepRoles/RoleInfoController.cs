@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/roleinfo")]
     public class RoleInfoController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RoleInfoRepository _repository = new RoleInfoRepository();
 
         private static string NormalizeUpper(string value)
@@ -42,6 +44,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAdminRoles failed");
                 return Ok(JObject.Parse(JsonConvert.SerializeObject(new
                 {
                     data = (object)null,
@@ -67,6 +70,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetUserRoles failed");
                 return Ok(JObject.Parse(JsonConvert.SerializeObject(new
                 {
                     data = (object)null,
@@ -145,6 +149,7 @@ namespace MISReports_Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                logger.Warn("CreateRole rejected: {error}. request={@request}", ex.Message, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -153,6 +158,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "CreateRole failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -244,6 +250,7 @@ namespace MISReports_Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                logger.Warn("UpdateRole rejected: {error}. epfNo={epfNo}, userType={userType}, request={@request}", ex.Message, epfNo, userType, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -252,6 +259,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "UpdateRole failed. epfNo={epfNo}, userType={userType}, request={@request}", epfNo, userType, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -312,6 +320,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "AddCostCentresToRole failed. epfNo={epfNo}, userType={userType}, request={@request}", epfNo, userType, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -360,6 +369,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "DeleteRole failed. epfNo={epfNo}, userType={userType}", epfNo, userType);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -385,6 +395,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMotherCompanies failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -419,6 +430,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDepartmentsByCompany failed. companyId={companyId}", companyId);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -453,6 +465,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCostCentresByCompany failed. companyId={companyId}", companyId);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -487,6 +500,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCostCentresByDepartment failed. departmentId={departmentId}", departmentId);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -512,6 +526,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetUserGroups failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

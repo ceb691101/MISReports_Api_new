@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/chequedetailsexp")]
     public class ChequeDetailsExpController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ChequeDetailsExpDAL _dal = new ChequeDetailsExpDAL();
 
         private const string DATE_FORMAT = "yyyy/MM/dd";
@@ -87,6 +89,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. costCtr={costCtr}, acctCode={acctCode}, fromDate={fromDate}, toDate={toDate}", costCtr, acctCode, fromDate, toDate);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

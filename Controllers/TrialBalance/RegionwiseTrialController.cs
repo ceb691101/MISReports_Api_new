@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/regionwisetrial")]
     public class RegionwiseTrialController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RegionwiseTrialRepository _repository = new RegionwiseTrialRepository();
 
         [HttpGet]
@@ -47,6 +49,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetRegionwiseTrial failed. companyId={companyId}, month={month}, year={year}", companyId, month, year);
                 // Log error details
                 System.Diagnostics.Trace.WriteLine($"ERROR: {ex.ToString()}");
 

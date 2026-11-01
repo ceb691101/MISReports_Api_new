@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/phvslowmovingwh")]
     public class PHVSlowMovingWHController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVSlowMovingWHDAL _dal = new PHVSlowMovingWHDAL();
 
         // PATH: /api/phvslowmovingwh/report/2026/WH_CEPP
@@ -71,6 +73,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, whCode={whCode}", repYear, whCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

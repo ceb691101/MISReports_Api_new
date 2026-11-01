@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/othercctoprovince")]
     public class OtherCCtoProvinceController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly OtherCCtoProvinceRepository _repo = new OtherCCtoProvinceRepository();
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception("Error while fetching Other CC to Province report: " + ex.Message));
             }
         }

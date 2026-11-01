@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers.SMC
     public class SawMillsMetalCrushersWeldingPlantsDetailsController
         : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SawMillsMetalCrushersWeldingPlantsDetailsDAL _dal =
             new SawMillsMetalCrushersWeldingPlantsDetailsDAL();
 
@@ -119,6 +121,7 @@ namespace MISReports_Api.Controllers.SMC
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                 var errorResponse = new
                 {
                     data = (object)null,

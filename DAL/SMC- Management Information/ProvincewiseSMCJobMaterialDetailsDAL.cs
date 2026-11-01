@@ -13,6 +13,8 @@ namespace MISReports_Api.DAL.SMC__Management_Information
 {
     public class ProvincewiseSMCJobMaterialDetailsDAL
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -323,6 +325,7 @@ namespace MISReports_Api.DAL.SMC__Management_Information
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetNullableDecimal failed (exception rethrown). columnName={columnName}", columnName);
                 throw new InvalidOperationException(
                     "Failed to read Oracle numeric column '" +
                     columnName + "'.",
@@ -358,6 +361,7 @@ namespace MISReports_Api.DAL.SMC__Management_Information
                     ex is OverflowException ||
                     ex is InvalidCastException)
                 {
+                    logger.Error(ex, "GetNullableDecimal failed (exception rethrown). columnName={columnName}", columnName);
                     throw new InvalidOperationException(
                         "Oracle numeric column '" + columnName +
                         "' cannot be represented as a .NET decimal.",

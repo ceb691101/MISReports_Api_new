@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class ConsolidatedOutputVATRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -79,6 +81,7 @@ order by T1.piv_no, T1.paid_date";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetConsolidatedOutputVAT failed (exception rethrown). fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                     // In real project you should log the error
                     throw new Exception("Error fetching Consolidated Output VAT report: " + ex.Message, ex);
                 }

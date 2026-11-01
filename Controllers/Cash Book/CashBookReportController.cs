@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/cashbook")]
     public class CashBookReportController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CashBookReportRepository _repo = new CashBookReportRepository();
 
         // MAIN: /api/cashbook/report/20220101/20251231/LTL
@@ -97,6 +99,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetData failed. fromDate={fromDate}, toDate={toDate}, payee={payee}, costCtr={costCtr}", fromDate, toDate, payee, costCtr);
                 System.Diagnostics.Debug.WriteLine($"Error in CashBookReportController: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Error fetching cash-book report: {ex.Message}", ex));
             }

@@ -10,6 +10,8 @@ namespace ChqApp.Controllers
 {
     public class CashSheetDateRangePayeeController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         [HttpGet]
         public IHttpActionResult Get(string costCtr, string fromDate, string toDate, string payee)
         {
@@ -34,6 +36,7 @@ namespace ChqApp.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. costCtr={costCtr}, fromDate={fromDate}, toDate={toDate}, payee={payee}", costCtr, fromDate, toDate, payee);
                 return InternalServerError(ex);
             }
         }

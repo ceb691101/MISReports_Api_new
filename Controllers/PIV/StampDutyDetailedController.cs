@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/stampduty")]
     public class StampDutyDetailedController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly StampDutyDetailedRepository _repo = new StampDutyDetailedRepository();
 
         // GET: api/stampduty/detailed?compId=COMP001&fromDate=2025/01/01&toDate=2025/12/31
@@ -36,6 +38,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDetailedReport failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception("Error generating Stamp Duty Detailed report: " + ex.Message));
             }
         }

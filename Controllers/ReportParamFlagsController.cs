@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/report-params")]
     public class ReportParamFlagsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ReportParamFlagsRepository _repository = new ReportParamFlagsRepository();
 
         // GET api/report-params/{repId}
@@ -34,6 +36,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReportParamFlags failed. repId={repId}", repId);
                 return Content(HttpStatusCode.InternalServerError,
                     ApiResponse<object>.Fail("Failed to fetch report parameter flags: " + ex.Message));
             }

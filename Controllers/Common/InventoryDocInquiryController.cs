@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/inventorydocinquiry")]
     public class InventoryDocInquiryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly InventoryDocInquiryDAL _dal = new InventoryDocInquiryDAL();
 
         // PATH: /api/inventorydocinquiry/report/510.11%2FISS%2F26%2F0001
@@ -56,6 +58,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. docNo={docNo}", docNo);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

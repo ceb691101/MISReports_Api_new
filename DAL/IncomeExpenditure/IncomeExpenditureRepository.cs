@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class IncomeExpenditureRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public List<IncomeExpenditureModel> GetIncomeExpenditure(string costctr, string repyear, string repmonth)
@@ -99,6 +101,7 @@ namespace MISReports_Api.DAL
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetIncomeExpenditure failed (exception rethrown). costctr={costctr}, repyear={repyear}, repmonth={repmonth}", costctr, repyear, repmonth);
                 Debug.WriteLine($"Error in GetIncomeExpenditure: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
                 throw;

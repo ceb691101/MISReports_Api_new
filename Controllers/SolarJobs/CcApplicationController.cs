@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers.SolarJobs
     [RoutePrefix("api/solarjobs/ccapplication")]
     public class CcApplicationController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CcApplicationRepository _repository = new CcApplicationRepository();
 
         [HttpGet]
@@ -55,6 +57,7 @@ namespace MISReports_Api.Controllers.SolarJobs
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetList failed. fromDate={fromDate}, toDate={toDate}, costctr={costctr}", fromDate, toDate, costctr);
                 return Ok(new
                 {
                     data = (object)null,

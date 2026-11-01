@@ -12,6 +12,8 @@ namespace MISReports_Api.Services.Reporting
 {
     public class PHVObsoleteIdleJasperReportService
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private const int ProcessTimeoutMs = 10 * 60 * 1000;
         private readonly string _javaExecutable;
         private readonly string _jarPath;
@@ -181,6 +183,7 @@ namespace MISReports_Api.Services.Reporting
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GeneratePhvObsoleteIdleReportAsync failed (exception rethrown). costCenterLabel={costCenterLabel}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}, templateRelativePath={templateRelativePath}, format={format}", costCenterLabel, warehouseCode, repYear, repMonth, templateRelativePath, format);
                 throw new JasperReportExecutionException("Unexpected error while generating the report.", ex);
             }
             finally

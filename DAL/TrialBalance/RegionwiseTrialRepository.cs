@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class RegionwiseTrialRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public List<RegionwiseTrialModel> GetRegionwiseTrialData(string companyId, string month, string year)
@@ -143,10 +145,12 @@ namespace MISReports_Api.DAL
             }
             catch (OracleException ex)
             {
+                logger.Error(ex, "GetRegionwiseTrialData failed (exception rethrown). companyId={companyId}, month={month}, year={year}", companyId, month, year);
                 throw new Exception($"Oracle Error {ex.Number}: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetRegionwiseTrialData failed (exception rethrown). companyId={companyId}, month={month}, year={year}", companyId, month, year);
                 throw new Exception($"Database operation failed: {ex.Message}", ex);
             }
         }

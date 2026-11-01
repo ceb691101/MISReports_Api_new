@@ -26,6 +26,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "TestConnection failed");
                 errorMessage = ex.Message;
                 return false;
             }

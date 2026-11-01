@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/workinprogresscompletedcostcenterwise")]
     public class WorkInProgressCompletedCostCenterwiseController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly WorkInProgressCompletedCostCenterwiseRepository _repo;
 
         public WorkInProgressCompletedCostCenterwiseController()
@@ -37,6 +39,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetWorkInProgressCompletedCostCenterwise failed. costctr={costctr}, fromDate={fromDate}, toDate={toDate}", costctr, fromDate, toDate);
                 return Ok(new
                 {
                     data = (object)null,

@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/debtorsbulk")]
     public class DebtorsBulkController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DebtorsBulkRepository _debtorsBulkRepository = new DebtorsBulkRepository();
 
         [HttpGet]
@@ -66,6 +68,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDebtorsBulkSummary failed. opt={opt}, cycle={cycle}, areaCode={areaCode}", opt, cycle, areaCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

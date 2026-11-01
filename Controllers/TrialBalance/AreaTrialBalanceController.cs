@@ -14,6 +14,8 @@ namespace MISReports_Api.Controllers.TrialBalance
     [RoutePrefix("api/areatrialbalance")]
     public class AreaTrialBalanceController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AreaTrialBalanceRepository _repository;
         private readonly AreaTrialBalanceJasperReportService _jasperReportService;
 
@@ -45,6 +47,7 @@ namespace MISReports_Api.Controllers.TrialBalance
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAreaTrialBalanceList failed. companyId={companyId}, year={year}, month={month}", companyId, year, month);
                 return InternalServerError(ex);
             }
         }
@@ -96,6 +99,7 @@ namespace MISReports_Api.Controllers.TrialBalance
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAreaTrialBalancePdf failed. companyId={companyId}, year={year}, month={month}, download={download}", companyId, year, month, download);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error generating trial balance PDF: {ex.Message}");
             }
         }
@@ -146,6 +150,7 @@ namespace MISReports_Api.Controllers.TrialBalance
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAreaTrialBalanceCsv failed. companyId={companyId}, year={year}, month={month}", companyId, year, month);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Error generating trial balance CSV: {ex.Message}");
             }
         }

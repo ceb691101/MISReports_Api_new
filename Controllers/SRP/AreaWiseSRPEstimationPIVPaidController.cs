@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers.PIV
     [RoutePrefix("api/area-wise-srp-estimation-piv-paid")]
     public class AreaWiseSRPEstimationPIVPaidController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AreaWiseSRPEstimationPIVPaidRepository _repository;
 
         public AreaWiseSRPEstimationPIVPaidController()
@@ -43,6 +45,7 @@ namespace MISReports_Api.Controllers.PIV
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return Request.CreateResponse(
                     HttpStatusCode.InternalServerError,
                     new { message = ex.Message },

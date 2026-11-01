@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL
 {
     public class CashBookReportRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connStr = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public List<CashBookReportModel> GetCashBookData(string fromDate, string toDate, string payee, string costCtr = null)
@@ -72,10 +74,12 @@ SELECT * FROM (
                 }
                 catch (OracleException oex)
                 {
+                    logger.Error(oex, "GetCashBookData failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, payee={payee}, costCtr={costCtr}", fromDate, toDate, payee, costCtr);
                     throw new Exception($"Oracle error {oex.Number}: {oex.Message}", oex);
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetCashBookData failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, payee={payee}, costCtr={costCtr}", fromDate, toDate, payee, costCtr);
                     throw new Exception("Error fetching cash-book data from database", ex);
                 }
             }

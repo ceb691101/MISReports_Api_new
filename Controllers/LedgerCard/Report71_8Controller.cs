@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class Report71_8Controller : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly Report71_8Repository _repository = new Report71_8Repository();
 
         [HttpGet]
@@ -65,6 +67,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. compId={compId}, repyear={repyear}, repmonth={repmonth}", compId, repyear, repmonth);
                 System.Diagnostics.Debug.WriteLine($"Error in Report71_8Controller: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Error fetching 71/8 Report data: {ex.Message}", ex));
             }

@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
 	[RoutePrefix("api/role-report")]
 	public class RoleCrudController : ApiController
 	{
+		private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
 		private readonly RoleCrudRepository _repository = new RoleCrudRepository();
 
 		[HttpPost]
@@ -63,6 +65,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetReportsByCategory failed. request={@request}", request);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -134,6 +137,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "SaveUserRoleReports failed");
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -167,6 +171,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "DeleteAllReports failed. roleId={roleId}", roleId);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -200,6 +205,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "DeleteReportsByCategory failed. roleId={roleId}, catCode={catCode}", roleId, catCode);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -233,6 +239,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "DeleteReportByName failed. roleId={roleId}, repId={repId}", roleId, repId);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -266,6 +273,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetReportsByName failed. repId={repId}", repId);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -290,6 +298,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetAllCategories failed");
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -314,6 +323,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetAllActiveReports failed");
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -347,6 +357,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetUserAssignedReports failed. roleId={roleId}", roleId);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,

@@ -17,6 +17,8 @@ namespace MISReports_Api.DAL.Shared
     /// </summary>
     public class ArrearsPositionBillCycleDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public ArrearsPositionBillCycleModel GetMaxBillCycle(string areaCode)
@@ -59,11 +61,13 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetMaxBillCycle failed. areaCode={areaCode}", areaCode);
                     System.Diagnostics.Trace.WriteLine($"OleDbException in ArrearsPositionBillCycleDao: {ex.Message}");
                     model.ErrorMessage = "Database error retrieving max bill cycle.";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetMaxBillCycle failed. areaCode={areaCode}", areaCode);
                     System.Diagnostics.Trace.WriteLine($"Unexpected error in ArrearsPositionBillCycleDao: {ex.Message}");
                     model.ErrorMessage = "Unexpected error occurred.";
                 }

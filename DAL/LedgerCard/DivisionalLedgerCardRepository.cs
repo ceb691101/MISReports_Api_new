@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL
 {
     public class DivisionalLedgerCardRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -105,11 +107,13 @@ ORDER BY
                 }
                 catch (OracleException oex)
                 {
+                    logger.Error(oex, "GetDivisionalLedgerCardData failed (exception rethrown). year={year}, month={month}, glCode={glCode}, company={company}", year, month, glCode, company);
                     throw new Exception(
                         $"Oracle error in DivisionalLedgerCard: Code {oex.Number}", oex);
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetDivisionalLedgerCardData failed (exception rethrown). year={year}, month={month}, glCode={glCode}, company={company}", year, month, glCode, company);
                     throw new Exception(
                         $"Error fetching Divisional Ledger Card data.", ex);
                 }

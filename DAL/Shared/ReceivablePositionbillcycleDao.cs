@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.Shared
 {
     public class ReceivablePositionBillCycleDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         // ── Primary method used by CollectionController ────────────────────
@@ -50,12 +52,14 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetLast24BillCycles failed. billType={billType}", billType);
                     System.Diagnostics.Trace.WriteLine(
                         $"Error retrieving max bill cycle from receive_position: {ex.Message}");
                     model.ErrorMessage = "Error retrieving max bill cycle";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetLast24BillCycles failed. billType={billType}", billType);
                     System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
                     model.ErrorMessage = "Unexpected error occurred";
                 }
@@ -110,6 +114,7 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "QueryMaxBillCycle failed. useBulkConnection={useBulkConnection}, billType={billType}", useBulkConnection, billType);
                     System.Diagnostics.Trace.WriteLine(
                         $"Error in QueryMaxBillCycle: {ex.Message}");
                 }
@@ -138,6 +143,7 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "QueryMaxBillCycleFromMonTot failed. useBulkConnection={useBulkConnection}", useBulkConnection);
                     System.Diagnostics.Trace.WriteLine(
                         $"Error in QueryMaxBillCycleFromMonTot: {ex.Message}");
                 }

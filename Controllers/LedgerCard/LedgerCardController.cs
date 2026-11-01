@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ledgercard")]
     public class LedgerCardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly LedgerCardRepository _repository;
 
         public LedgerCardController()
@@ -91,6 +93,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLedgerCardData failed. glcode={glcode}, repyear={repyear}, startmonth={startmonth}, endmonth={endmonth}", glcode, repyear, startmonth, endmonth);
                 System.Diagnostics.Debug.WriteLine($"Error in LedgerCardController.GetReport: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Error fetching ledger card data: {ex.Message}", ex));
             }

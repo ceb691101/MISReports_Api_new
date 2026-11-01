@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers.IntegratedDashboard
     [RoutePrefix("api/integrated")]
     public class IntegratedDashboardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private static readonly IntegratedFinancialDao Dao = new IntegratedFinancialDao();
         private static readonly ConcurrentDictionary<string, object> Cache = new ConcurrentDictionary<string, object>();
         private const double CacheMinutes = 5;
@@ -62,6 +64,7 @@ namespace MISReports_Api.Controllers.IntegratedDashboard
                     }
                     catch (Exception ex)
                     {
+                        logger.Error(ex, "GetOrReturnStaleAndRefreshWithMetadata failed");
                         Trace.TraceError($"[IntegratedDashboard] {key}-refresh failed: {ex.Message}");
                     }
                 });

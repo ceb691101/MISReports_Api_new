@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class BankPaidPIVDetailsRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -66,6 +68,7 @@ ORDER BY
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetBankPaidPIVDetails failed (exception rethrown). fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                     throw new Exception("Error fetching Bank Paid PIV details: " + ex.Message, ex);
                 }
             }

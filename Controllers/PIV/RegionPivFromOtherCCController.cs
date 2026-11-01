@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/Regional-POS-relevant-to-OtherCC")]
     public class RegionPivFromOtherCCController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RegionPivFromOtherCCRepository _repo = new RegionPivFromOtherCCRepository();
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception("Error fetching Region PIV from Other CC report: " + ex.Message));
             }
         }
