@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ledgercard/curr-acct-recon-ext-period")]
     public class CurrAcctReconExtPeriodController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CurrAcctReconExtPeriodRepository _repository;
 
         public CurrAcctReconExtPeriodController()
@@ -40,6 +42,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. compId={compId}, repyear={repyear}, monthFrom={monthFrom}, monthTo={monthTo}, subac={subac}", compId, repyear, monthFrom, monthTo, subac);
                 return InternalServerError(ex);
             }
         }

@@ -15,6 +15,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class SharedController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AreasDao _areasDao = new AreasDao();
         private readonly ProvinceDao _provinceDao = new ProvinceDao();
         private readonly RegionDao _regionDao = new RegionDao();
@@ -61,6 +63,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAreas failed. regionCode={regionCode}, provCode={provCode}", regionCode, provCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -96,6 +99,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBulkAreas failed. regionCode={regionCode}, provCode={provCode}", regionCode, provCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -131,6 +135,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetProvince failed. regionCode={regionCode}", regionCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -166,6 +171,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetOrdinaryProvince failed. regionCode={regionCode}", regionCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -201,6 +207,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetRegion failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -236,6 +243,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetOrdinaryRegion failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -261,6 +269,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaxBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -286,6 +295,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPVBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -311,6 +321,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetOrdinaryBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -336,6 +347,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetRetailBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -361,6 +373,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPVCapacityMaxBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -386,6 +399,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBillCycleFromArea failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -411,6 +425,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetContractDemandBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -436,6 +451,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetActiveCustomersSalesOrdBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -461,6 +477,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetActiveCustomersSalesBulkBillCycle failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -486,6 +503,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCalcCycleFromArea failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -532,6 +550,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetGovernmentAccountsBillCycle failed. areaCode={areaCode}", areaCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -566,6 +585,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReceivablePositionBillCycle failed. billType={billType}", billType);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -612,6 +632,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetArrearsPositionBillCycle failed. areaCode={areaCode}", areaCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

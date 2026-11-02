@@ -14,6 +14,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/chqdetailsexpregion")]
     public class ChqDetailsExpRegionController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ChequeDetailsExpRegionDAL _dal;
 
         public ChqDetailsExpRegionController()
@@ -92,6 +94,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, compId={compId}, glCode={glCode}", fromDate, toDate, compId, glCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

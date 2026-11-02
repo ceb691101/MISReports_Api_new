@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/costcenterworkinprogress")]
     public class CostCenterWorkInProgressController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CostCenterWorkInProgressRepository _repository = new CostCenterWorkInProgressRepository();
 
         [HttpGet]
@@ -35,6 +37,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCostCenterWorkInProgress failed. deptId={deptId}", deptId);
                 // More detailed error logging
                 Debug.WriteLine($"Error in API: {ex.ToString()}");
 

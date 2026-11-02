@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/smc-line-details-by-province")]
     public class SMCLineDetailsByProvinceController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SMCLineDetailsByProvinceDAL _dal =
             new SMCLineDetailsByProvinceDAL();
 
@@ -28,6 +30,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetActiveCompanies failed");
                 System.Diagnostics.Debug.WriteLine(
                     $"Error loading active companies: {ex.Message}\n{ex.StackTrace}");
 
@@ -154,6 +157,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. compId={compId}, fromDate={fromDate}, toDate={toDate}, wiringType={wiringType}", compId, fromDate, toDate, wiringType);
                 System.Diagnostics.Debug.WriteLine(
                     $"Error in SMCLineDetailsByProvinceController: " +
                     $"{ex.Message}\n{ex.StackTrace}");

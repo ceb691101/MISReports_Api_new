@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/physical-verification")]
     public class PHVEntryFormController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PhysicalVerificationRepository _repository;
 
         public PHVEntryFormController()
@@ -62,6 +64,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPhysicalVerification failed. deptId={deptId}, docNo={docNo}", deptId, docNo);
                 // Error logging
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR in PHVEntryFormController: {ex}"

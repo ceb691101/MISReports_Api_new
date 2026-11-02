@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/billcalculation")]
     public class BillCalculationController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly BillCalculationDao _dao;
 
         public BillCalculationController()
@@ -57,6 +59,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "CalculateBill failed. request={@request}", request);
                 System.Diagnostics.Trace.WriteLine($"Error in CalculateBill: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
                 return InternalServerError(ex);

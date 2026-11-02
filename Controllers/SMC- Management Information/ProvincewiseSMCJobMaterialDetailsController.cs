@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers.SMC__Management_Information
     public class ProvincewiseSMCJobMaterialDetailsController
         : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvincewiseSMCJobMaterialDetailsDAL _dal =
             new ProvincewiseSMCJobMaterialDetailsDAL();
 
@@ -96,11 +98,13 @@ namespace MISReports_Api.Controllers.SMC__Management_Information
             }
             catch (ArgumentException ex)
             {
+                logger.Warn("GetReport rejected: {error}. compId={compId}, fromDate={fromDate}, toDate={toDate}, wiringType={wiringType}", ex.Message, compId, fromDate, toDate, wiringType);
                 // Invalid input or validation failure.
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. compId={compId}, fromDate={fromDate}, toDate={toDate}, wiringType={wiringType}", compId, fromDate, toDate, wiringType);
                 // Log the complete exception for debugging.
                 Trace.TraceError(
                     "Error in Provincewise SMC Job Material Details API: {0}",

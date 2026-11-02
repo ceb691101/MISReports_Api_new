@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ledgercardtotal")]
     public class LedgerCardTotalController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly LedgerCardTotalRepository _repo = new LedgerCardTotalRepository();
 
         // ---------- MAIN ROUTE (used by front-end) ----------
@@ -79,6 +81,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLedgerCardTotalData failed. glcode={glcode}, repyear={repyear}, repmonth={repmonth}", glcode, repyear, repmonth);
                 System.Diagnostics.Debug.WriteLine(
                     $"Error in LedgerCardTotalController: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(

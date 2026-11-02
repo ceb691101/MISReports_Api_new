@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/reprolereports")]
     public class RepRoleReportController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RepRoleReportRepository _repository =
             new RepRoleReportRepository();
 
@@ -35,6 +37,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReports failed. roleId={roleId}", roleId);
                 var errorResponse = new
                 {
                     data = (object)null,

@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/last-doc")]
     public class LastDocController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly LastDocRepository _repository;
 
         public LastDocController()
@@ -48,6 +50,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLastDoc failed. deptId={deptId}, repYear={repYear}", deptId, repYear);
                 return Request.CreateResponse(
                     HttpStatusCode.InternalServerError,
                     new { message = ex.Message },

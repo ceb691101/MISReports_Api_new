@@ -6,6 +6,8 @@ namespace MISReports_Api.DBAccess
 {
     public class DBConnection
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string bulkConnectionString;
         private readonly string ordinaryConnectionString;
 
@@ -38,6 +40,7 @@ namespace MISReports_Api.DBAccess
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "DBConnection constructor failed (exception rethrown)");
                 System.Diagnostics.Trace.WriteLine($"DBConnection initialization error: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
                 throw;
@@ -74,12 +77,14 @@ namespace MISReports_Api.DBAccess
             }
             catch (OleDbException oleEx)
             {
+                logger.Error(oleEx, "TestConnection failed. useBulkConnection={useBulkConnection}", useBulkConnection);
                 errorMessage = $"OleDb Error: {oleEx.Message}, Error Code: {oleEx.ErrorCode}";
                 System.Diagnostics.Trace.WriteLine(errorMessage);
                 return false;
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "TestConnection failed. useBulkConnection={useBulkConnection}", useBulkConnection);
                 errorMessage = $"Connection failed: {ex.Message}";
                 System.Diagnostics.Trace.WriteLine(errorMessage);
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");

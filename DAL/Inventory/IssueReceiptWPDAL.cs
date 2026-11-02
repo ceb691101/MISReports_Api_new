@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL
 {
     public class IssueReceiptWPDAL
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -82,10 +84,12 @@ SELECT * FROM (
                 }
                 catch (OracleException oex)
                 {
+                    logger.Error(oex, "GetIssueReceiptWP failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, costCtr={costCtr}", fromDate, toDate, costCtr);
                     throw new Exception($"Oracle error {oex.Number}: {oex.Message}", oex);
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetIssueReceiptWP failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, costCtr={costCtr}", fromDate, toDate, costCtr);
                     throw new Exception("Error fetching issue-receipt data from database", ex);
                 }
             }

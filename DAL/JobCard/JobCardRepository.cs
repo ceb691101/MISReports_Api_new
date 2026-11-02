@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL
 {
     public class JobCardRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public async Task<List<JobcardModel>> GetJobCardsAsync(string projectNo, string costCenter)
@@ -115,6 +117,7 @@ namespace MISReports_Api.DAL
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetJobCardsAsync failed (exception rethrown). projectNo={projectNo}, costCenter={costCenter}", projectNo, costCenter);
                 Debug.WriteLine($"Error in GetJobCard: {ex.Message}");
                 throw;
             }

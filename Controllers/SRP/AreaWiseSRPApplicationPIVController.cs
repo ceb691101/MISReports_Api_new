@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/areawisesrpapplicationpiv")]
     public class AreaWiseSRPApplicationPIVController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AreaWiseSRPApplicationPIVRepository _repo = new AreaWiseSRPApplicationPIVRepository();
 
         // GET: api/areawisesrpapplicationpiv/get?compId=01&fromDate=20250101&toDate=20250131
@@ -43,6 +45,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception("Error while fetching Area Wise SRP Application PIV report: " + ex.Message));
             }
         }

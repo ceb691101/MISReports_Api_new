@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class DebtorsBulkRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["InformixBulkConnection"].ConnectionString;
 
         public List<DebtorsBulkModel> GetDebtorsBulkData(string opt, string cycle, string areaCode)
@@ -45,6 +47,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetDebtorsBulkData failed (exception rethrown). opt={opt}, cycle={cycle}, areaCode={areaCode}", opt, cycle, areaCode);
                     Console.WriteLine($"Error retrieving bulk debtors data: {ex.Message}", ex);
                     throw;
                 }

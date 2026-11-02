@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/user")]
     public class UserController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         // Connection string configured in Web.config
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["OracleTest"].ConnectionString;
 
@@ -65,6 +67,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEmployeeByEpf failed. epfNo={epfNo}", epfNo);
                 return InternalServerError(ex);
             }
         }
@@ -119,6 +122,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAllocatedSystems failed. epfNo={epfNo}", epfNo);
                 return InternalServerError(ex);
             }
         }

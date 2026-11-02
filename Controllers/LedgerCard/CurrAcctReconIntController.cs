@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ledgercard/current-account-reconciliation-internal")]
     public class CurrAcctReconIntController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CurrAcctReconIntRepository _repository;
 
         public CurrAcctReconIntController()
@@ -34,6 +36,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. region={region}, year={year}, month={month}, subac={subac}", region, year, month, subac);
                 return InternalServerError(ex);
             }
         }

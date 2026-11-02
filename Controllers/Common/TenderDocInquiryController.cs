@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/tenderdocinquiry")]
     public class TenderDocInquiryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly TenderDocInquiryDAL _dal = new TenderDocInquiryDAL();
 
         // QUERY: /api/tenderdocinquiry/report?fromDate=2026-01-01&toDate=2026-01-31&costCtr=100&refNo=TND
@@ -66,6 +68,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetQuery failed. fromDate={fromDate}, toDate={toDate}, costCtr={costCtr}, refNo={refNo}", fromDate, toDate, costCtr, refNo);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

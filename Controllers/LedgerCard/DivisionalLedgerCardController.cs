@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/divisionalledgercard")]
     public class DivisionalLedgerCardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DivisionalLedgerCardRepository _repo = new DivisionalLedgerCardRepository();
 
         // ---------- MAIN ROUTE ----------
@@ -79,6 +81,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetData failed. year={year}, month={month}, glcode={glcode}, company={company}", year, month, glcode, company);
                 System.Diagnostics.Debug.WriteLine(
                     $"Error in DivisionalLedgerCardController: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(

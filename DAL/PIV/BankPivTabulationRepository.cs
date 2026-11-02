@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class BankPivTabulationRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -110,6 +112,7 @@ ORDER BY
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetBankPivTabulation failed (exception rethrown). fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                     throw new Exception("Error fetching Bank PIV Tabulation data: " + ex.Message, ex);
                 }
             }

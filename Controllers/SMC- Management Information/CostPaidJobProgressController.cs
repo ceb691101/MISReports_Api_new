@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers.SMC__Management_Information
     [RoutePrefix("api/cost-paid-job-progress")]
     public class CostPaidJobProgressController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CostPaidJobProgressDAL _dal =
             new CostPaidJobProgressDAL();
 
@@ -87,10 +89,12 @@ namespace MISReports_Api.Controllers.SMC__Management_Information
             }
             catch (ArgumentException ex)
             {
+                logger.Warn("GetReport rejected: {error}. deptId={deptId}, applicationNo={applicationNo}, fromDate={fromDate}, toDate={toDate}", ex.Message, deptId, applicationNo, fromDate, toDate);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. deptId={deptId}, applicationNo={applicationNo}, fromDate={fromDate}, toDate={toDate}", deptId, applicationNo, fromDate, toDate);
                 Trace.TraceError(
                     "Error in Cost Paid Job Progress API: {0}",
                     ex.ToString());

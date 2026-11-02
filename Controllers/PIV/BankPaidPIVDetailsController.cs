@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/bank-paid-piv")]
     public class BankPaidPIVDetailsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly BankPaidPIVDetailsRepository _repo = new BankPaidPIVDetailsRepository();
 
         // GET: api/bank-paid-piv/report?fromDate=2025/01/01&toDate=2025/12/31
@@ -38,6 +40,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                 return InternalServerError(new Exception("Error generating Bank Paid PIV Report: " + ex.Message));
             }
         }

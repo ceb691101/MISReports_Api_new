@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.Shared
 {
     public class AreasDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public bool TestConnection(out string errorMessage)
@@ -94,6 +96,7 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetAreas failed (exception rethrown). regionCode={regionCode}, provCode={provCode}", regionCode, provCode);
                     throw new Exception("Error retrieving areas data: " + ex.Message, ex);
                 }
             }

@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff
 {
     public class ActiveCustSalesOrdBillCycleDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public BillCycleModel GetLast36BillCycles()
@@ -47,11 +49,13 @@ namespace MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetLast36BillCycles failed");
                     System.Diagnostics.Trace.WriteLine($"Error retrieving max bill cycle: {ex.Message}");
                     model.ErrorMessage = "Error retrieving max bill cycle";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetLast36BillCycles failed");
                     System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
                     model.ErrorMessage = "Unexpected error occurred";
                 }

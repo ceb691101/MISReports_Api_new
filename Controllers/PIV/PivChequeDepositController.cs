@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/pivchequedeposit")]
     public class PivChequeDepositController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PivChequeDepositRepository _repo = new PivChequeDepositRepository();
 
         // GET: api/pivchequedeposit/get?chequeNo=123456
@@ -29,6 +31,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. chequeNo={chequeNo}", chequeNo);
                 return InternalServerError(new Exception("Error while fetching cheque deposit details: " + ex.Message));
             }
         }

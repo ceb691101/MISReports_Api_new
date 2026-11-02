@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class AreasRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["InformixConnection"].ConnectionString;
 
         // regionCode / provCode are optional. When provided, results are scoped
@@ -60,6 +62,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetAreas failed (exception rethrown). regionCode={regionCode}, provCode={provCode}", regionCode, provCode);
                     Console.WriteLine($"Error retrieving areas data: {ex.Message}", ex);
                     throw;
                 }

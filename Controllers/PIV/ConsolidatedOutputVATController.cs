@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/consolidatedvat")]
     public class ConsolidatedOutputVATController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ConsolidatedOutputVATRepository _repo = new ConsolidatedOutputVATRepository();
 
         // GET: api/consolidatedvat/report?fromDate=2025/01/01&toDate=2025/12/31
@@ -39,6 +41,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                 return InternalServerError(new Exception("Error while generating Consolidated Output VAT report: " + ex.Message));
             }
         }

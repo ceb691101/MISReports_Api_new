@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/annual-verification-sheet")]
     public class AnnualVerificationSheetController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AnnualVerificationSheetRepository _repository;
 
         public AnnualVerificationSheetController()
@@ -50,6 +52,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAnnualVerificationSheet failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}", deptId, repYear, repMonth);
                 return Ok(new
                 {
                     success = false,

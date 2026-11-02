@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/phv-obsolete-idle")]
     public class PHVObsoleteIdleController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVObsoleteIdleRepository _repository;
         private readonly PHVObsoleteIdleJasperReportService _jasperReportService;
 
@@ -45,6 +47,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetObsoleteIdle failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}", deptId, repYear, repMonth, warehouseCode);
                 return InternalServerError(ex);
             }
         }
@@ -105,10 +108,12 @@ namespace MISReports_Api.Controllers
             }
             catch (JasperReportExecutionException ex)
             {
+                logger.Error(ex, "GetObsoleteIdlePdf failed. deptId={deptId}, deptName={deptName}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}, download={download}", deptId, deptName, repYear, repMonth, warehouseCode, download);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetObsoleteIdlePdf failed. deptId={deptId}, deptName={deptName}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}, download={download}", deptId, deptName, repYear, repMonth, warehouseCode, download);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error generating obsolete/idle PDF.");
             }
         }

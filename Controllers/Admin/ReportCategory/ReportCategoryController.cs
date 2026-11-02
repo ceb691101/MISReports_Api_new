@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/reportcategory")]
     public class ReportCategoryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ReportCategoryRepository _repository = new ReportCategoryRepository();
 
         private static string NormalizeCategoryCode(string catCode)
@@ -40,6 +42,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAllCategories failed");
                 return Ok(JObject.Parse(JsonConvert.SerializeObject(new
                 {
                     data = (object)null,
@@ -88,6 +91,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCategoryByCode failed. catCode={catCode}", catCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -150,6 +154,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "CreateCategory failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -228,6 +233,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "UpdateCategory failed. catCode={catCode}, request={@request}", catCode, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -273,6 +279,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "DeleteCategory failed. catCode={catCode}", catCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

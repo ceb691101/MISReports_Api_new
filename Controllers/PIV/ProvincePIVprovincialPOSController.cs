@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/provincepivprovincialpos")]
     public class ProvincePIVprovincialPOSController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvincePIVprovincialRepository _repository =
             new ProvincePIVprovincialRepository();
 
@@ -47,6 +49,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception(
                     "Error occurred while retrieving Province POS wise PIV Collections data.",
                     ex

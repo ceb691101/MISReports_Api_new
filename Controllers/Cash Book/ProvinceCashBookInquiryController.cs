@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/provincecashbookinquiry")]
     public class ProvinceCashBookInquiryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvinceCashBookInquiryDAL _dal = new ProvinceCashBookInquiryDAL();
 
         // PATH: /api/provincecashbookinquiry/report/2026-01-01/100
@@ -70,6 +72,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. curDate={curDate}, compId={compId}", curDate, compId);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class AccCodeWisePivNotAfmhqRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -96,6 +98,7 @@ ORDER BY company, c.dept_id, a.account_code, c.piv_no, c.piv_receipt_no, c.piv_d
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetAccCodeWisePivNotAfmhq failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, costctr={costctr}", fromDate, toDate, costctr);
                     throw new Exception("Error fetching PIV (non-AFMHQ companies) data: " + ex.Message, ex);
                 }
             }

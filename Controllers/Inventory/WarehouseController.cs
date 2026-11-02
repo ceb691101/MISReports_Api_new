@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/warehouse")]
     public class WarehouseController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly WarehouseRepository _repository = new WarehouseRepository();
 
         // Endpoint: GET /api/warehouse/{epfNo}
@@ -30,6 +32,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetWarehousesByEpf failed. epfNo={epfNo}", epfNo);
                 var errorResponse = new
                 {
                     data = (object)null,

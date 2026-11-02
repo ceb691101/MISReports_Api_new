@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
     [RoutePrefix("api/reppara")]
     public class RepParaController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RepParaRepository _repository = new RepParaRepository();
 
         [HttpGet]
@@ -33,6 +35,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAllReportParams failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -58,6 +61,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPopedRepParams failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -84,6 +88,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAllReports failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -129,6 +134,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "SaveReportParams failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -164,6 +170,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "PopulateParamTs failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -194,6 +201,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "DebugPendingParams failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -242,6 +250,7 @@ namespace MISReports_Api.Controllers.Admin.Report_Parameters
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "DeleteReportParam failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

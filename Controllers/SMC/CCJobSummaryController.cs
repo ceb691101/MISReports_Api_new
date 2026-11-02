@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ccjobsummary")]
     public class CCJobSummaryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CCJobSummaryDAL _dal = new CCJobSummaryDAL();
 
         // QUERY: /api/ccjobsummary/report?repYear=2026&costCtr=510.20&fromNo=0001&toNo=0030
@@ -79,6 +81,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, costCtr={costCtr}, fromNo={fromNo}, toNo={toNo}", repYear, costCtr, fromNo, toNo);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

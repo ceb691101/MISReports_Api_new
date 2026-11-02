@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class OUMRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         //private readonly string connectionString = ConfigurationManager.ConnectionStrings["InformixCreditCard"].ConnectionString;
         // private readonly string connectionString = "Provider=Ifxoledbc.2;Password=run10times;User ID=appadm1;Data Source=crdtcard@hqinfdb10";
         string connectionstring = "Provider=Ifxoledbc.2;Password=run10times;User ID=appadm1;Data Source=crdtcard@hqinfdb10";
@@ -53,6 +55,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "InsertIntoAmex2 failed (exception rethrown)");
                     Console.WriteLine($"Error inserting into Amex2: {ex.Message}");
                     throw;
                 }
@@ -102,6 +105,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "RefreshCrdTemp failed (exception rethrown)");
                     Console.WriteLine($"Error refreshing CrdTemp: {ex.Message}");
                     throw;
                 }
@@ -160,6 +164,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetCrdTempRecords failed (exception rethrown)");
                     Console.WriteLine($"Error retrieving CrdTemp records: {ex.Message}");
                     throw;
                 }
@@ -208,6 +213,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "ApproveRecords failed");
                     transaction?.Rollback();
                     return success;
 

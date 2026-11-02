@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/acc-code-wise-piv-not-afmhq")]
     public class AccCodeWisePivNotAfmhqController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AccCodeWisePivNotAfmhqRepository _repo = new AccCodeWisePivNotAfmhqRepository();
 
         // GET: api/acc-code-wise-piv-not-afmhq/report?fromDate=2025/01/01&toDate=2025/12/31&costctr=AFMHQ001
@@ -39,6 +41,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. fromDate={fromDate}, toDate={toDate}, costctr={costctr}", fromDate, toDate, costctr);
                 return InternalServerError(new Exception("Error generating PIV Non-AFMHQ Companies Report: " + ex.Message));
             }
         }

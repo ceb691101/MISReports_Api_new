@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/jobsearchmaintable")]
     public class JobSearchMainTableController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly JobSearchMainTableRepository _repository = new JobSearchMainTableRepository();
 
         // GET: api/jobsearchmaintable
@@ -55,6 +57,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Search failed. applicationId={applicationId}, applicationNo={applicationNo}, projectNo={projectNo}, idNo={idNo}, accountNo={accountNo}, tele={tele}", applicationId, applicationNo, projectNo, idNo, accountNo, tele);
                 System.Diagnostics.Trace.WriteLine($"JobSearchMainTable error: {ex}");
                 return Ok(new
                 {

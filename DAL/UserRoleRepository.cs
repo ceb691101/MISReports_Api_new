@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class UserRoleRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
         public List<UserRoleModel> GetUserRole(string epfNo)
@@ -53,6 +55,7 @@ namespace MISReports_Api.DAL
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetUserRole failed (exception rethrown). epfNo={epfNo}", epfNo);
                 Debug.WriteLine($"Error in GetUserRole: {ex.Message}");
                 throw;
             }

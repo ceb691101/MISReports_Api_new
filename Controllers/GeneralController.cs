@@ -42,6 +42,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class GeneralController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         [HttpGet]
         [Route("general/total-customer-base")]
         public IHttpActionResult GetTotalCustomerBase([FromUri] TotalCustomerBaseRequest request)
@@ -54,6 +56,7 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException ex)
             {
+                logger.Warn("GetTotalCustomerBase rejected: {error}. request={@request}", ex.Message, request);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -193,6 +196,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessContractDemandRequest failed");
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR ProcessContractDemandRequest: {ex.Message}\n{ex.StackTrace}");
 
@@ -318,6 +322,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessActiveCustomersOrdinaryRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -344,6 +349,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessActiveCustomersBulkRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -411,6 +417,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSMSRegisteredRange failed. fromCycle={fromCycle}, toCycle={toCycle}, reportType={reportType}, typeCode={typeCode}", fromCycle, toCycle, reportType, typeCode);
                 System.Diagnostics.Trace.WriteLine($"ERROR in GetSMSRegisteredRange: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
 
@@ -536,6 +543,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessSalesByTariffOrdinaryRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -562,6 +570,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessSalesByTariffBulkRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -610,6 +619,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDepartments failed");
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetDepartments: {ex.Message}\n{ex.StackTrace}");
 
@@ -707,6 +717,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessGovernmentAccountsRequest failed. request={@request}", request);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR ProcessGovernmentAccountsRequest: {ex.Message}\n{ex.StackTrace}");
 
@@ -769,6 +780,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetListingOfCustomersFilters failed. areaCode={areaCode}, billCycle={billCycle}", areaCode, billCycle);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetListingOfCustomersFilters: {ex.Message}\n{ex.StackTrace}");
 
@@ -805,6 +817,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetListingOfCustomersReport failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -856,6 +869,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessListingOfCustomersRequest failed. request={@request}", request);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR ProcessListingOfCustomersRequest: {ex.Message}\n{ex.StackTrace}");
 
@@ -925,6 +939,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetArrearsPositionReport failed. billCycle={billCycle}, areaCode={areaCode}", billCycle, areaCode);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetArrearsPositionReport: {ex.Message}\n{ex.StackTrace}");
 
@@ -991,6 +1006,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMeterReadingCompletionStatus failed. billCycle={billCycle}", billCycle);
                 return Ok(new { data = (object)null, errorMessage = ex.Message });
             }
         }
