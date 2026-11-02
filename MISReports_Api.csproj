@@ -705,6 +705,8 @@
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\General\MeterReadingCompletionStatusDao.cs" />
+    <Compile Include="DAL\General\SecurityDepositInterestDao.cs" />
+    <Compile Include="DAL\SMC- Management Information\SMCLineDetailsByProvinceDAL.cs" />
     <Compile Include="DAL\SolarInformation\SolarJournalsBulkDao.cs" />
     <Compile Include="DAL\SolarInformation\SolarRooftopPaymentsandExportUnitsDao.cs" />
     <Compile Include="DAL\SMC\SMCMatDetailsDAL.cs" />
@@ -829,6 +831,8 @@
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\General\MeterReadingCompletionStatusModel.cs" />
+    <Compile Include="Models\General\SecurityDepositInterestModel.cs" />
+    <Compile Include="Models\SMC- Management Information\SMCLineDetailsByProvinceModel.cs" />
     <Compile Include="Models\SolarInformation\SolarJournalsBulkModel.cs" />
     <Compile Include="Models\SolarInformation\SolarRooftopPaymentsandExportUnitsModel.cs" />
     <Compile Include="Models\SMC\SMCMatDetailsModel.cs" />

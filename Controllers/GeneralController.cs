@@ -59,6 +59,8 @@ namespace MISReports_Api.Controllers
 
         private readonly FinalizedAccountsDao _finalizedAccountsDao = new FinalizedAccountsDao();
         private readonly MeterReadingCompletionStatusDao _meterReadingCompletionStatusDao = new MeterReadingCompletionStatusDao();
+        private readonly SecurityDepositInterestDao _securityDepositInterestDao = new SecurityDepositInterestDao();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
 
         // ================================================================== //
@@ -948,5 +950,53 @@ namespace MISReports_Api.Controllers
                 return Ok(new { data = (object)null, errorMessage = ex.Message });
             }
         }
-    }
+    
+ // ------------------------------------------------------------------ //
+ // GET api/security-deposit-interest/billcycles?type=bulk //
+ // ------------------------------------------------------------------ //
+ [HttpGet]
+ [Route("security-deposit-interest/billcycles")]
+ public IHttpActionResult GetSecurityDepositInterestBillCycles([FromUri] string type = "bulk")
+ {
+ logger.Info($"[SecurityDeposit] Request received for billcycles?type={type}");
+ try
+ {
+ bool isBulk = !string.Equals(type, "ordinary", StringComparison.OrdinalIgnoreCase);
+ var cycles = isBulk 
+ ? _securityDepositInterestDao.GetBulkBillCycles(36)
+ : _securityDepositInterestDao.GetOrdinaryBillCycles();
+
+ return Ok(new { data = cycles, errorMessage = (string)null });
+ }
+ catch (Exception ex)
+ {
+ logger.Error(ex, $"[SecurityDeposit] Error in billcycles (type={type}): {ex.Message}");
+ return Ok(new { data = (object)null, errorMessage = ex.Message });
+ }
+ }
+
+ // ------------------------------------------------------------------ //
+ // POST api/security-deposit-interest/report //
+ // ------------------------------------------------------------------ //
+ [HttpPost]
+ [Route("security-deposit-interest/report")]
+ public IHttpActionResult GetSecurityDepositInterestReport([FromBody] SecurityDepositInterestRequest request)
+ {
+ logger.Info($"[SecurityDeposit] Request received for report: Type={request?.ReportType}, BillCycle={request?.BillCycle}, Category={request?.Category}, Value={request?.CategoryValue}");
+ try
+ {
+ if (request == null || request.BillCycle <= 0)
+ {
+ return Ok(new { data = (object)null, errorMessage = "A valid Bill Cycle is required." });
+ }
+
+ var result = _securityDepositInterestDao.GetReportData(request);
+ return Ok(new { data = result, errorMessage = (string)null });
+ }
+ catch (Exception ex)
+ {
+ return Ok(new { data = (object)null, errorMessage = ex.Message });
+ }
+ }
+ }
 }

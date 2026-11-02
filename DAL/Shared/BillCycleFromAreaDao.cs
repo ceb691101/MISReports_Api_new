@@ -11,7 +11,10 @@ namespace MISReports_Api.DAL.Shared
     public class BillCycleFromAreaDao
     {
         private readonly DBConnection _dbConnection = new DBConnection();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public BillCycleModel GetLast24BillCycles()
         {
             var model = new BillCycleModel();
@@ -47,6 +50,12 @@ namespace MISReports_Api.DAL.Shared
                     string countSql = "SELECT COUNT(*) FROM areas WHERE bill_cycle = ?";
                     int count;
 
+              
+                    
+                    ////
+                    
+                    
+                    
                     using (OleDbCommand cmd = new OleDbCommand(countSql, conn))
                     {
                         cmd.Parameters.Add("@bill_cycle", OleDbType.Integer).Value = minCycle;
