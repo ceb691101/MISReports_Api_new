@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -408,6 +408,7 @@
     <Compile Include="Controllers\General Ledger\DocInquiryGlController.cs" />
     <Compile Include="Controllers\General Ledger\GlInquiryByDocController.cs" />
     <Compile Include="Controllers\Inventory\MaterialPriceByYearController.cs" />
+    <Compile Include="Controllers\Inventory\QuantityOnHandGradeCodewiseController.cs" />
     <Compile Include="Controllers\Inventory\QuantityOnHandLessThanReorderLevelController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
@@ -635,6 +636,7 @@
     <Compile Include="DAL\General Ledger\DocInquiryGlDAL.cs" />
     <Compile Include="DAL\General Ledger\GlInquiryByDocdal.CS" />
     <Compile Include="DAL\Inventory\MaterialPriceByYearDAL.cs" />
+    <Compile Include="DAL\Inventory\QuantityOnHandGradeCodewiseDAL.cs" />
     <Compile Include="DAL\Inventory\QuantityOnHandLessThanReorderLevelDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
@@ -793,6 +795,7 @@
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
     <Compile Include="Models\General Ledger\GlInquiryByDocModel.CS" />
     <Compile Include="Models\Inventory\MaterialPriceByYearModel.cs" />
+    <Compile Include="Models\Inventory\QuantityOnHandGradeCodewiseModel.cs" />
     <Compile Include="Models\Inventory\QuantityOnHandLessThanReorderLevelModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
@@ -1258,6 +1261,7 @@
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
     <Folder Include="Views\ProvincewiseSMCJobMaterialDetails\" />
     <Folder Include="Views\QtyOnHandReorder\" />
+    <Folder Include="Views\QuantityOnHandGradeCodewise\" />
     <Folder Include="Views\QuantityOnHandLessThanReorderLevel\" />
     <Folder Include="Views\RegionPeriodStatus\" />
     <Folder Include="Views\SawMillsMetalCrushersWeldingPlantsDetails\" />
