@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/projectcommitmentsummary")]
     public class ProjectCommitmentSummaryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProjectCommitmentSummaryRepository _repository = new ProjectCommitmentSummaryRepository();
 
         [HttpGet]
@@ -32,6 +34,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetProjectCommitmentSummary failed. deptId={deptId}", deptId);
                 var errorResponse = new
                 {
                     data = (object)null,

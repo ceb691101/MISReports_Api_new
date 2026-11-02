@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/areat1t2t3")]
     public class AreaT1T2T3Controller : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AreaT1T2T3DAL _dal = new AreaT1T2T3DAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
@@ -79,6 +81,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, compId={compId}", fromDate, toDate, compId);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/regionalpivstampduty")]
     public class RegionalPIVStampDutyController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RegionalPIVStampDutyRepository _repo = new RegionalPIVStampDutyRepository();
 
         // GET: api/regionalpivstampduty/get?compID=1&fromDate=20250401&toDate=20250430
@@ -35,6 +37,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compID={compID}, fromDate={fromDate}, toDate={toDate}", compID, fromDate, toDate);
                 return InternalServerError(new Exception("Error while fetching Regional PIV Stamp Duty report: " + ex.Message));
             }
         }

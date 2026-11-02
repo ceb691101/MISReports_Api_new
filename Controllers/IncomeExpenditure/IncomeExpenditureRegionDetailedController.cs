@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
 {
     public class IncomeExpenditureRegionDetailedController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly IncomeExpenditureRegionDetailedRepository _repository;
 
         public IncomeExpenditureRegionDetailedController()
@@ -34,6 +36,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, year={year}, month={month}", compId, year, month);
                 // Log exception here if you have logging in place
                 return InternalServerError(ex);
             }

@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/dashboard")]
     public class DashboardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly BulkCustomersDao _bulkCustomersDao = new BulkCustomersDao();
         private readonly SalesAndCollectionRangeDao _salesAndCollectionRangeDao = new SalesAndCollectionRangeDao();
         private readonly OrdinaryCustomersDao _ordinaryCustomersDao = new OrdinaryCustomersDao();
@@ -39,6 +41,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetActiveCustomerCount failed. region={region}, province={province}, area={area}", region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get active customer count.", errorDetails = ex.Message });
             }
         }
@@ -59,6 +62,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetOrdinaryCustomersSummary failed. region={region}, province={province}, area={area}", region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Error retrieving ordinary customers summary.", errorDetails = ex.Message });
             }
         }
@@ -91,6 +95,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetOrdinarySalesAndCollection failed. region={region}, province={province}, area={area}", region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get ordinary sales and collection data.", errorDetails = ex.Message });
             }
         }
@@ -123,6 +128,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBulkSalesAndCollection failed. region={region}, province={province}, area={area}", region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get bulk sales and collection data.", errorDetails = ex.Message });
             }
         }
@@ -162,6 +168,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetKioskCollection failed. userId={userId}, region={region}, province={province}, area={area}", userId, region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get kiosk collection data.", errorDetails = ex.Message });
             }
         }
@@ -186,6 +193,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetTopCustomersMaxBillCycle failed");
                 return Ok(new { data = (object)null, errorMessage = "Error retrieving max bill cycle.", errorDetails = ex.Message });
             }
         }
@@ -211,6 +219,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetTopCustomers failed. region={region}, province={province}, area={area}, take={take}", region, province, area, take);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get top customers data.", errorDetails = ex.Message });
             }
         }
@@ -269,6 +278,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/dashboard/solar-ordinary-customers")]
     public class SolarOrdinaryCustomersController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SolarOrdinaryCustomersDao _solarOrdinaryCustomersDao = new SolarOrdinaryCustomersDao();
 
         /// <summary>GET api/dashboard/solar-ordinary-customers/billcycle/max</summary>
@@ -291,6 +302,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaxBillCycle failed");
                 return Ok(new { data = (object)null, errorMessage = "Error retrieving max bill cycle.", errorDetails = ex.Message });
             }
         }
@@ -355,6 +367,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetGenerationCapacityGraph failed. billCycle={billCycle}, cycles={cycles}, region={region}, province={province}, area={area}", billCycle, cycles, region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Error retrieving solar ordinary generation capacity graph.", errorDetails = ex.Message });
             }
         }
@@ -383,6 +396,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCustomersCountResponse failed. billCycle={billCycle}, region={region}, province={province}, area={area}, fallbackErrorMessage={fallbackErrorMessage}", billCycle, region, province, area, fallbackErrorMessage);
                 return Ok(new { data = (object)null, errorMessage = fallbackErrorMessage, errorDetails = ex.Message });
             }
         }
@@ -438,6 +452,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/dashboard/solar-bulk-customers")]
     public class SolarBulkCustomersController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SolarBulkCustomersDao _solarBulkCustomersDao = new SolarBulkCustomersDao();
 
         /// <summary>GET api/dashboard/solar-bulk-customers/summary</summary>
@@ -460,6 +476,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSummary failed. region={region}, province={province}, area={area}", region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Error retrieving solar bulk customers summary.", errorDetails = ex.Message });
             }
         }
@@ -524,6 +541,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetGenerationCapacityGraph failed. billCycle={billCycle}, cycles={cycles}, region={region}, province={province}, area={area}", billCycle, cycles, region, province, area);
                 return Ok(new { data = (object)null, errorMessage = "Error retrieving solar bulk generation capacity graph.", errorDetails = ex.Message });
             }
         }
@@ -551,6 +569,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCountResponse failed. fallbackErrorMessage={fallbackErrorMessage}, region={region}, province={province}, area={area}", fallbackErrorMessage, region, province, area);
                 return Ok(new { data = (object)null, errorMessage = fallbackErrorMessage, errorDetails = ex.Message });
             }
         }

@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/solarbilling")]
     public class SolarBillingController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SolarBillingRepository _repo = new SolarBillingRepository();
 
         // GET: api/solarbilling/get?compId=123&fromDate=20250101&toDate=20251231
@@ -45,6 +47,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception("Error while fetching Solar Billing report: " + ex.Message));
             }
         }

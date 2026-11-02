@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/materials")]
     public class MaterialController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly MaterialRepository _materialRepository = new MaterialRepository();
 
         // Get name and mat_cd
@@ -32,6 +34,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterials failed");
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -62,6 +65,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialStocks failed");
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -103,6 +107,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialStockBalances failed. matCd={matCd}", matCd);
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -144,6 +149,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialStocksByMatCd failed. matCd={matCd}", matCd);
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -185,6 +191,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialStocksByMatCdProvinceWise failed. matCd={matCd}", matCd);
                 var errorResponse = new
                 {
                     data = (object)null,

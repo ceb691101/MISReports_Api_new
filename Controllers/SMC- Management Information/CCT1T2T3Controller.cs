@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/cct1t2t3")]
     public class CCT1T2T3Controller : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CCT1T2T3DAL _dal = new CCT1T2T3DAL();
 
         private static readonly string[] DateFormats = { "yyyy/MM/dd", "yyyy-MM-dd" };
@@ -79,6 +81,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, costCtr={costCtr}", fromDate, toDate, costCtr);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL
 {
     public class ProjectAgeAnalysisRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public async Task<List<ProjectAgeAnalysisModel>> GetProjectAgeAnalysis(string deptId)
         {
             var resultList = new List<ProjectAgeAnalysisModel>();
@@ -86,6 +88,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (Exception ex)
                 {
+                    logger.Warn(ex, "GetProjectAgeAnalysis attempt failed; retrying / trying next option. deptId={deptId}", deptId);
                     lastException = ex;
                     continue;
                 }

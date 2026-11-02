@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers.DgmDashboard
     [RoutePrefix("api/dgm")]
     public class DgmDashboardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private static readonly DgmPivTotalDao DgmPivTotalDao = new DgmPivTotalDao();
         private static readonly DgmPivPeriodSummaryDao DgmPivPeriodSummaryDao = new DgmPivPeriodSummaryDao();
         private static readonly DgmStockValueDao DgmStockValueDao = new DgmStockValueDao();
@@ -68,6 +70,7 @@ namespace MISReports_Api.Controllers.DgmDashboard
                     }
                     catch (Exception ex)
                     {
+                        logger.Error(ex, "GetOrReturnStaleAndRefreshWithMetadata failed");
                         Trace.TraceError($"{key}-refresh failed: {ex.Message}");
                     }
                 });

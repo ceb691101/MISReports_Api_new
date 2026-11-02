@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.Shared
 {
     public class CalcCycleFromAreaDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public CalcCycleModel GetMaxCalcCycle()
@@ -39,11 +41,13 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetMaxCalcCycle failed");
                     System.Diagnostics.Trace.WriteLine($"Error retrieving max calc cycle: {ex.Message}");
                     model.ErrorMessage = "Error retrieving max calc cycle";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetMaxCalcCycle failed");
                     System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
                     model.ErrorMessage = "Unexpected error occurred";
                 }

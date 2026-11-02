@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/provincepivbank")]
     public class ProvincePIVbankController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvincePIVbankRepository _repository = new ProvincePIVbankRepository();
 
         /// <summary>
@@ -39,6 +41,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 return InternalServerError(new Exception("Error fetching Province PIV Bank report.", ex));
             }
         }

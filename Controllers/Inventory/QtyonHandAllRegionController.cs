@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers.Inventory
     [RoutePrefix("api/qty-on-hand-all-region")]
     public class QtyonHandAllRegionController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly QtyonHandAllRegionRepository _repository = new QtyonHandAllRegionRepository();
 
         // GET api/qty-on-all-region?compId=XXX&matcode=YYY
@@ -38,6 +40,7 @@ namespace MISReports_Api.Controllers.Inventory
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetQtyonHandAllRegion failed. compId={compId}, matcode={matcode}", compId, matcode);
                 System.Diagnostics.Trace.WriteLine($"ERROR: {ex}");
 
                 return Ok(new

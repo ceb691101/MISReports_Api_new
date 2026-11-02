@@ -19,6 +19,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/oum")]
     public class OUMController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly OUMRepository _oumRepository = new OUMRepository();
 
         [HttpPost]
@@ -60,6 +62,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "UploadExcelFile failed");
                 return Ok(JObject.FromObject(new OUMUploadResponseModel
                 {
                     RecordsInserted = 0,
@@ -82,6 +85,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetRecords failed");
                 response.ErrorMessage = "error";
                 response.TotalRecords = 0;
             }
@@ -116,6 +120,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ApproveRecordsLoad failed");
 
                 return Ok(JObject.FromObject(new
                 {
@@ -155,6 +160,7 @@ namespace MISReports_Api.Controllers
 
             catch (Exception ex)
             {
+                logger.Error(ex, "ApproveRecords failed");
                 var response = new OUMRecordsResponseModel
                 {
                     Success = false,
@@ -190,6 +196,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "RefreshCrdTemp failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,

@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/chequedetailwp")]
     public class ChequeDetailWPController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ChequeDetailWPDAL _dal = new ChequeDetailWPDAL();
 
         private const string DateFormat = "yyyy-MM-dd";
@@ -90,6 +92,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, costCtr={costCtr}", fromDate, toDate, costCtr);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

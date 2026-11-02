@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers.Inventory
     [RoutePrefix("api/province-qty-onhand-crosstab")]
     public class ProvinceQtyOnHandCrossTabController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvinceQtyOnHandCrossTabRepository _repository;
 
         public ProvinceQtyOnHandCrossTabController()
@@ -42,6 +44,7 @@ namespace MISReports_Api.Controllers.Inventory
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. compId={compId}, matcode={matcode}", compId, matcode);
                 return Request.CreateResponse(
                     HttpStatusCode.InternalServerError,
                     new { message = ex.Message },

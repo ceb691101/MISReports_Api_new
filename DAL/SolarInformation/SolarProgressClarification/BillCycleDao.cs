@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
 {
     public class BillCycleDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public BillCycleModel GetLast24BillCycles()
@@ -40,11 +42,13 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetLast24BillCycles failed");
                     System.Diagnostics.Trace.WriteLine($"Error retrieving max bill cycle: {ex.Message}");
                     model.ErrorMessage = "Error retrieving max bill cycle";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetLast24BillCycles failed");
                     System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
                     model.ErrorMessage = "Unexpected error occurred";
                 }

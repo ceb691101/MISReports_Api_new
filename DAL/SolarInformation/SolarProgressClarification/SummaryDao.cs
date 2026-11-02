@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
 {
     public class SummaryDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public bool TestConnection(out string errorMessage)
@@ -50,6 +52,7 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
             }
             catch (OleDbException ex)
             {
+                logger.Error(ex, "TestConnection failed");
                 System.Diagnostics.Debug.WriteLine($"OLE DB Error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Error Code: {ex.ErrorCode}");
 
@@ -66,6 +69,7 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "TestConnection failed");
                 System.Diagnostics.Debug.WriteLine($"General Error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Exception Type: {ex.GetType().FullName}");
                 System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
@@ -134,6 +138,7 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
             }
             catch (OleDbException ex)
             {
+                logger.Error(ex, "GetSummaryReport failed (exception rethrown)");
                 System.Diagnostics.Debug.WriteLine($"=== OLE DB ERROR ===");
                 System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Error Code: {ex.ErrorCode}");
@@ -149,6 +154,7 @@ namespace MISReports_Api.DAL.SolarInformation.SolarProgressClarification
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSummaryReport failed (exception rethrown)");
                 System.Diagnostics.Debug.WriteLine($"=== GENERAL ERROR ===");
                 System.Diagnostics.Debug.WriteLine($"Message: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");

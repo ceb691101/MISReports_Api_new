@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/billmap")]
     public class BillMapController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly BillMapRepository _repository;
 
         public BillMapController()
@@ -30,6 +32,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBillMaps failed. epfNo={epfNo}", epfNo);
                 return InternalServerError(ex);
             }
         }

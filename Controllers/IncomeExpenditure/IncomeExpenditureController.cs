@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     public class IncomeExpenditureController : ApiController
 
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly IncomeExpenditureRepository _repository = new IncomeExpenditureRepository();
         // one  company details 
         [HttpGet]
@@ -32,6 +34,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetIncomeExpenditure failed. costctr={costctr}, repyear={repyear}, repmonth={repmonth}", costctr, repyear, repmonth);
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -61,6 +64,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDepartmentsByUser failed. epfno={epfno}", epfno);
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -92,6 +96,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCompaniesByUserLevel failed. epfno={epfno}, lvl_no={lvl_no}", epfno, lvl_no);
                 var errorResponse = new
                 {
                     data = (object)null,

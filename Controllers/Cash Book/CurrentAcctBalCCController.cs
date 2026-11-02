@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/currentacctbalcc")]
     public class CurrentAcctBalCCController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CurrentAcctBalCCDAL _dal = new CurrentAcctBalCCDAL();
 
         // PATH: /api/currentacctbalcc/report/year/month/costctr
@@ -88,6 +90,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, repMonth={repMonth}, costCtr={costCtr}", repYear, repMonth, costCtr);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

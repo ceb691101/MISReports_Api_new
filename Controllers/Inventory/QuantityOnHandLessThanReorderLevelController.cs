@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers.Inventory
     [RoutePrefix("api/quantityonhandlessthanreorderlevel")]
     public class QuantityOnHandLessThanReorderLevelController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly QuantityOnHandLessThanReorderLevelDAL _dal =
             new QuantityOnHandLessThanReorderLevelDAL();
 
@@ -45,6 +47,7 @@ namespace MISReports_Api.Controllers.Inventory
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetQuery failed. costCtr={costCtr}", costCtr);
                 System.Diagnostics.Debug.WriteLine(
                     "Error: " +
                     ex.Message +

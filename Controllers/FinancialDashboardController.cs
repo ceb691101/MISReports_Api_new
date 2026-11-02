@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
 {
     public class FinancialDashboardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private static readonly PivTotalDao PivTotalDao = new PivTotalDao();
         private static readonly PivDivisionDao PivDivisionDao = new PivDivisionDao();
         private static readonly StockTotalDao StockTotalDao = new StockTotalDao();
@@ -69,6 +71,7 @@ namespace MISReports_Api.Controllers
                     }
                     catch (Exception ex)
                     {
+                        logger.Error(ex, "GetOrReturnStaleAndRefreshWithMetadata failed");
                         Trace.TraceError($"{key}-refresh failed: {ex.Message}");
                     }
                 });
@@ -143,6 +146,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "RefreshAllAsync failed");
                 Trace.TraceError($"warm-refresh failed: {ex.Message}");
             }
             finally

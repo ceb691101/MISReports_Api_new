@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/jobsearch")]
     public class JobSearchController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly JobSearchRepository _repository = new JobSearchRepository();
 
         // ────────────────────────────────────────────────
@@ -73,6 +75,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetApplicationStatus failed. application_id={application_id}", application_id);
                 return Ok(new { success = false, message = "Failed to fetch application status", error = ex.Message });
             }
         }
@@ -95,6 +98,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetApplicationInfo failed. application_id={application_id}", application_id);
                 return Ok(new { success = false, message = "Failed to fetch application info", error = ex.Message });
             }
         }
@@ -117,6 +121,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetContractorInfo failed. project_no={project_no}", project_no);
                 return Ok(new { success = false, message = "Failed to fetch contractor info", error = ex.Message });
             }
         }
@@ -139,6 +144,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLabourDetails failed. estimate_no={estimate_no}", estimate_no);
                 return Ok(new { success = false, message = "Failed to fetch labour details", error = ex.Message });
             }
         }
@@ -161,6 +167,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEnergizingBasic failed. project_no={project_no}", project_no);
                 return Ok(new { success = false, message = "Failed to fetch energizing basic info", error = ex.Message });
             }
         }
@@ -183,6 +190,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GeStandardEstimate failed. estimate_no={estimate_no}", estimate_no);
                 return Ok(new { success = false, message = "Failed to fetch revised estimate", error = ex.Message });
             }
         }
@@ -210,6 +218,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEstimateCostSummary failed. estimateNo={estimateNo}", estimateNo);
                 return Ok(new
                 {
                     success = false,
@@ -236,6 +245,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialTransactions failed. estimateNo={estimateNo}", estimateNo);
                 return Ok(new
                 {
                     success = false,
@@ -263,6 +273,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetJobStatusHistory failed. project_no={project_no}", project_no);
                 return Ok(new { success = false, message = "Failed to fetch job status history", error = ex.Message });
             }
         }
@@ -285,6 +296,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEnergizedInfo failed. project_no={project_no}", project_no);
                 return Ok(new { success = false, message = "Failed to fetch energized info", error = ex.Message });
             }
         }
@@ -307,6 +319,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEstimateApprovals failed. estimate_no={estimate_no}", estimate_no);
                 return Ok(new
                 {
                     success = false,
@@ -334,6 +347,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetRevisedEstimateApprovals failed. projectNO={projectNO}", projectNO);
                 return Ok(new
                 {
                     success = false,
@@ -366,6 +380,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetJobFinalizedInfo failed. project_no={project_no}", project_no);
                 return Ok(new
                 {
                     success = false,
@@ -398,6 +413,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetContractorBills failed. project_no={project_no}", project_no);
                 return Ok(new
                 {
                     success = false,
@@ -430,6 +446,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPivDetails failed. referenceNo={referenceNo}", referenceNo);
                 return Ok(new
                 {
                     success = false,
@@ -458,6 +475,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAppointmentInfo failed. reference_no={reference_no}", reference_no);
                 return Ok(new
                 {
                     success = false,
@@ -490,6 +508,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEstimateSummary failed. estimateNo={estimateNo}", estimateNo);
                 return Ok(new
                 {
                     success = false,
@@ -516,6 +535,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialsforjobsAsync failed. estimateNo={estimateNo}", estimateNo);
                 return Ok(new
                 {
                     success = false,

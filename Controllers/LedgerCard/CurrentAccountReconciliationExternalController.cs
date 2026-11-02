@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ledgercard/current-account-reconciliation-external")]
     public class CurrentAccountReconciliationExternalController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CurrentAccountReconciliationExternalRepository _repository;
 
         public CurrentAccountReconciliationExternalController()
@@ -34,6 +36,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. compId={compId}, repyear={repyear}, repmonth={repmonth}, subac={subac}", compId, repyear, repmonth, subac);
                 return InternalServerError(ex);
             }
         }

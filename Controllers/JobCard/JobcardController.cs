@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/jobcard")]
     public class JobcardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly JobCardRepository _repository = new JobCardRepository();
 
         // GET api/jobcard?projectNo=XXX&costCtr=YYY
@@ -41,6 +43,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetJobCards failed. projectNo={projectNo}, costCtr={costCtr}", projectNo, costCtr);
                 // Log error details
                 System.Diagnostics.Trace.WriteLine($"ERROR: {ex.ToString()}");
 

@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/pricevawh")]
     public class PriceVaWHController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PriceVaWHDAL _dal = new PriceVaWHDAL();
 
         // PATH: /api/pricevawh/report/2026/02/510.11/WRH-A
@@ -81,6 +83,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, repMonth={repMonth}, costCtr={costCtr}, whCode={whCode}", repYear, repMonth, costCtr, whCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

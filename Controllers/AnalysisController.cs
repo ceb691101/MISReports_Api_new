@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
 	[RoutePrefix("api/analysis/solar-age")]
 	public class AnalysisController : ApiController
 	{
+		private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
 		private readonly AreasDao _areasDao = new AreasDao();
 		private readonly SolarAgeAnalysisDao _solarAgeAnalysisDao = new SolarAgeAnalysisDao();
 
@@ -31,6 +33,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetAreas failed");
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -69,6 +72,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "CheckDatabase failed. areaCode={areaCode}", areaCode);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -173,6 +177,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetAgeAnalysis failed. areaCode={areaCode}, billCycle={billCycle}, ageBand={ageBand}", areaCode, billCycle, ageBand);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,
@@ -229,6 +234,7 @@ namespace MISReports_Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				logger.Error(ex, "GetFullReport failed. areaCode={areaCode}, billCycle={billCycle}", areaCode, billCycle);
 				return Ok(JObject.FromObject(new
 				{
 					data = (object)null,

@@ -8,11 +8,13 @@ namespace MISReports_Api.DAL.Shared
 {
     public class RegionOrdinaryDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public bool TestConnection(out string errorMessage)
         {
-            return _dbConnection.TestConnection(out errorMessage);
+            return _dbConnection.TestConnection(out errorMessage, false);
         }
 
         public List<RegionModel> GetRegion()
@@ -43,6 +45,7 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetRegion failed (exception rethrown)");
                     throw new Exception("Error retrieving region data: " + ex.Message, ex);
                 }
             }

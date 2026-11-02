@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/phv-nonmovingwhwisebos-report")]
     public class PHVNonMovingWHwiseBOSController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVNonMovingWHwiseBOSRepository _repository;
 
         public PHVNonMovingWHwiseBOSController()
@@ -45,6 +47,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException ex)
             {
+                logger.Error(ex, "GetNonMovingReport failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}", deptId, repYear, repMonth, warehouseCode);
                 if (ex.Number == 1652)
                     return InternalServerError(new Exception("Database TEMP tablespace full."));
 
@@ -52,6 +55,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetNonMovingReport failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}", deptId, repYear, repMonth, warehouseCode);
                 return InternalServerError(ex);
             }
         }

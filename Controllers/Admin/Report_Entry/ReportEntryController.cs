@@ -15,6 +15,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/reportentry")]
     public class ReportEntryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ReportEntryRepository _repository = new ReportEntryRepository();
 
         private static string NormalizeRepId(string repId)
@@ -35,6 +37,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetNextReportIdNo failed");
                 return Ok(JObject.FromObject(new { data = (object)null, errorMessage = "Cannot get next ID.", errorDetails = ex.Message }));
             }
         }
@@ -56,6 +59,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAllReportEntries failed. catcode={catcode}", catcode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -89,6 +93,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "FilterReportEntries failed. repid={repid}, catcode={catcode}", repid, catcode);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -142,6 +147,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "AddReportEntry failed. request={@request}", request);
                 return Ok(JObject.FromObject(new
                 {
                     data = new { success = false },
@@ -175,6 +181,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "EditReportEntry failed. repIdNo={repIdNo}, catCode={catCode}, request={@request}", repIdNo, catCode, request);
                 return Ok(JObject.FromObject(new
                 {
                     data = new { success = false },
@@ -233,6 +240,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "DeleteReportEntry failed. repIdNo={repIdNo}, catCode={catCode}", repIdNo, catCode);
                 return Ok(JObject.FromObject(new
                 {
                     data = new { success = false },
@@ -329,6 +337,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "UploadSampleImage failed");
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -365,6 +374,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ResolveSampleReportsDirectory failed");
                 System.Diagnostics.Debug.WriteLine($"Error resolving sample reports directory: {ex.Message}");
                 string fallback = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SampleReports");
                 if (!Directory.Exists(fallback))

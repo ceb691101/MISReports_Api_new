@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/materialcommittedstock")]
     public class MaterialCommittedStockController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly MaterialCommittedStockRepository _repository =
             new MaterialCommittedStockRepository();
 
@@ -28,6 +30,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetProvinces failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -57,6 +60,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialCommittedStock failed. compId={compId}, matCode={matCode}", compId, matCode);
                 return Ok(new
                 {
                     data = (object)null,

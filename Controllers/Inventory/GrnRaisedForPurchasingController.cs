@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/grnraisedforpurchasing")]
     public class GrnRaisedForPurchasingController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly GrnRaisedForPurchasingDAL _dal = new GrnRaisedForPurchasingDAL();
 
         private const string DateFormat = "yyyy-MM-dd";
@@ -92,6 +94,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, matCode={matCode}", fromDate, toDate, matCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

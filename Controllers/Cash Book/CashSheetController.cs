@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/cashsheet")]
     public class CashSheetController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CashSheetDAL _dal = new CashSheetDAL();
 
         // PATH: /api/cashsheet/report/year/month/costctr
@@ -80,6 +82,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, repMonth={repMonth}, costCtr={costCtr}", repYear, repMonth, costCtr);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

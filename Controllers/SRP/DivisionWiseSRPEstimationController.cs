@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/divisionwise-srp-estimation")]
     public class DivisionWiseSRPEstimationController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DivisionWiseSRPEstimationRepository _repository =
             new DivisionWiseSRPEstimationRepository();
 
@@ -41,6 +43,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDivisionWiseSRP failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 var errorResponse = new
                 {
                     data = (object)null,

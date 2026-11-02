@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/pivbypeoplebank")]
     public class PivByPeopleBankController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PivByPeopleBankRepository _repo = new PivByPeopleBankRepository();
 
         // GET: api/pivbypeoplebank/get?fromDate=20250401&toDate=20250430
@@ -41,6 +43,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                 return InternalServerError(new Exception("Error while fetching PIV by People (Bank) report: " + ex.Message));
             }
         }

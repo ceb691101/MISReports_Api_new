@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/physical-verification-validation")]
     public class PHVValidationController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVValidationRepository _repository;
         private readonly PHVValidationJasperReportService _jasperReportService;
 
@@ -70,6 +72,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPHVValidationData failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}", deptId, repYear, repMonth);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR in PHVValidationController: {ex}"
                 );
@@ -148,11 +151,13 @@ namespace MISReports_Api.Controllers
             }
             catch (JasperReportExecutionException ex)
             {
+                logger.Error(ex, "GetPHVValidationPdf failed. deptId={deptId}, deptName={deptName}, repYear={repYear}, repMonth={repMonth}, download={download}", deptId, deptName, repYear, repMonth, download);
                 System.Diagnostics.Trace.WriteLine($"Jasper report execution failed: {ex}");
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPHVValidationPdf failed. deptId={deptId}, deptName={deptName}, repYear={repYear}, repMonth={repMonth}, download={download}", deptId, deptName, repYear, repMonth, download);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR in PHVValidationController PDF: {ex}"
                 );

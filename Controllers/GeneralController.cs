@@ -1,4 +1,5 @@
 using MISReports_Api.DAL.General.ActiveCustomersAndSalesTariff;
+using MISReports_Api.DAL.General;
 using MISReports_Api.DAL.General.SecurityDepositContractDemandBulk;
 using MISReports_Api.DAL.General.ListOfGovernmentAccounts;
 using MISReports_Api.DAL.General.ListingOfCustomer;
@@ -41,6 +42,54 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class GeneralController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        [HttpGet]
+        [Route("general/total-customer-base")]
+        public IHttpActionResult GetTotalCustomerBase([FromUri] TotalCustomerBaseRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                var data = new TotalCustomerBaseDao().GetReport(request);
+                return Ok(new { data, errorMessage = (string)null });
+            }
+            catch (ArgumentException ex)
+            {
+                logger.Warn("GetTotalCustomerBase rejected: {error}. request={@request}", ex.Message, request);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Cannot retrieve Total Customer Base report.");
+                return Content(System.Net.HttpStatusCode.InternalServerError, new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot retrieve Total Customer Base report. Please try again."
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("general/total-customer-base/bill-cycles")]
+        public IHttpActionResult GetTotalCustomerBaseBillCycles()
+        {
+            try
+            {
+                var data = new TotalCustomerBaseDao().GetBillCycles();
+                return Ok(new { data, errorMessage = (string)null });
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Cannot retrieve Total Customer Base bill cycles.");
+                return Content(System.Net.HttpStatusCode.InternalServerError, new
+                {
+                    data = (object)null,
+                    errorMessage = "Cannot load bill cycles. Please try again."
+                });
+            }
+        }
+
         // ── DAO fields ────────────────────────────────────────────────────────
         private readonly ContractDemandBulkDao _contractDemandBulkDao = new ContractDemandBulkDao();
         private readonly ContractDemandBillCycleDao _billCycleDao = new ContractDemandBillCycleDao();
@@ -149,6 +198,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessContractDemandRequest failed");
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR ProcessContractDemandRequest: {ex.Message}\n{ex.StackTrace}");
 
@@ -274,6 +324,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessActiveCustomersOrdinaryRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -300,6 +351,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessActiveCustomersBulkRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -367,6 +419,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSMSRegisteredRange failed. fromCycle={fromCycle}, toCycle={toCycle}, reportType={reportType}, typeCode={typeCode}", fromCycle, toCycle, reportType, typeCode);
                 System.Diagnostics.Trace.WriteLine($"ERROR in GetSMSRegisteredRange: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
 
@@ -492,6 +545,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessSalesByTariffOrdinaryRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -518,6 +572,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessSalesByTariffBulkRequest failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -566,6 +621,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDepartments failed");
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetDepartments: {ex.Message}\n{ex.StackTrace}");
 
@@ -663,6 +719,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessGovernmentAccountsRequest failed. request={@request}", request);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR ProcessGovernmentAccountsRequest: {ex.Message}\n{ex.StackTrace}");
 
@@ -725,6 +782,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetListingOfCustomersFilters failed. areaCode={areaCode}, billCycle={billCycle}", areaCode, billCycle);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetListingOfCustomersFilters: {ex.Message}\n{ex.StackTrace}");
 
@@ -761,6 +819,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetListingOfCustomersReport failed");
                 return Ok(new
                 {
                     data = (object)null,
@@ -812,6 +871,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessListingOfCustomersRequest failed. request={@request}", request);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR ProcessListingOfCustomersRequest: {ex.Message}\n{ex.StackTrace}");
 
@@ -881,6 +941,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetArrearsPositionReport failed. billCycle={billCycle}, areaCode={areaCode}", billCycle, areaCode);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetArrearsPositionReport: {ex.Message}\n{ex.StackTrace}");
 
@@ -947,56 +1008,9 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMeterReadingCompletionStatus failed. billCycle={billCycle}", billCycle);
                 return Ok(new { data = (object)null, errorMessage = ex.Message });
             }
         }
-    
- // ------------------------------------------------------------------ //
- // GET api/security-deposit-interest/billcycles?type=bulk //
- // ------------------------------------------------------------------ //
- [HttpGet]
- [Route("security-deposit-interest/billcycles")]
- public IHttpActionResult GetSecurityDepositInterestBillCycles([FromUri] string type = "bulk")
- {
- logger.Info($"[SecurityDeposit] Request received for billcycles?type={type}");
- try
- {
- bool isBulk = !string.Equals(type, "ordinary", StringComparison.OrdinalIgnoreCase);
- var cycles = isBulk 
- ? _securityDepositInterestDao.GetBulkBillCycles(36)
- : _securityDepositInterestDao.GetOrdinaryBillCycles();
-
- return Ok(new { data = cycles, errorMessage = (string)null });
- }
- catch (Exception ex)
- {
- logger.Error(ex, $"[SecurityDeposit] Error in billcycles (type={type}): {ex.Message}");
- return Ok(new { data = (object)null, errorMessage = ex.Message });
- }
- }
-
- // ------------------------------------------------------------------ //
- // POST api/security-deposit-interest/report //
- // ------------------------------------------------------------------ //
- [HttpPost]
- [Route("security-deposit-interest/report")]
- public IHttpActionResult GetSecurityDepositInterestReport([FromBody] SecurityDepositInterestRequest request)
- {
- logger.Info($"[SecurityDeposit] Request received for report: Type={request?.ReportType}, BillCycle={request?.BillCycle}, Category={request?.Category}, Value={request?.CategoryValue}");
- try
- {
- if (request == null || request.BillCycle <= 0)
- {
- return Ok(new { data = (object)null, errorMessage = "A valid Bill Cycle is required." });
- }
-
- var result = _securityDepositInterestDao.GetReportData(request);
- return Ok(new { data = result, errorMessage = (string)null });
- }
- catch (Exception ex)
- {
- return Ok(new { data = (object)null, errorMessage = ex.Message });
- }
- }
- }
+    }
 }

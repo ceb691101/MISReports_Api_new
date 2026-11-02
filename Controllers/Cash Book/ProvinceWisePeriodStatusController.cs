@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/provincewiseperiodstatus")]
     public class ProvinceWisePeriodStatusController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvinceWisePeriodStatusDAL _dal = new ProvinceWisePeriodStatusDAL();
 
         // PATH: /api/provincewiseperiodstatus/report/2026/7/CC
@@ -74,6 +76,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, repMonth={repMonth}, compId={compId}", repYear, repMonth, compId);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

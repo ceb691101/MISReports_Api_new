@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/annual-verification-whwise-signature")]
     public class AnnualVerificationWHwiseSignatureController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AnnualVerificationWHwiseSignatureRepository _repository;
 
         public AnnualVerificationWHwiseSignatureController()
@@ -48,6 +50,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSignatureData failed. deptId={deptId}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}", deptId, warehouseCode, repYear, repMonth);
                 return Ok(new
                 {
                     success = false,

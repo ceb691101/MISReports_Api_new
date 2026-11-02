@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -321,6 +321,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="App_Start\ApiLoggingFilter.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
     <Compile Include="Areas\HelpPage\App_Start\HelpPageConfig.cs" />
@@ -408,6 +409,7 @@
     <Compile Include="Controllers\General Ledger\DocInquiryGlController.cs" />
     <Compile Include="Controllers\General Ledger\GlInquiryByDocController.cs" />
     <Compile Include="Controllers\Inventory\MaterialPriceByYearController.cs" />
+    <Compile Include="Controllers\Inventory\QuantityOnHandGradeCodewiseController.cs" />
     <Compile Include="Controllers\Inventory\QuantityOnHandLessThanReorderLevelController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVDamageBOSController.cs" />
     <Compile Include="Controllers\PHV - FIFO\PHVNonMovingBOSController.cs" />
@@ -417,6 +419,8 @@
     <Compile Include="Controllers\FinancialDashboardController.cs" />
     <Compile Include="Controllers\IntegratedDashboard\IntegratedDashboardController.cs" />
     <Compile Include="Controllers\GeneralController.cs" />
+    <Compile Include="DAL\General\TotalCustomerBaseDao.cs" />
+    <Compile Include="Models\General\TotalCustomerBaseModel.cs" />
     <Compile Include="Controllers\IncomeExpenditure\IncomeExpenditureRegionDetailedController.cs" />
     <Compile Include="Controllers\Inventory\avgConsumptionSelectedController.cs" />
     <Compile Include="Controllers\Inventory\BranchgrnnotgenController.cs" />
@@ -440,8 +444,10 @@
     <Compile Include="Controllers\ReportParamFlagsController.cs" />
     <Compile Include="Controllers\SMC- Management Information\AreaT1T2T3Controller.cs" />
     <Compile Include="Controllers\SMC- Management Information\CCT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\CostPaidJobProgressController.cs" />
     <Compile Include="Controllers\SMC- Management Information\JobFinBillNotGeneratedController.cs" />
     <Compile Include="Controllers\SMC- Management Information\ProvinceT1T2T3Controller.cs" />
+    <Compile Include="Controllers\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SmcLineDetailsController.cs" />
     <Compile Include="Controllers\SMC\CCJobSummaryController.cs" />
     <Compile Include="Controllers\SMC\CompletedJobsCCController.cs" />
@@ -458,6 +464,7 @@
     <Compile Include="Controllers\SMC\JobSummaryPeriodController.cs" />
     <Compile Include="Controllers\SMC\PendingEstimationCCController.cs" />
     <Compile Include="Controllers\SMC\RegionSMCAllPIVController.cs" />
+    <Compile Include="Controllers\SMC\SawMillsMetalCrushersWeldingPlantsDetailsController.cs" />
     <Compile Include="Controllers\SMC\SMCAllApplicationController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCJobProgressController.cs" />
     <Compile Include="Controllers\SMC- Management Information\SMCLineDetailsByProvinceController.cs" />
@@ -630,6 +637,7 @@
     <Compile Include="DAL\General Ledger\DocInquiryGlDAL.cs" />
     <Compile Include="DAL\General Ledger\GlInquiryByDocdal.CS" />
     <Compile Include="DAL\Inventory\MaterialPriceByYearDAL.cs" />
+    <Compile Include="DAL\Inventory\QuantityOnHandGradeCodewiseDAL.cs" />
     <Compile Include="DAL\Inventory\QuantityOnHandLessThanReorderLevelDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVDamageBOSDAL.cs" />
     <Compile Include="DAL\PHV - FIFO\PHVNonMovingBOSDAL.cs" />
@@ -676,6 +684,7 @@
     <Compile Include="DAL\JobSearch\JobSearchRepository.cs" />
     <Compile Include="DAL\PUCSLReports\BulkPUCSLSolarCustomersDao.cs" />
     <Compile Include="DAL\PUCSLReports\OrdinaryPUCSLSolarCustomersDao.cs" />
+    <Compile Include="DAL\PUCSLReports\SolarJournalsRetailDao.cs" />
     <Compile Include="DAL\ReportParamFlagsRepository.cs" />
     <Compile Include="DAL\Shared\ArrearsPositionbillcycleDao.cs" />
     <Compile Include="DAL\Shared\CalcCycleFromAreaDao.cs" />
@@ -684,8 +693,10 @@
     <Compile Include="DAL\Shared\ReceivablePositionbillcycleDao.cs" />
     <Compile Include="DAL\SMC- Management Information\AreaT1T2T3DAL.cs" />
     <Compile Include="DAL\SMC- Management Information\CCT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\CostPaidJobProgressDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\JobFinBillNotGeneratedDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\ProvinceT1T2T3DAL.cs" />
+    <Compile Include="DAL\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SmcLineDetailsDAL.cs" />
     <Compile Include="DAL\SMC\CCJobSummaryDAL.cs" />
     <Compile Include="DAL\SMC\CompletedJobsCCDAL.cs" />
@@ -702,6 +713,7 @@
     <Compile Include="DAL\SMC\JobSummaryPeriodDAL.cs" />
     <Compile Include="DAL\SMC\PendingEstimationCCDAL.cs" />
     <Compile Include="DAL\SMC\RegionSMCAllPIVDAL.cs" />
+    <Compile Include="DAL\SMC\SawMillsMetalCrushersWeldingPlantsDetailsDAL.cs" />
     <Compile Include="DAL\SMC\SMCAllApplicationDAL.cs" />
     <Compile Include="DAL\SMC- Management Information\SMCJobProgressDAL.cs" />
     <Compile Include="DAL\General\MeterReadingCompletionStatusDao.cs" />
@@ -735,6 +747,7 @@
     <Compile Include="DAL\PIV\BranchWisePivBothRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVEntryFormRepository.cs" />
     <Compile Include="DAL\PhysicalVerification\PHVValidationRepository.cs" />
+    <Compile Include="DAL\SMC- Management Information\SMCLineDetailsByProvinceDAL.cs" />
     <Compile Include="Models\AreaEngineerDashboard\AreaEngineerDashboardModel.cs" />
     <Compile Include="Models\Cash Book\AreaWiseCashBookInquiryModel.cs" />
     <Compile Include="Models\Cash Book\CashBookInquiryDrCrModel.cs" />
@@ -785,6 +798,7 @@
     <Compile Include="Models\General Ledger\DocInquiryGlModel.cs" />
     <Compile Include="Models\General Ledger\GlInquiryByDocModel.CS" />
     <Compile Include="Models\Inventory\MaterialPriceByYearModel.cs" />
+    <Compile Include="Models\Inventory\QuantityOnHandGradeCodewiseModel.cs" />
     <Compile Include="Models\Inventory\QuantityOnHandLessThanReorderLevelModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVDamageBOSModel.cs" />
     <Compile Include="Models\PHV - FIFO\PHVNonMovingBOSModel.cs" />
@@ -807,12 +821,16 @@
     <Compile Include="Models\Inventory\QtyOnHandReorderModel.cs" />
     <Compile Include="Models\PUCSLReports\BulkPUCSLSolarCustomersModel.cs" />
     <Compile Include="Models\PUCSLReports\OrdinaryPUCSLSolarCustomersModel.cs" />
+    <Compile Include="Models\PUCSLReports\SolarJournalsRetailModel.cs" />
     <Compile Include="Models\FIFO\QuantityMatFIFOModel.cs" />
     <Compile Include="Models\SMC- Management Information\AreaT1T2T3Model.cs" />
     <Compile Include="Models\SMC- Management Information\CCT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\CostPaidJobProgressModel.cs" />
     <Compile Include="Models\SMC- Management Information\JobFinBillNotGeneratedModel.cs" />
     <Compile Include="Models\SMC- Management Information\ProvinceT1T2T3Model.cs" />
+    <Compile Include="Models\SMC- Management Information\ProvincewiseSMCJobMaterialDetailsModel.cs" />
     <Compile Include="Models\SMC- Management Information\SmcLineDetailsModel.cs" />
+    <Compile Include="Models\SMC- Management Information\SMCLineDetailsByProvinceModel.cs" />
     <Compile Include="Models\SMC\CCJobSummaryModel.cs" />
     <Compile Include="Models\SMC\CompletedJobsCCModel.cs" />
     <Compile Include="Models\SMC\EnergizeAgeAnalysisModel.cs" />
@@ -828,6 +846,7 @@
     <Compile Include="Models\SMC\JobSummaryPeriodModel.cs" />
     <Compile Include="Models\SMC\PendingEstimationCCModel.cs" />
     <Compile Include="Models\SMC\RegionSMCAllPIVModel.cs" />
+    <Compile Include="Models\SMC\SawMillsMetalCrushersWeldingPlantsDetailsModel.cs" />
     <Compile Include="Models\SMC\SMCAllApplicationModel.cs" />
     <Compile Include="Models\SMC- Management Information\SMCJobProgressModel.cs" />
     <Compile Include="Models\General\MeterReadingCompletionStatusModel.cs" />
@@ -1164,9 +1183,6 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
-    <Content Include="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -1213,6 +1229,7 @@
     <Folder Include="Views\ConstructionCompletedLookUp\" />
     <Folder Include="Views\ConstructionCompleted\" />
     <Folder Include="Views\Costcenterwisegldocument\" />
+    <Folder Include="Views\CostPaidJobProgress\" />
     <Folder Include="Views\DocInquiryGl\" />
     <Folder Include="Views\GlInquiryByDoc\" />
     <Folder Include="Views\GrnRaisedForPurchasing\" />
@@ -1244,9 +1261,12 @@
     <Folder Include="Views\ProvinceCashBookInquiry\" />
     <Folder Include="Views\ProvinceMaterialReqDetail\" />
     <Folder Include="Views\ProvinceMaterialReqSummary\" />
+    <Folder Include="Views\ProvincewiseSMCJobMaterialDetails\" />
     <Folder Include="Views\QtyOnHandReorder\" />
+    <Folder Include="Views\QuantityOnHandGradeCodewise\" />
     <Folder Include="Views\QuantityOnHandLessThanReorderLevel\" />
     <Folder Include="Views\RegionPeriodStatus\" />
+    <Folder Include="Views\SawMillsMetalCrushersWeldingPlantsDetails\" />
     <Folder Include="Views\SMCJobProgress\" />
     <Folder Include="Views\SmcLineDetails\" />
     <Folder Include="Views\SolarOrdinaryCustomersGenerationCapacity\" />
@@ -1257,6 +1277,9 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Scripts\Swagger\GovernmentAgeAnalysis.js">
       <LogicalName>MISReports_Api.Swagger.GovernmentAgeAnalysis.js</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Scripts\Swagger\SolarJournalsRetail.js">
+      <LogicalName>MISReports_Api.Swagger.SolarJournalsRetail.js</LogicalName>
     </EmbeddedResource>
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />

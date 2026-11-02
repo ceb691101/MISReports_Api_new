@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/phv-obsolete-idle-bos")]
     public class PHVObsoleteIdleBOSController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVObsoleteIdleBOSRepository _repository;
 
         public PHVObsoleteIdleBOSController()
@@ -61,6 +63,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException ex)
             {
+                logger.Error(ex, "GetObsoleteIdleBOS failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}", deptId, repYear, repMonth, warehouseCode);
                 if (ex.Number == 1652)
                 {
                     return Request.CreateResponse(
@@ -78,6 +81,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetObsoleteIdleBOS failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}", deptId, repYear, repMonth, warehouseCode);
                 return Request.CreateResponse(
                     HttpStatusCode.InternalServerError,
                     new { message = ex.Message },

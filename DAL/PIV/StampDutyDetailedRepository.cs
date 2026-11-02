@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class StampDutyDetailedRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -82,6 +84,7 @@ ORDER BY p.dept_id, p.piv_date, p.piv_no";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetStampDutyDetailedReport failed (exception rethrown). compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                     // TODO: In production → log exception properly (Serilog/NLog/etc)
                     throw new Exception("Error fetching Stamp Duty Detailed report: " + ex.Message, ex);
                 }

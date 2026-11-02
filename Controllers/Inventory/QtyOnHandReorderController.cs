@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/qtyonhandreorder")]
     public class QtyOnHandReorderController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly QtyOnHandReorderDAL _dal = new QtyOnHandReorderDAL();
 
         // PATH: /api/qtyonhandreorder/report/100
@@ -62,6 +64,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. costCtr={costCtr}", costCtr);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

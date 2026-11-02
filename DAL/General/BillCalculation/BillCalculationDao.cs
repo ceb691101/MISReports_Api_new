@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.General.BillCalculation
 {
     public class BillCalculationDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection;
 
         public BillCalculationDao()
@@ -66,6 +68,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetTariffPeriods failed (exception rethrown). category={category}, fromDate={fromDate}, toDate={toDate}", category, fromDate, toDate);
                 System.Diagnostics.Trace.WriteLine($"Error in GetTariffPeriods: {ex.Message}");
                 throw;
             }
@@ -145,6 +148,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetTariffBlocks failed (exception rethrown). category={category}, effectiveDate={effectiveDate}", category, effectiveDate);
                 System.Diagnostics.Trace.WriteLine($"Error in GetTariffBlocks: {ex.Message}");
                 throw;
             }
@@ -433,6 +437,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "CalculateDetailedBill failed (exception rethrown). request={@request}", request);
                 System.Diagnostics.Trace.WriteLine($"Error in CalculateDetailedBill: {ex.Message}");
                 throw;
             }
@@ -469,6 +474,7 @@ namespace MISReports_Api.DAL.General.BillCalculation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBillSummary failed (exception rethrown). category={category}, units={units}, fromDate={fromDate}, toDate={toDate}", category, units, fromDate, toDate);
                 System.Diagnostics.Trace.WriteLine($"Error in GetBillSummary: {ex.Message}");
                 throw;
             }

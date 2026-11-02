@@ -11,6 +11,8 @@ namespace MISReports_Api.DAL
 {
     public class BillCycleRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["InformixConnection"].ConnectionString;
 
         public BillCycleModel GetLast24BillCycles()
@@ -41,12 +43,14 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetLast24BillCycles failed");
                     // Log error appropriately for .NET 4.7.2
                     System.Diagnostics.Trace.WriteLine($"Error retrieving max bill cycle: {ex.Message}");
                     model.ErrorMessage = "Error retrieving max bill cycle";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetLast24BillCycles failed");
                     System.Diagnostics.Trace.WriteLine($"Unexpected error: {ex.Message}");
                     model.ErrorMessage = "Unexpected error occurred";
                 }

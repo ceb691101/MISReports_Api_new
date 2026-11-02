@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/joballocatedestimatesdetails")]
     public class JobAllocatedEstimatesDetailsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly JobAllocatedEstimatesDetailsDAL _dal = new JobAllocatedEstimatesDetailsDAL();
 
         // QUERY: /api/joballocatedestimatesdetails/report?costCtr=511.20&matCode=
@@ -60,6 +62,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. costCtr={costCtr}, matCode={matCode}", costCtr, matCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

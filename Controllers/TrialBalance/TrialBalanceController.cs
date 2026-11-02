@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/trialbalance")]
     public class TrialBalanceController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly TrialBalanceRepository _repository = new TrialBalanceRepository();
    // one  company details 
         [HttpGet]
@@ -30,6 +32,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetTrialBalance failed. costctr={costctr}, repyear={repyear}, repmonth={repmonth}", costctr, repyear, repmonth);
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -59,6 +62,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDepartmentsByRegion failed. region={region}", region);
                 var errorResponse = new
                 {
                     data = (object)null,
@@ -89,6 +93,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCompaniesByLevel failed. lvl_no={lvl_no}", lvl_no);
                 var errorResponse = new
                 {
                     data = (object)null,

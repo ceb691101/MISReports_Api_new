@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/documentinquiry")]
     public class DocumentInquiryController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DocumentInquiryRepository _repository = new DocumentInquiryRepository();
 
         // GET api/documentinquiry/cashbook?costCtr=001&fromDate=20220101&toDate=20220131
@@ -48,6 +50,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCashBookReport failed. costCtr={costCtr}, fromDate={fromDate}, toDate={toDate}", costCtr, fromDate, toDate);
                 System.Diagnostics.Trace.WriteLine($"ERROR in DocumentInquiryController: {ex}");
                 return Ok(new
                 {
