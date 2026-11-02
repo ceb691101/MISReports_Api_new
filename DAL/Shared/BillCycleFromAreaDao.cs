@@ -13,7 +13,10 @@ namespace MISReports_Api.DAL.Shared
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly DBConnection _dbConnection = new DBConnection();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public BillCycleModel GetLast24BillCycles()
         {
             var model = new BillCycleModel();

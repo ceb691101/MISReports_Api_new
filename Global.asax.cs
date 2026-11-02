@@ -10,6 +10,8 @@ namespace MISReports_Api
     {
         protected void Application_Start()
         {
+            NLog.LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration(System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "NLog.config"));
+            NLog.LogManager.GetCurrentClassLogger().Info("Application starting up - NLog logger initialized.");
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);

@@ -108,6 +108,8 @@ namespace MISReports_Api.Controllers
 
         private readonly FinalizedAccountsDao _finalizedAccountsDao = new FinalizedAccountsDao();
         private readonly MeterReadingCompletionStatusDao _meterReadingCompletionStatusDao = new MeterReadingCompletionStatusDao();
+        private readonly SecurityDepositInterestDao _securityDepositInterestDao = new SecurityDepositInterestDao();
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
 
         // ================================================================== //
