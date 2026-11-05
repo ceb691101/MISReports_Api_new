@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/ledgercard/costcenter-transfer-vouchers")]
     public class CostCenterTransferVouchersController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CostCenterTransferVouchersRepository _repository;
 
         public CostCenterTransferVouchersController()
@@ -36,6 +38,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. costctr={costctr}, repyear={repyear}, startmonth={startmonth}, endmonth={endmonth}, subac={subac}, docpf={docpf}", costctr, repyear, startmonth, endmonth, subac, docpf);
                 return InternalServerError(ex);
             }
         }
@@ -56,6 +59,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetDocProfiles failed. costctr={costctr}", costctr);
                 return InternalServerError(ex);
             }
         }

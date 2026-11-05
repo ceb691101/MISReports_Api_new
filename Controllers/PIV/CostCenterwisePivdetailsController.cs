@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/costcenter-piv")]
     public class CostCenterwisePivdetailsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly CostCenterwisePivdetailsRepository _repo = new CostCenterwisePivdetailsRepository();
 
         // GET: api/costcenter-piv/report?costctr=440.00&fromDate=2026/01/01&toDate=2026/01/02
@@ -44,6 +46,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. costctr={costctr}, fromDate={fromDate}, toDate={toDate}", costctr, fromDate, toDate);
                 return InternalServerError(new Exception("Error generating Cost Center PIV Report: " + ex.Message));
             }
         }

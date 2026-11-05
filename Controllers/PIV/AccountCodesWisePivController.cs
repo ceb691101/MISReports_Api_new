@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/account-codes-wise-piv")]
     public class AccountCodesWisePivController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly AccountCodesWisePivRepository _repo = new AccountCodesWisePivRepository();
 
         // GET: api/account-codes-wise-piv/report?fromDate=2025/01/01&toDate=2025/12/31&costctr=AFMHQ001
@@ -42,6 +44,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReport failed. fromDate={fromDate}, toDate={toDate}, costctr={costctr}", fromDate, toDate, costctr);
                 return InternalServerError(new Exception("Error generating Account Codes Wise PIV Report: " + ex.Message));
             }
         }

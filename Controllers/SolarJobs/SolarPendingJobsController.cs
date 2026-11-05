@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers.SolarJobs
     [RoutePrefix("api/solarjobs/pending-jobs")]
     public class SolarPendingJobsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SolarPendingJobsRepository _repository = new SolarPendingJobsRepository();
 
         [HttpGet]
@@ -55,6 +57,7 @@ namespace MISReports_Api.Controllers.SolarJobs
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetList failed. fromDate={fromDate}, toDate={toDate}, provinceId={provinceId}", fromDate, toDate, provinceId);
                 return Ok(new
                 {
                     data = (object)null,

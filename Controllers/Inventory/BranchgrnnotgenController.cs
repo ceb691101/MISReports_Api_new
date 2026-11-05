@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/branchgrnnotgen")]
     public class BranchGrnNotGenController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly BranchGrnNotGenDAL _dal = new BranchGrnNotGenDAL();
 
         // PATH: /api/branchgrnnotgen/report/2026-01-01/2026-03-31/100
@@ -80,6 +82,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, compId={compId}", fromDate, toDate, compId);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

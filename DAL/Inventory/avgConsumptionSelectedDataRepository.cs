@@ -18,6 +18,8 @@ namespace MISReports_Api.DAL
 
     public class AvgConsumptionSelectedDataRepository : IAvgConsumptionSelectedDataRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager
             .ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -121,6 +123,7 @@ ORDER BY
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSelectedAverageConsumption failed (exception rethrown). costCenter={costCenter}, warehouseCode={warehouseCode}, fromDate={fromDate}, toDate={toDate}, matCode={matCode}", costCenter, warehouseCode, fromDate, toDate, matCode);
                 System.Diagnostics.Debug.WriteLine("Error in GetSelectedAverageConsumption: " + ex.Message);
                 throw;
             }

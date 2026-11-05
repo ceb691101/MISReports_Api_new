@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/incomeexpenditureregion")]
     public class IncomeExpenditureRegionController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly IncomeExpenditureRegionRepository _repository = new IncomeExpenditureRegionRepository();
 
         [HttpGet]
@@ -39,6 +41,7 @@ namespace MISReports_Api.Controllers
             }
             catch (ArgumentException aex)
             {
+                logger.Warn("GetIncomeExpenditureRegion rejected: {error}. companyId={companyId}, repyear={repyear}, repmonth={repmonth}", aex.Message, companyId, repyear, repmonth);
                 var error = new
                 {
                     data = (object)null,
@@ -49,6 +52,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetIncomeExpenditureRegion failed. companyId={companyId}, repyear={repyear}, repmonth={repmonth}", companyId, repyear, repmonth);
                 var error = new
                 {
                     data = (object)null,

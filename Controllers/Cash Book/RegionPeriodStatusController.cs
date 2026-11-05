@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/regionperiodstatus")]
     public class RegionPeriodStatusController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly RegionPeriodStatusDAL _dal = new RegionPeriodStatusDAL();
         // PATH: /api/regionperiodstatus/report/2026/07/DISCO1
         [HttpGet]
@@ -68,6 +70,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. repYear={repYear}, repMonth={repMonth}, region={region}", repYear, repMonth, region);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

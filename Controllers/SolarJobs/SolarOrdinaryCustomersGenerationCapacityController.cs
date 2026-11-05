@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers.SolarJobs
     [RoutePrefix("api/solarordinarycustomersgenerationcapacity")]
     public class SolarOrdinaryCustomersGenerationCapacityController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly SolarOrdinaryCustomersGenerationCapacityDAL _dal =
             new SolarOrdinaryCustomersGenerationCapacityDAL();
 
@@ -87,6 +89,7 @@ namespace MISReports_Api.Controllers.SolarJobs
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetQuery failed. fromDate={fromDate}, toDate={toDate}", fromDate, toDate);
                 System.Diagnostics.Debug.WriteLine(
                     "Error: " + ex.Message + "\n" + ex.StackTrace);
 

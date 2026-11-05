@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers.FIFO
     [RoutePrefix("api/phv-damage-fifo")]
     public class PHVDamageFIFOController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVDamageFIFORepository _repository;
         private readonly PHVObsoleteIdleJasperReportService _jasperReportService;
 
@@ -43,6 +45,7 @@ namespace MISReports_Api.Controllers.FIFO
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPHVDamageFIFO failed. deptId={deptId}, warehouseCode={warehouseCode}, repYear={repYear}", deptId, warehouseCode, repYear);
                 return InternalServerError(ex);
             }
         }
@@ -114,10 +117,12 @@ namespace MISReports_Api.Controllers.FIFO
             }
             catch (JasperReportExecutionException ex)
             {
+                logger.Error(ex, "GetPHVDamageFIFOPdf failed. deptId={deptId}, deptName={deptName}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}, download={download}", deptId, deptName, warehouseCode, repYear, repMonth, download);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPHVDamageFIFOPdf failed. deptId={deptId}, deptName={deptName}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}, download={download}", deptId, deptName, warehouseCode, repYear, repMonth, download);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error generating FIFO PDF.");
             }
         }
@@ -188,10 +193,12 @@ namespace MISReports_Api.Controllers.FIFO
             }
             catch (JasperReportExecutionException ex)
             {
+                logger.Error(ex, "GetPHVDamageFIFOCsv failed. deptId={deptId}, deptName={deptName}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}", deptId, deptName, warehouseCode, repYear, repMonth);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPHVDamageFIFOCsv failed. deptId={deptId}, deptName={deptName}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}", deptId, deptName, warehouseCode, repYear, repMonth);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error generating FIFO CSV.");
             }
         }

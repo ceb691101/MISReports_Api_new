@@ -7,6 +7,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/materialreqjobwise")]
     public class MaterialReqJobwiseController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly MaterialReqJobwiseDAL _dal = new MaterialReqJobwiseDAL();
 
         // PATH: /api/materialreqjobwise/report/100/PRJ-2026-01
@@ -70,6 +72,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. costCtr={costCtr}, projectNo={projectNo}", costCtr, projectNo);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

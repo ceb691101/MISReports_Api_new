@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.SolarInformation.SolarPVConnections
 {
     public class PVBillCycleDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public BillCycleModel GetLast24BillCycles()
@@ -61,12 +63,14 @@ namespace MISReports_Api.DAL.SolarInformation.SolarPVConnections
             }
             catch (OleDbException ex)
             {
+                logger.Error(ex, "GetLast24BillCycles failed");
                 string errorDetails = $"OleDb Error: {ex.Message}, Error Code: {ex.ErrorCode}";
                 System.Diagnostics.Trace.WriteLine(errorDetails);
                 model.ErrorMessage = $"Database error: {ex.Message}";
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLast24BillCycles failed");
                 string errorDetails = $"Unexpected error: {ex.Message}, Stack: {ex.StackTrace}";
                 System.Diagnostics.Trace.WriteLine(errorDetails);
                 model.ErrorMessage = $"Unexpected error: {ex.Message}";

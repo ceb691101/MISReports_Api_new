@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/materialmaster")]
     public class MaterialMasterController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly MaterialMasterDAL _dal = new MaterialMasterDAL();
 
         // PATH:
@@ -69,6 +71,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. matCode={matCode}, status={status}", matCode, status);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
 
                 return InternalServerError(

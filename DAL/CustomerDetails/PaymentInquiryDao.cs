@@ -30,6 +30,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "TestConnection failed");
                 errorMessage = ex.Message;
                 return false;
             }
@@ -1006,6 +1007,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCountersFromConnection failed. connectionName={connectionName}, provCode={provCode}", connectionName, provCode);
                 if (ex.Message.Contains("-111") || ex.Message.Contains("ISAM error"))
                 {
                     logMessage = $"Success on {connectionName} (0 counters found).";
@@ -1229,6 +1231,7 @@ namespace MISReports_Api.DAL.CustomerDetails
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCollectionBreakupFromConnection failed. connectionName={connectionName}, request={@request}, transDate={transDate}", connectionName, request, transDate);
                 if (ex.Message.Contains("-111") || ex.Message.Contains("ISAM error"))
                 {
                     logMessage = $"Success on {connectionName} (0 records found).";

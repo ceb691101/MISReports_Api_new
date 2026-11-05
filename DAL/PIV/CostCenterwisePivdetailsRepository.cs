@@ -10,6 +10,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class CostCenterwisePivdetailsRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -79,6 +81,7 @@ ORDER BY
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetCostCenterPivDetails failed (exception rethrown). costCenter={costCenter}, fromDate={fromDate}, toDate={toDate}", costCenter, fromDate, toDate);
                     throw new Exception("Error fetching Cost Center wise PIV details: " + ex.Message, ex);
                 }
             }

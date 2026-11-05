@@ -12,6 +12,8 @@ namespace MISReports_Api.DAL
 {
     public class ProvinceT1T2T3DAL
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -181,6 +183,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OracleException ex)
                 {
+                    logger.Error(ex, "GetProvinceT1T2T3 failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, compId={compId}", fromDate, toDate, compId);
                     System.Diagnostics.Trace.WriteLine($"Oracle error {ex.Number}: {ex.Message}");
                     throw;
                 }

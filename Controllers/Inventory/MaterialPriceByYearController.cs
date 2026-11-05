@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/material-price")]
     public class MaterialPriceByYearController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly MaterialPriceByYearDAL _materialPriceByYearDAL =
             new MaterialPriceByYearDAL();
 
@@ -60,6 +62,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterialPriceByYear failed. costCtr={costCtr}, repYear={repYear}", costCtr, repYear);
                 var errorResponse = new
                 {
                     data = (object)null,

@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/customerdetails")]
     public class CustomerDetailsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PaymentInquiryDao _paymentInquiryDao;
 
         public CustomerDetailsController()
@@ -39,6 +41,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLatestUpdateTimes failed");
                 return Ok(new { data = (object)null, errorMessage = "Cannot get latest update times.", errorDetails = ex.Message });
             }
         }
@@ -66,6 +69,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPaymentFullReport failed. request={@request}", request);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get payment full report.", errorDetails = ex.Message });
             }
         }
@@ -94,6 +98,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetProvinces failed");
                 return Ok(new { data = (object)null, errorMessage = "Cannot get provinces.", errorDetails = ex.Message });
             }
         }
@@ -120,6 +125,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAreas failed. provCode={provCode}", provCode);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get areas.", errorDetails = ex.Message });
             }
         }
@@ -146,6 +152,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCounters failed. provCode={provCode}", provCode);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get counters.", errorDetails = ex.Message });
             }
         }
@@ -172,6 +179,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPOSCollectionBreakup failed. request={@request}", request);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get POS counter collection breakup.", errorDetails = ex.Message });
             }
         }
@@ -198,6 +206,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetPayModes failed");
                 return Ok(new { data = (object)null, errorMessage = "Cannot get pay modes.", errorDetails = ex.Message });
             }
         }
@@ -219,6 +228,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetBillTypes failed");
                 return Ok(new { data = (object)null, errorMessage = "Cannot get bill types.", errorDetails = ex.Message });
             }
         }
@@ -249,6 +259,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetStandingOrderReport failed. request={@request}", request);
                 return Ok(new { data = (object)null, errorMessage = "Cannot get standing order report.", errorDetails = ex.Message });
             }
         }

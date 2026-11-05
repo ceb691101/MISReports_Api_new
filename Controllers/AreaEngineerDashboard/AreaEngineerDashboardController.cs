@@ -13,6 +13,8 @@ namespace MISReports_Api.Controllers.AreaEngineerDashboard
     [RoutePrefix("api/areaengineer")]
     public class AreaEngineerDashboardController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private static readonly AreaEngineerPivTotalDAL AreaEngineerPivTotalDAL = new AreaEngineerPivTotalDAL();
         private static readonly AreaEngineerPivPeriodSummaryDAL AreaEngineerPivPeriodSummaryDAL = new AreaEngineerPivPeriodSummaryDAL();
         private static readonly AreaEngineerStockValueDAL AreaEngineerStockValueDAL = new AreaEngineerStockValueDAL();
@@ -70,6 +72,7 @@ namespace MISReports_Api.Controllers.AreaEngineerDashboard
                     }
                     catch (Exception ex)
                     {
+                        logger.Error(ex, "GetOrReturnStaleAndRefreshWithMetadata failed");
                         Trace.TraceError($"{key}-refresh failed: {ex.Message}");
                     }
                 });

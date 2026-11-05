@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/userrole")]
     public class UserRoleController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly UserRoleRepository _repository = new UserRoleRepository();
 
         [HttpGet]
@@ -29,6 +31,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetUserRole failed. epfNo={epfNo}", epfNo);
                 var errorResponse = new
                 {
                     data = (object)null,

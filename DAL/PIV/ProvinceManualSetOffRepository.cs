@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.PIV
 {
     public class ProvinceManualSetOffRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string _connectionString =
             ConfigurationManager.ConnectionStrings["HQOracle"].ConnectionString;
 
@@ -69,6 +71,7 @@ order by c.dept_id ,c.piv_no";
                 }
                 catch (Exception ex)
                 {
+                    logger.Error(ex, "GetProvinceManualSetOffReport failed (exception rethrown). fromDate={fromDate}, toDate={toDate}, compId={compId}", fromDate, toDate, compId);
                     throw new Exception("Error fetching Province Manual Set-off Report: " + ex.Message, ex);
                 }
             }

@@ -9,6 +9,8 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
 {
     public class SolarCustomerInforOrdinaryDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection;
 
         public SolarCustomerInforOrdinaryDao()
@@ -79,6 +81,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCustomerInformation failed. accountNumber={accountNumber}", accountNumber);
                 response.ErrorMessage = $"Error retrieving customer information: {ex.Message}";
                 System.Diagnostics.Trace.WriteLine($"Error in GetCustomerInformation: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
@@ -115,6 +118,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLatestBillCycle failed (exception rethrown). accountNumber={accountNumber}", accountNumber);
                 System.Diagnostics.Trace.WriteLine($"Error in GetLatestBillCycle: {ex.Message}");
                 throw;
             }
@@ -167,6 +171,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetClosestAvailableCycleInPrnDat failed (exception rethrown). accountNumber={accountNumber}, targetCycle={targetCycle}", accountNumber, targetCycle);
                 System.Diagnostics.Trace.WriteLine($"Error in GetClosestAvailableCycleInPrnDat: {ex.Message}");
                 throw;
             }
@@ -286,6 +291,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCustomerBasicInfo failed (exception rethrown). accountNumber={accountNumber}, billCycle={billCycle}", accountNumber, billCycle);
                 System.Diagnostics.Trace.WriteLine($"Error in GetCustomerBasicInfo: {ex.Message}");
                 throw;
             }
@@ -333,6 +339,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAreaInformation failed. areaCode={areaCode}", areaCode);
                 System.Diagnostics.Trace.WriteLine($"Error in GetAreaInformation: {ex.Message}");
                 // Don't throw - area info is supplementary
             }
@@ -418,6 +425,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEnergyHistory failed (exception rethrown). accountNumber={accountNumber}, latestBillCycle={latestBillCycle}, customerInfo={@customerInfo}", accountNumber, latestBillCycle, customerInfo);
                 System.Diagnostics.Trace.WriteLine($"Error in GetEnergyHistory: {ex.Message}");
                 throw;
             }
@@ -441,6 +449,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "CalculateStartCycle failed. latestCycle={latestCycle}, monthsBack={monthsBack}", latestCycle, monthsBack);
                 System.Diagnostics.Trace.WriteLine($"Error in CalculateStartCycle: {ex.Message}");
                 return latestCycle;
             }
@@ -471,6 +480,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "AccountExists failed. accountNumber={accountNumber}", accountNumber);
                 System.Diagnostics.Trace.WriteLine($"Error in AccountExists: {ex.Message}");
                 return false;
             }

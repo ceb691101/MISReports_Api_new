@@ -9,6 +9,8 @@ namespace MISReports_Api.DAL
 {
     public class DebtorRepository
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["InformixConnection"].ConnectionString;
 
         public List<DebtorDetailModel> GetDebtorDetails(DebtorRequest request)
@@ -34,6 +36,7 @@ namespace MISReports_Api.DAL
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetDebtorDetails failed (exception rethrown)");
                     Console.WriteLine($"Error retrieving debtor details: {ex.Message}", ex);
                     throw;
                 }

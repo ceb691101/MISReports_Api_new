@@ -8,6 +8,8 @@ namespace MISReports_Api.DAL.Shared
 {
     public class ProvinceOrdinaryDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection = new DBConnection();
 
         public bool TestConnection(out string errorMessage)
@@ -67,6 +69,7 @@ namespace MISReports_Api.DAL.Shared
                 }
                 catch (OleDbException ex)
                 {
+                    logger.Error(ex, "GetProvince failed (exception rethrown). regionCode={regionCode}", regionCode);
                     throw new Exception("Error retrieving province data: " + ex.Message, ex);
                 }
             }

@@ -24,6 +24,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api")]
     public class CollectionController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         // ── DAO fields ────────────────────────────────────────────────────────
         private readonly ReceivablePositionDao _receivablePositionDao = new ReceivablePositionDao();
         private readonly SalesAndCollectionDao _salesAndCollectionDao = new SalesAndCollectionDao();
@@ -92,6 +94,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReceivablePositionReport failed. billCycle={billCycle}, areaCode={areaCode}, billType={billType}", billCycle, areaCode, billType);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetReceivablePositionReport: {ex.Message}\n{ex.StackTrace}");
 
@@ -134,6 +137,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReceivablePositionAreasByProvince failed. provinceCode={provinceCode}, billType={billType}", provinceCode, billType);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -173,6 +177,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetReceivablePositionAreasByRegion failed. regionCode={regionCode}, billType={billType}", regionCode, billType);
                 return Ok(JObject.FromObject(new
                 {
                     data = (object)null,
@@ -251,6 +256,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSalesCollectionReport failed. billCycle={billCycle}, reportType={reportType}, provinceCode={provinceCode}, regionCode={regionCode}", billCycle, reportType, provinceCode, regionCode);
                 System.Diagnostics.Trace.WriteLine(
                     $"ERROR GetSalesCollectionReport: {ex.Message}\n{ex.StackTrace}");
                 return Ok(JObject.FromObject(new
@@ -287,6 +293,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetHeadOfficePOSReport failed. request={@request}", request);
                 return Ok(new { data = (object)null, errorMessage = "Failed to fetch report data.", errorDetails = ex.Message });
             }
         }
@@ -340,6 +347,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetHighestOutstandingReport failed. request={@request}", request);
                 System.Diagnostics.Trace.WriteLine($"ERROR CustomersHighestOutstanding GetReport: {ex.Message}\n{ex.StackTrace}");
                 return Ok(new
                 {
@@ -410,6 +418,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ProcessSuspensePaymentDetailsRequest failed. request={@request}", request);
                 return Ok(new
                 {
                     data = (object)null,

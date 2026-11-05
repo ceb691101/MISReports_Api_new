@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/materialflow")]
     public class MaterialFlowController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly MaterialFlowDAL _dal = new MaterialFlowDAL();
 
         // PATH: /api/materialflow/report/2026-05-09/2026-07-09/510.00/EBG120007G/A/WH_CEPP
@@ -43,6 +45,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetGradeCodes failed");
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }
@@ -123,6 +126,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "ExecuteQuery failed. fromDate={fromDate}, toDate={toDate}, costCtr={costCtr}, matCode={matCode}, grCode={grCode}, whCode={whCode}", fromDate, toDate, costCtr, matCode, grCode, whCode);
                 System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
                 return InternalServerError(new Exception($"Database error: {ex.Message}", ex));
             }

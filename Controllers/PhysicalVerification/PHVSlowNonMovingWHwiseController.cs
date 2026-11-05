@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/phv-slow-nonmoving-whwise")]
     public class PHVSlowNonMovingWHwiseController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVSlowNonMovingWHwiseRepository _repository;
 
         public PHVSlowNonMovingWHwiseController()
@@ -43,6 +45,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetSlowNonMovingWHwise failed. deptId={deptId}, repYear={repYear}, repMonth={repMonth}, warehouseCode={warehouseCode}", deptId, repYear, repMonth, warehouseCode);
                 return InternalServerError(ex);
             }
         }

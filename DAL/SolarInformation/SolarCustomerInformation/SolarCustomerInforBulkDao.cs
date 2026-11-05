@@ -9,6 +9,8 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
 {
     public class SolarCustomerInforBulkDao
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly DBConnection _dbConnection;
 
         public SolarCustomerInforBulkDao()
@@ -53,6 +55,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCustomerInformation failed. accountNumber={accountNumber}", accountNumber);
                 response.ErrorMessage = $"Error retrieving customer information: {ex.Message}";
                 System.Diagnostics.Trace.WriteLine($"ERROR in GetCustomerInformation: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack Trace: {ex.StackTrace}");
@@ -89,6 +92,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetLatestBillCycle failed (exception rethrown). accountNumber={accountNumber}", accountNumber);
                 System.Diagnostics.Trace.WriteLine($"ERROR in GetLatestBillCycle: {ex.Message}");
                 throw;
             }
@@ -268,6 +272,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetCustomerBasicInfo failed (exception rethrown). accountNumber={accountNumber}, billCycle={billCycle}", accountNumber, billCycle);
                 System.Diagnostics.Trace.WriteLine($"ERROR in GetCustomerBasicInfo: {ex.Message}");
                 System.Diagnostics.Trace.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
@@ -469,6 +474,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetEnergyHistory failed (exception rethrown). accountNumber={accountNumber}, latestBillCycle={latestBillCycle}", accountNumber, latestBillCycle);
                 System.Diagnostics.Trace.WriteLine($"ERROR in GetEnergyHistory: {ex.Message}");
                 throw;
             }
@@ -491,6 +497,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "CalculateStartCycle failed. latestCycle={latestCycle}, monthsBack={monthsBack}", latestCycle, monthsBack);
                 System.Diagnostics.Trace.WriteLine($"ERROR in CalculateStartCycle: {ex.Message}");
                 return latestCycle;
             }
@@ -521,6 +528,7 @@ namespace MISReports_Api.DAO.SolarInformation.SolarCustomerInformation
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "AccountExists failed. accountNumber={accountNumber}", accountNumber);
                 System.Diagnostics.Trace.WriteLine($"ERROR in AccountExists: {ex.Message}");
                 return false;
             }

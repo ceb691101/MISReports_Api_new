@@ -12,6 +12,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/provinceincomeexpenditure")]
     public class ProvinceIncomeExpenditureController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvinceIncomeExpenditureRepository _repo = new ProvinceIncomeExpenditureRepository();
 
         [HttpGet]
@@ -42,6 +44,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetProvinceIncomeExpenditure failed. compId={compId}, repYear={repYear}, repMonth={repMonth}", compId, repYear, repMonth);
                 Debug.WriteLine(ex);
                 return Content(HttpStatusCode.InternalServerError, new
                 {

@@ -11,6 +11,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/inventoryonhand")]
     public class InventoryOnHandController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly InventoryOnHandRepository _repository = new InventoryOnHandRepository();
 
         [HttpGet]
@@ -33,6 +35,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetInventoryOnHand failed. deptId={deptId}, matCode={matCode}", deptId, matCode);
                 var errorResponse = new
                 {
                     data = (object)null,

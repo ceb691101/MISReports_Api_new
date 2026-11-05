@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/jobcardmaterials")]
     public class JobCardMaterialsController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly JobCardMaterialsRepository _repository = new JobCardMaterialsRepository();
 
         // GET api/jobcardmaterials?projectNo=XXX&costCtr=YYY
@@ -36,6 +38,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetMaterials failed. projectNo={projectNo}, costCtr={costCtr}", projectNo, costCtr);
                 System.Diagnostics.Trace.WriteLine($"ERROR in JobCardMaterialsController: {ex}");
                 return Ok(new
                 {

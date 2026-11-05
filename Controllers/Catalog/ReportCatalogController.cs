@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers.Catalog
     [RoutePrefix("api/reportcatalog")]
     public class ReportCatalogController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ReportCatalogRepository _repository = new ReportCatalogRepository();
 
         // GET api/reportcatalog/all?epfNo=12345&roleId=ROLE_ADMIN
@@ -31,6 +33,7 @@ namespace MISReports_Api.Controllers.Catalog
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetAllReports failed. epfNo={epfNo}, roleId={roleId}", epfNo, roleId);
                 var errorResponse = new
                 {
                     data = (object)null,

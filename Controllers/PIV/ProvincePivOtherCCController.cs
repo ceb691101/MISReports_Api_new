@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/provincepivothercc")]
     public class ProvincePivOtherCCController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly ProvincePivOtherCCRepository _repo = new ProvincePivOtherCCRepository();
 
         /// <summary>
@@ -38,6 +40,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. compId={compId}, fromDate={fromDate}, toDate={toDate}", compId, fromDate, toDate);
                 // You can replace this with your logging framework if needed
                 return InternalServerError(new Exception("Error while fetching Province PIV Other CC report: " + ex.Message));
             }

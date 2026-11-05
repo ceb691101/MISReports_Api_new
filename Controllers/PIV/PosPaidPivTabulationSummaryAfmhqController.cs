@@ -10,6 +10,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/pos-paid-piv-tabulation-afmhq")]
     public class PosPaidPivTabulationSummaryAfmhqController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PosPaidPivTabulationSummaryAfmhqRepository _repo = new PosPaidPivTabulationSummaryAfmhqRepository();
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. costCtr={costCtr}, fromDate={fromDate}, toDate={toDate}", costCtr, fromDate, toDate);
                 return InternalServerError(new Exception("Error fetching POS Paid PIV Tabulation Summary (AFMHQ): " + ex.Message));
             }
         }

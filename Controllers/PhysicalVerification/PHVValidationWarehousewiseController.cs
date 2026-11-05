@@ -8,6 +8,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/phv-validation-warehousewise")]
     public class PHVValidationWarehousewiseController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PHVValidationWarehousewiseRepository _repository;
 
         public PHVValidationWarehousewiseController()
@@ -35,6 +37,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "GetWarehousewiseValidation failed. deptId={deptId}, warehouseCode={warehouseCode}, repYear={repYear}, repMonth={repMonth}", deptId, warehouseCode, repYear, repMonth);
                 return InternalServerError(ex);
             }
         }

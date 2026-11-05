@@ -9,6 +9,8 @@ namespace MISReports_Api.Controllers
     [RoutePrefix("api/pivsearch")]
     public class PivSearchController : ApiController
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly PivSearchRepository _repo = new PivSearchRepository();
 
         // GET: api/pivsearch/get?piv=ABC123&project=PROJ001
@@ -29,6 +31,7 @@ namespace MISReports_Api.Controllers
             }
             catch (Exception ex)
             {
+                logger.Error(ex, "Get failed. piv={piv}, project={project}", piv, project);
                 return InternalServerError(new Exception("Error while fetching PIV details: " + ex.Message));
             }
         }
